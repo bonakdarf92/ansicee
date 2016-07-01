@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/Subsysteme.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Lenkmotoren.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/DGL_Berechnen.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Lenkmotoren.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Subsysteme.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/modelAntrieb.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/modelAntrieb.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/calcMatrix_A_B.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/main.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/matrizeCalculator.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/calcMatrix_A_B.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/linear.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/matrizeCalculator.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/horizontalModel.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/DGL_Berechnen.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/linear.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/horizontalModel.c" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Header Search Paths">
+        <CLASSES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
+          <root url="file:///usr/local/include" />
+        </CLASSES>
+        <SOURCES>
+          <root url="file:///usr/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include" />
+          <root url="file:///usr/lib/gcc/x86_64-pc-linux-gnu/6.1.1/include-fixed" />
+          <root url="file:///usr/local/include" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+  </component>
+</module>
