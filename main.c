@@ -7,6 +7,7 @@
 #include "linear.h"
 #include "Lenkmotoren.h"
 #include <time.h>
+#include "matrizeCalculator.h
 
 
 
@@ -14,7 +15,7 @@ int main() {
     clock_t begin = clock();
     //double a = 5.0;
     printf("Auch hallo\n");
-    printf("%f\n" , fun(2.0,3.0));
+    int test = multiplizieren();
     // TODO funktioniert nicht !!!
     //printf("%4s", ausgabe());
     clock_t  end = clock();
