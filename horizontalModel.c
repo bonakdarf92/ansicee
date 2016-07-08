@@ -4,22 +4,22 @@
 
 #include "horizontalModel.h"
 #include <math.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_vector.h>
+//#include <gsl/gsl_matrix.h>
+//#include <gsl/gsl_vector.h>
 
 
-#define KS 5        // Linearisierung mu-Schlupf war 5
-#define C_a 9095    // Schräglaufsteifigkeit
-#define R 0.15      // Radradius
-#define M 1200      // total mass kg ursprünglich 308.52
-#define HCG 0.48303 // height of the center of gravity m  -- CarMaker// 0.55m platform //total 0.48303 selbt gerechnet mit allen Komponenten aus CarMaker
-#define L 2.28      // equilateral triangle setup m ursprünglich 2.54
-#define G 9.81      // gravity constant
-#define THETA 944.8465962
-#define SQRT3 1.73205
+#define KS 5                        // linearized mu-slip about 5
+#define C_a 9095                    // slippage
+#define R 0.15                      // radius of tire
+#define M 1200                      // total mass kg originally 308.52
+#define HCG 0.48303                 // height of the center of gravity m  -- CarMaker self calculated // 0.55m platform
+#define L 2.28                      // equilateral triangle setup m initially 2.54
+#define G 9.81                      // gravity constant
+#define THETA 944.8465962           // Angle Theta
+#define SQRT3 1.73205               // square root of 3
 
 /*
- * Declaration of Systemmatrices and inner Systemvector for further use in methods
+ * Declaration of System matrices and inner System vector for further use in methods
  */
 
     gsl_vector* xg;       // Vector xg
@@ -30,8 +30,8 @@
     gsl_vector* delta_x;  // Vector delta_x
     gsl_vector* delta_u;  // Vector delta_u
     gsl_vector* alpha_r;  // Vector alpha_r
-    gsl_vector* alphax;   // Vector alphax
-    gsl_vector* alphay;   // Vector alphay
+    gsl_vector* alphax;   // Vector alpha_x
+    gsl_vector* alphay;   // Vector alpha_y
     gsl_matrix* C;        // Matrix C
     gsl_matrix* D;        // Matrix D
     double v_1;           // Velocity No.1
@@ -47,15 +47,16 @@
     gsl_vector* mu;       // Vector mu
     gsl_vector* mux;      // Vector mu
     gsl_vector* muy;      // Vector mu
+    gsl_vector* Fz;       // Force Fz
     gsl_vector* Fx;       // Force Fx
     gsl_vector* Fy;       // Force Fy
     gsl_vector* acc;      // Vector acc
 
 
 /*
- * Initialization of Systemmatrix C and D.
- * Allocation of inner Systemvector xg, ug, xg_alt, ug_alt and acc_alt
- * The size of vector and matrix taken from Jans Matlab Code (Horizontalmodell)
+ * Initialization of System matrix C and D.
+ * Allocation of inner System vector xg, ug, xg_alt, ug_alt and acc_alt
+ * The size of vector and matrix taken from Jan's Matlab Code (Horizontal model)
  */
 void initializeVector(){
 
@@ -67,8 +68,8 @@ void initializeVector(){
     delta_x = gsl_vector_alloc(3);  // Vector delta_x
     delta_u = gsl_vector_alloc(9);  // Vector delta_u
     alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
-    alphax = gsl_vector_alloc(3);   // Vector alphax
-    alphay = gsl_vector_alloc(3);   // Vector alphay
+    alphax = gsl_vector_alloc(3);   // Vector alpha_x
+    alphay = gsl_vector_alloc(3);   // Vector alpha_y
     C = gsl_matrix_calloc(18,1);    // Matrix C
     D = gsl_matrix_calloc(18,1);    // Matrix D
     beta = gsl_vector_alloc(3);     // Vector beta
@@ -78,6 +79,7 @@ void initializeVector(){
     mu = gsl_vector_alloc(3);       // Vector mu
     mux = gsl_vector_alloc(3);      // Vector mx
     muy = gsl_vector_alloc(3);      // Vector my
+    Fz = gsl_vector_alloc(3);       // Vector Fz
     Fx = gsl_vector_alloc(3);       // Vector Fx
     Fy = gsl_vector_alloc(3);       // Vector Fy
     acc = gsl_vector_alloc(3);      // Vector acc
@@ -85,7 +87,7 @@ void initializeVector(){
 }
 
 /*
- * This Method returns the Systemvectors.
+ * This Method returns the System vectors.
  * It gets an input int representing the vector:
  * 1  -> xg
  * 2  -> ug
@@ -95,11 +97,21 @@ void initializeVector(){
  * 6  -> delta_xg
  * 7  -> delta_ug
  * 8  -> alpha_r
- * 9  -> alphax
- * 10 -> alphay
+ * 9  -> alpha_x
+ * 10 -> alpha_y
  */
 gsl_vector* getVector(int n) {
+    // Declaration of output vector
     gsl_vector* out;
+
+    // If vector ug, ug_alt or delta_u is called allocate
+    // out with size 9
+    // Else allocate out with size 3
+    if (n == 2 || n == 4 || n == 7)
+        out = gsl_vector_alloc(9);
+    else
+        out = gsl_vector_alloc(3);
+
     switch (n) {
         case 1:
             out = xg;
@@ -142,7 +154,7 @@ gsl_vector* getVector(int n) {
 }
 
 /*
- * This Method returns the Systemmatrices.
+ * This Method returns the System matrices.
  * It gets an input int representing the matrix:
  * 1 -> C
  * 2 -> D
@@ -179,23 +191,23 @@ void testVector(){
 }
 
 /*
- * This method calculates the vectors alpha_r, alphax and alphay and
+ * This method calculates the vectors alpha_r, alpha_x and alpha_y and
  * saves it.
- * The formula is taken from Jans Horizontalmodell line 25 to 27
+ * The formula is taken from Jan's Horizontal model line 25 to 27
  */
-void schraeglaufwinkel() {
+void slipage() {
 
     // Calculation of Vector indices alpha_r
     gsl_vector_set(alpha_r, 0, gsl_vector_get(ug, 3) - gsl_vector_get(ug, 6));      // Index 1
     gsl_vector_set(alpha_r, 1, gsl_vector_get(ug, 4) - gsl_vector_get(ug, 7));      // Index 2
     gsl_vector_set(alpha_r, 2, gsl_vector_get(ug, 5) - gsl_vector_get(ug, 8));      // Index 3
 
-    // Calculation of Vector indices alphax
+    // Calculation of Vector indices alpha_x
     gsl_vector_set(alphax, 0, gsl_vector_get(alpha_r, 0) * sin(gsl_vector_get(ug, 3)));       // Index 1
     gsl_vector_set(alphax, 1, gsl_vector_get(alpha_r, 1) * sin(gsl_vector_get(ug, 4)));       // Index 2
     gsl_vector_set(alphax, 2, gsl_vector_get(alpha_r, 2) * sin(gsl_vector_get(ug, 5)));       // Index 3
 
-    // Calculation of Vector indices alphay
+    // Calculation of Vector indices alpha_y
     gsl_vector_set(alphay, 0, gsl_vector_get(alpha_r, 0) * cos(gsl_vector_get(ug, 3)));       // Index 1
     gsl_vector_set(alphay, 1, gsl_vector_get(alpha_r, 1) * cos(gsl_vector_get(ug, 4)));       // Index 2
     gsl_vector_set(alphay, 2, gsl_vector_get(alpha_r, 2) * cos(gsl_vector_get(ug, 5)));       // Index 3
@@ -204,9 +216,9 @@ void schraeglaufwinkel() {
 
 /*
  * This method calculates the velocity of the driving simulator given by ADMA sensor Data
- * Formula taken from Jans Horizontalmodell in line 30 -40
+ * Formula taken from Jan's Horizontal model in line 30 -40
  */
-void Adma_geschwindigkeit() {
+void adma_velocity() {
 
     // Current vector indices v_x, v_y and psi_p
     double v_x = gsl_vector_get(xg, 0);
@@ -217,7 +229,7 @@ void Adma_geschwindigkeit() {
     v_1 = sqrt( pow(v_x ,2) + pow((v_y + psi_p* L / SQRT3),2 ));
     beta_1 = atan2((v_y + psi_p* L / SQRT3),v_x);
 
-    // Calculation of velcocity v2 and angle beta2
+    // Calculation of velocity v2 and angle beta2
     v_2 = sqrt(pow((v_x + (psi_p * L / SQRT3) * cos(7 * M_PI / 6) ),2) + pow((v_y + (psi_p * L / SQRT3) * sin(7 * M_PI / 6) ),2));
     beta_2 = atan2((v_y + (psi_p * L / SQRT3) * sin(7 * M_PI / 6) ), (v_x + (psi_p * L / SQRT3) * cos(7 * M_PI / 6) ));
 
@@ -237,11 +249,11 @@ void Adma_geschwindigkeit() {
 
 /*
  * This method gets the vector indices of ug and calculates the slip
- * Formula taken from Jans horizontalmodell in line 46 - 54
+ * Formula taken from Jan's horizontal model in line 46 - 54
  */
-void schlupfBerechnung() {
+void slip() {
 
-    // Velocity of tire calculatet by its rotation speed
+    // Velocity of tire calculated by its rotation speed
     gsl_vector_set(vr, 0, (M_PI * R * gsl_vector_get(ug, 0)/ 30));
     gsl_vector_set(vr, 1, (M_PI * R * gsl_vector_get(ug, 1)/ 30));
     gsl_vector_set(vr, 2, (M_PI * R * gsl_vector_get(ug, 2)/ 30));
@@ -249,10 +261,10 @@ void schlupfBerechnung() {
     // TODO herausfinden was der Vector sr fuer eine Bedeutung hat
     for (int i = 0; i <3 ; i++) {
         if (gsl_vector_get(vr,i) >= gsl_vector_get(v,i))
-            // Antriebsfall
+            // Propulsion
             gsl_vector_set(sr, i, (1 - gsl_vector_get(v, i)/ gsl_vector_get(vr, i)) );
         else
-            // Bremsfall
+            // Brake
             gsl_vector_set(sr, i, (1 - gsl_vector_get(vr, i)/ gsl_vector_get(v, i)) );
     }
 }
@@ -260,7 +272,7 @@ void schlupfBerechnung() {
 /*
  * Method calculates the Friction for x and y-axes
  */
-void ReibwertBerechnung() {
+void friction() {
 
     // Filling up vector mu with linearized slip KS and indices of vector sr
     gsl_vector_set(mu, 0, KS * gsl_vector_get(sr, 0));
@@ -283,7 +295,7 @@ void ReibwertBerechnung() {
 /*
  * This method calculates the acceleration of in x-direction and returns double ax
  * It calculates the equitation of motion with the formula of Jan Steier
- * For more Information look up in Jan's MasterThesis or line 63 in Horizontalmodell
+ * For more Information look up in Jan's MasterThesis or line 63 in Horizontal model
  */
 // TODO alle Einträge nochmal uberpruefen
 double Bewegungsgleichung_ax() {
@@ -292,7 +304,7 @@ double Bewegungsgleichung_ax() {
     /*
      * For an overview and summary of the long equitation some auxiliary scalars are calculated
      * and stored into the following doubles
-     * mux_all, muy_all, alphax_all, alphay_all, firstPart,
+     * mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
      * p1 and p2
      *
      */
@@ -332,8 +344,8 @@ double Bewegungsgleichung_ax() {
 
 
 /*
- * This Method calculates the accelartion ay.
- * It Solves the equitation with Jan's Formel form Horizontalmodell.
+ * This Method calculates the acceleration ay.
+ * It Solves the equitation with Jan's Formula from Horizontal model.
  * For getting the result, Bewegungsgleichung_ax() must be called
  */
 double Bewegungsgleichung_ay() {
@@ -352,8 +364,6 @@ double Bewegungsgleichung_ay() {
  */
 gsl_vector * AufstandsKraefte() {
     // Declaration of output vector
-    gsl_vector* Fz;
-
     // Calculation of the three Forces FZ_1, FZ_2 and FZ_3
     double FZ_1 = M * G / 3 - 2 * M * HCG / SQRT3 / L * Bewegungsgleichung_ax();
     double FZ_2 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 - Bewegungsgleichung_ay());
@@ -370,8 +380,8 @@ gsl_vector * AufstandsKraefte() {
 /*
  * This Method calculates the Forces on the Tire and puts it into the Vector
  * Fx and Fy.
- * The formula is taken from Jan's Horizontalmodell
- * Fx(x) = Fz(x) * mux(x) + C_a * alphax(x)
+ * The formula is taken from Jan's Horizontal model
+ * Fx(x) = Fz(x) * mux(x) + C_a * alpha_x(x)
  */
 void RadKraefte() {
     // Putting the calculated scalar into the vector Fx
@@ -403,23 +413,23 @@ void GierbewegungBerechnen() {
 }
 
 /*
- * This Method calculates the Big Systemmatrices C and D.
+ * This Method calculates the Big System matrices C and D.
  * For the equitation some auxiliary parameters are calculated.
  *
  */
 void SystemmatrixBerechnen() {
 
-    // Calculating auxiliary parameters acc for futher calculations
+    // Calculating auxiliary parameters acc for further calculations
     double acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
     double acc_two = gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1);
     double acc_three = gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2);
 
-    // Calculating auxiliary parameters xg for futher calculations
+    // Calculating auxiliary parameters xg for further calculations
     double xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
     double xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
     double xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
 
-    // Calculating auxiliary parameters ug for futher calculations
+    // Calculating auxiliary parameters ug for further calculations
     double ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
     double ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
     double ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);

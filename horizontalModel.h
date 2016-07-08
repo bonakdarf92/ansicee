@@ -10,10 +10,14 @@
 
 //TODO Anpassen des Infotextes
 /*
- * This Model is transcripted from Jan's Horizontalmodel.
+ * This Model is transcribed from Jan's Horizontal Model.
  * All Methods and Calculation formula are taken from his
  * Matlab-Code or his Masterthesis.
- * For futher Information take a look in the readme, Bachelor-
+ * The main purpose of this c-file is to generate the System
+ * Matrices C and D.
+ * Some thought should be spent on the model of capsulising
+ * the Information. A
+ * For further Information take a look in the readme, Bachelor-
  * thesis of Farid Bonakdar or Masterthesis of Jan Steier
  */
 
@@ -25,19 +29,19 @@ gsl_matrix * getMatrix(int n);
 
 void testVector();
 
-void schraeglaufwinkel();
+void slipage();
 
-void Adma_geschwindigkeit();
+void adma_velocity();
 
-void schlupfBerechnung();
+void slip();
 
-void ReibwertBerechnung();
+void friction();
 
 double Bewegungsgleichung_ax();
 
 double Bewegungsgleichung_ay();
 
-gsl_vector *  AufstandsKraefte();
+gsl_vector * AufstandsKraefte();
 
 void RadKraefte();
 
