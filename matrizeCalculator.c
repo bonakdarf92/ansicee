@@ -4,11 +4,10 @@
 
 #include "matrizeCalculator.h"
 #include <stdio.h>
+#include <gsl/gsl_matrix.h>
 
 
-int multiplizieren();
-
-int multiplizieren() {
+void multiplizieren() {
     int m, n, p, q, c, d, k, sum = 0;
     int first[10][10], second[10][10], multiply[10][10];
 
@@ -52,11 +51,7 @@ int multiplizieren() {
             printf("\n");
         }
     }
-    return 0;
-
 }
 
-void multi() {
 
-}
 
