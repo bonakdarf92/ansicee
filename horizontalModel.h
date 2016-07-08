@@ -37,13 +37,13 @@ double Bewegungsgleichung_ax();
 
 double Bewegungsgleichung_ay();
 
-double AufstandsKraefte();
+gsl_vector *  AufstandsKraefte();
 
-double RadKraefte();
+void RadKraefte();
 
-double GierbewegungBerechnen();
+void GierbewegungBerechnen();
 
-double SystemmatrixBerechnen();
+void SystemmatrixBerechnen();
 
 void deltasBerechnen();
 
