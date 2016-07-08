@@ -45,8 +45,11 @@
     gsl_vector* vr;       // Vector vr
     gsl_vector* sr;       // Vector sr
     gsl_vector* mu;       // Vector mu
-    gsl_vector* mux;       // Vector mu
-    gsl_vector* muy;       // Vector mu
+    gsl_vector* mux;      // Vector mu
+    gsl_vector* muy;      // Vector mu
+    gsl_vector* Fx;       // Force Fx
+    gsl_vector* Fy;       // Force Fy
+    gsl_vector* acc;      // Vector acc
 
 
 /*
@@ -73,8 +76,11 @@ void initializeVector(){
     vr = gsl_vector_alloc(3);       // Vector vr
     sr = gsl_vector_alloc(3);       // Vector sr
     mu = gsl_vector_alloc(3);       // Vector mu
-    mux = gsl_vector_alloc(3);       // Vector mx
-    muy = gsl_vector_alloc(3);       // Vector my
+    mux = gsl_vector_alloc(3);      // Vector mx
+    muy = gsl_vector_alloc(3);      // Vector my
+    Fx = gsl_vector_alloc(3);       // Vector Fx
+    Fy = gsl_vector_alloc(3);       // Vector Fy
+    acc = gsl_vector_alloc(3);      // Vector acc
 
 }
 
@@ -93,30 +99,46 @@ void initializeVector(){
  * 10 -> alphay
  */
 gsl_vector* getVector(int n) {
+    gsl_vector* out;
     switch (n) {
         case 1:
-            return xg;
+            out = xg;
         case 2:
-            return ug;
+            out = ug;
         case 3:
-            return xg_alt;
+            out = xg_alt;
         case 4:
-            return ug_alt;
+            out = ug_alt;
         case 5:
-            return acc_alt;
+            out = acc_alt;
         case 6:
-            return delta_x;
+            out = delta_x;
         case 7:
-            return delta_u;
+            out = delta_u;
         case 8:
-            return alpha_r;
+            out = alpha_r;
         case 9:
-            return alphax;
+            out = alphax;
         case 10:
-            return alphay;
+            out = alphay;
+        case 11:
+            out = beta;
+        case 12:
+            out = v;
+        case 13:
+            out = vr;
+        case 14:
+            out = sr;
+        case 15:
+            out = mu;
+        case 16:
+            out = mux;
+        case 17:
+            out = muy;
         default:
             break;
     }
+    return out;
 }
 
 /*
@@ -126,14 +148,16 @@ gsl_vector* getVector(int n) {
  * 2 -> D
  */
 gsl_matrix* getMatrix(int n){
+    gsl_matrix* out = gsl_matrix_alloc(18,1);
     switch (n) {
         case 1:
-            return C;
+            out = C;
         case 2:
-            return D;
+            out = D;
         default:
             break;
     }
+    return out;
 }
 
 /*
@@ -307,26 +331,177 @@ double Bewegungsgleichung_ax() {
 }
 
 
+/*
+ * This Method calculates the accelartion ay.
+ * It Solves the equitation with Jan's Formel form Horizontalmodell.
+ * For getting the result, Bewegungsgleichung_ax() must be called
+ */
 double Bewegungsgleichung_ay() {
     double ay;
+    double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
+    double alphay_all = gsl_vector_get(alphay,0) + gsl_vector_get(alphay, 1) + gsl_vector_get(alphay, 2);
 
+    ay = (G/3 * muy_all + HCG / L / SQRT3 * (gsl_vector_get(muy,1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0))
+            * Bewegungsgleichung_ax() + C_a / M * alphay_all) / (1 - HCG / L *  (gsl_vector_get(muy, 1) - gsl_vector_get(muy,2)));
     return ay;
 }
 
-double AufstandsKraefte() {
-    return 0;
+/*
+ * This Method calculates the Forces of each point in the triangle
+ * and returns a vector containing all three forces
+ */
+gsl_vector * AufstandsKraefte() {
+    // Declaration of output vector
+    gsl_vector* Fz;
+
+    // Calculation of the three Forces FZ_1, FZ_2 and FZ_3
+    double FZ_1 = M * G / 3 - 2 * M * HCG / SQRT3 / L * Bewegungsgleichung_ax();
+    double FZ_2 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 - Bewegungsgleichung_ay());
+    double FZ_3 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 + Bewegungsgleichung_ay());
+
+    // Putting the three forces into the vector
+    gsl_vector_set(Fz,0, FZ_1);
+    gsl_vector_set(Fz,1, FZ_2);
+    gsl_vector_set(Fz,2, FZ_3);
+
+    return Fz;
 }
 
-double RadKraefte() {
-    return 0;
+/*
+ * This Method calculates the Forces on the Tire and puts it into the Vector
+ * Fx and Fy.
+ * The formula is taken from Jan's Horizontalmodell
+ * Fx(x) = Fz(x) * mux(x) + C_a * alphax(x)
+ */
+void RadKraefte() {
+    // Putting the calculated scalar into the vector Fx
+    gsl_vector_set(Fx,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alphax,0));
+    gsl_vector_set(Fx,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alphax,1));
+    gsl_vector_set(Fx,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(mux,2) + C_a * gsl_vector_get(alphax,2));
+
+    // Putting the calculated scalar into the vector Fy
+    gsl_vector_set(Fy,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(muy,0) + C_a * gsl_vector_get(alphay,0));
+    gsl_vector_set(Fy,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(muy,1) + C_a * gsl_vector_get(alphay,1));
+    gsl_vector_set(Fy,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(muy,2) + C_a * gsl_vector_get(alphay,2));
 }
 
-double GierbewegungBerechnen() {
-    return 0;
+/*
+ * This Method calculate the yaw acceleration and returns the general acceleration
+ * in Form of the vector acc
+ */
+void GierbewegungBerechnen() {
+
+    // Calculation of psi_pp with formula taken from Jan's Modell
+    double psi_pp = L/THETA * (gsl_vector_get(Fy,0) / SQRT3 - gsl_vector_get(Fy,1) / 2 / SQRT3 - gsl_vector_get(Fy,2)
+            / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx,2) / 2);
+
+    // Filling the Vector acc with acceleration ax, ay and psi_pp
+    gsl_vector_set(acc, 0, Bewegungsgleichung_ax());
+    gsl_vector_set(acc, 1, Bewegungsgleichung_ay());
+    gsl_vector_set(acc, 2, psi_pp);
+
 }
 
-double SystemmatrixBerechnen() {
-    return 0;
+/*
+ * This Method calculates the Big Systemmatrices C and D.
+ * For the equitation some auxiliary parameters are calculated.
+ *
+ */
+void SystemmatrixBerechnen() {
+
+    // Calculating auxiliary parameters acc for futher calculations
+    double acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
+    double acc_two = gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1);
+    double acc_three = gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2);
+
+    // Calculating auxiliary parameters xg for futher calculations
+    double xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
+    double xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
+    double xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
+
+    // Calculating auxiliary parameters ug for futher calculations
+    double ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
+    double ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
+    double ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
+    double ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
+    double ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
+    double ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
+    double ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
+    double ug_eigth = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
+    double ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
+
+    // TODO Unbedingt kommentieren
+    /*
+     * This for loop calculates the three rows in the Matrix D
+     * In the first if-Statement the difference between xg and xg_alt
+     * bla bla
+     */
+    for (int i = 0; i <3 ; i++) {
+        if ((gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i)) != 0)
+            gsl_vector_set(xg_alt, i, gsl_vector_get(xg_alt, i) + 0.0001);
+        switch (i) {
+            case 0:
+                gsl_matrix_set(D, 3, 0, acc_one / xg_one);
+                gsl_matrix_set(D, 9, 0, acc_two / xg_one);
+                gsl_matrix_set(D, 15, 0, acc_three / xg_one);
+            case 1:
+                gsl_matrix_set(D, 4, 0, acc_one / xg_two);
+                gsl_matrix_set(D, 10, 0, acc_two / xg_two);
+                gsl_matrix_set(D, 16, 0, acc_three / xg_two);
+            case 2:
+                gsl_matrix_set(D, 5, 0, acc_one / xg_three);
+                gsl_matrix_set(D, 11, 0, acc_two / xg_three);
+                gsl_matrix_set(D, 17, 0, acc_three / xg_three);
+            default:
+                break;
+        }
+    }
+
+    for (int j = 0; j <8 ; j++) {
+        if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0)
+            gsl_vector_set(ug_alt, j, gsl_vector_get(ug_alt,j) + 0.0001);
+        switch (j){
+            case 0:
+                gsl_matrix_set(C,3,0, acc_one / ug_one);
+                gsl_matrix_set(C,9,0, acc_two / ug_one);
+                gsl_matrix_set(C,15,0, acc_three / ug_one);
+            case 1:
+                gsl_matrix_set(C,4,0, acc_one / ug_two);
+                gsl_matrix_set(C,10,0, acc_two / ug_two);
+                gsl_matrix_set(C,16,0, acc_three / ug_two);
+            case 2:
+                gsl_matrix_set(C,5,0, acc_one / ug_three);
+                gsl_matrix_set(C,11,0, acc_two / ug_three);
+                gsl_matrix_set(C,17,0, acc_three / ug_three);
+            case 3:
+                gsl_matrix_set(C,0,0, acc_one / ug_four);
+                gsl_matrix_set(C,6,0, acc_two / ug_four);
+                gsl_matrix_set(C,12,0, acc_three / ug_four);
+            case 4:
+                gsl_matrix_set(C,1,0, acc_one / ug_five);
+                gsl_matrix_set(C,7,0, acc_two / ug_five);
+                gsl_matrix_set(C,13,0, acc_three / ug_five);
+            case 5:
+                gsl_matrix_set(C,2,0, acc_one / ug_six);
+                gsl_matrix_set(C,8,0, acc_two / ug_six);
+                gsl_matrix_set(C,14,0, acc_three / ug_six);
+            case 6:
+                gsl_matrix_set(D,0,0, acc_one / ug_seven);
+                gsl_matrix_set(D,6,0, acc_two / ug_seven);
+                gsl_matrix_set(D,12,0, acc_three / ug_seven);
+            case 7:
+                gsl_matrix_set(C,1,0, acc_one / ug_eigth);
+                gsl_matrix_set(C,7,0, acc_two / ug_eigth);
+                gsl_matrix_set(C,13,0, acc_three / ug_eigth);
+            case 8:
+                gsl_matrix_set(C,2,0, acc_one / ug_nine);
+                gsl_matrix_set(C,8,0, acc_two / ug_nine);
+                gsl_matrix_set(C,14,0, acc_three / ug_nine);
+            default:
+                break;
+        }
+    }
+    acc_alt = acc;
 }
 
 
