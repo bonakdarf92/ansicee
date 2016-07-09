@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ansicee)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include/gsl -lgsl")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include/gsl -lgsl -lgslcblas -lm")
 
 include_directories(-I/usr/include/gsl)
 set(SOURCE_FILES main.c linear.h linear.c modelAntrieb.c modelAntrieb.h calcMatrix_A_B.c calcMatrix_A_B.h horizontalModel.c

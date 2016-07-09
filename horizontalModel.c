@@ -4,8 +4,6 @@
 
 #include "horizontalModel.h"
 #include <math.h>
-//#include <gsl/gsl_matrix.h>
-//#include <gsl/gsl_vector.h>
 
 
 #define KS 5                        // linearized mu-slip about 5
