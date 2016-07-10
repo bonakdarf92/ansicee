@@ -312,34 +312,43 @@ void friction() {
 /*
  * This method calculates the acceleration of in x-direction and returns double ax
  * It calculates the equitation of motion with the formula of Jan Steier
+ * The goal of this Function is pursued by some auxiliary functions in it
+ * One of these are the summarized doubles mux_all, muy_all, alpha_x_all and
+ * alpha_y_all to get a better overview
+ * Then the big equitation (size ~ length of A3 page) is divided into smaller
+ * parts like sums, products and fraction with nominator and denominator for
+ * better understanding
  * For more Information look up in Jan's MasterThesis or line 63 in Horizontal model
  */
 // TODO alle Einträge nochmal uberpruefen
 double Bewegungsgleichung_ax() {
+
     // Declaration of output acceleration ax
     double ax;
+
     /*
      * For an overview and summary of the long equitation some auxiliary scalars are calculated
      * and stored into the following doubles
      * mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
-     * p1 and p2
-     *
      */
     double mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
     double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
     double alphax_all = gsl_vector_get(alpha_x,0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
     double alphay_all = gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
-    // The firstPart is a summary of the first to additions in the big equitation of motion
-    // g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
+    /* The firstPart is a summary of the first to additions in the big equitation of motion
+     * g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
+     */
     double firstPart = G/3 * mux_all + C_a / M * alphax_all;
 
-    // The Factor p1 is a summary of the first big factor in the big equitation
-    // [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
+    /* The Factor p1 is a summary of the first big factor in the big equitation
+     * [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
+     */
     double p1 = (HCG/L * (gsl_vector_get(mux, 1) - gsl_vector_get(mux, 2)) ) / ( L / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2));
 
-    // The factor p2 is a summary of the second big factor in the fraction
-    // mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
+    /* The factor p2 is a summary of the second big factor in the fraction
+     * mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
+     */
     double p2 = muy_all + C_a / M * alphay_all;
 
     // The numerator of the big fraction
@@ -362,26 +371,40 @@ double Bewegungsgleichung_ax() {
 
 /*
  * This Method calculates the acceleration ay.
+ * It discribes the acceleration in y-axes and is important for the understanding
+ * of vehicle motion. With ay you could reconstruct how the vehicle moves
+ * and which action forces affect it.
  * It Solves the equitation with Jan's Formula from Horizontal model.
  * For getting the result, Bewegungsgleichung_ax() must be called
  */
 double Bewegungsgleichung_ay() {
+
+    // Declaration of double ay
     double ay;
+
+    // Calculation of auxiliary doubles for further use in line below
     double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
     double alphay_all = gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
+    /*
+     * ay is calculated by a big fraction
+     * For better understanding look up the equitation in Jan's Master Thesis
+     * or his Matlab Code in Horizontal Model
+     */
     ay = (G/3 * muy_all + HCG / L / SQRT3 * (gsl_vector_get(muy,1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0))
             * Bewegungsgleichung_ax() + C_a / M * alphay_all) / (1 - HCG / L *  (gsl_vector_get(muy, 1) - gsl_vector_get(muy,2)));
     return ay;
 }
 
 /*
- * This Method calculates the Forces of each point in the triangle
+ * This Method calculates the contact Forces of each point in the triangle
  * and returns a vector containing all three forces
  */
 gsl_vector * AufstandsKraefte() {
-    // Declaration of output vector
-    // Calculation of the three Forces FZ_1, FZ_2 and FZ_3
+
+    /* Declaration of output vector and
+     * Calculation of the three Forces FZ_1, FZ_2 and FZ_3
+     */
     double FZ_1 = M * G / 3 - 2 * M * HCG / SQRT3 / L * Bewegungsgleichung_ax();
     double FZ_2 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 - Bewegungsgleichung_ay());
     double FZ_3 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 + Bewegungsgleichung_ay());
@@ -496,42 +519,63 @@ void SystemmatrixBerechnen() {
         }
     }
 
+    /*
+     * This for loop does the same as the loop above with some differences.
+     * The size of the counter is 3 times bigger then before and here
+     * it also calculates indices of botn Matrices, C and D
+     * Therefore the switch-case block is bigger then before and
+     * the auxiliary vectors ug are more then xg
+     */
     for (int j = 0; j <8 ; j++) {
+
+        // Proof if difference between ug and ug_alt is 0
         if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0)
+            // if true increase value of index j of ug_alt by 0.0001
             gsl_vector_set(ug_alt, j, gsl_vector_get(ug_alt,j) + 0.0001);
+        // switch separate the calculation depending on counter j
         switch (j){
+
+            // if j is 0 set those values in matrix C
             case 0:
                 gsl_matrix_set(C,3,0, acc_one / ug_one);
                 gsl_matrix_set(C,9,0, acc_two / ug_one);
                 gsl_matrix_set(C,15,0, acc_three / ug_one);
+            // if j is 1 set those values in matrix C
             case 1:
                 gsl_matrix_set(C,4,0, acc_one / ug_two);
                 gsl_matrix_set(C,10,0, acc_two / ug_two);
                 gsl_matrix_set(C,16,0, acc_three / ug_two);
+            // if j is 2 set those values in matrix C
             case 2:
                 gsl_matrix_set(C,5,0, acc_one / ug_three);
                 gsl_matrix_set(C,11,0, acc_two / ug_three);
                 gsl_matrix_set(C,17,0, acc_three / ug_three);
+            // if j is 3 set those values in matrix C
             case 3:
                 gsl_matrix_set(C,0,0, acc_one / ug_four);
                 gsl_matrix_set(C,6,0, acc_two / ug_four);
                 gsl_matrix_set(C,12,0, acc_three / ug_four);
+            // if j is 4 set those values in matrix C
             case 4:
                 gsl_matrix_set(C,1,0, acc_one / ug_five);
                 gsl_matrix_set(C,7,0, acc_two / ug_five);
                 gsl_matrix_set(C,13,0, acc_three / ug_five);
+            // if j is 5 set those values in matrix C
             case 5:
                 gsl_matrix_set(C,2,0, acc_one / ug_six);
                 gsl_matrix_set(C,8,0, acc_two / ug_six);
                 gsl_matrix_set(C,14,0, acc_three / ug_six);
+            // if j is 6 set those values in matrix D
             case 6:
                 gsl_matrix_set(D,0,0, acc_one / ug_seven);
                 gsl_matrix_set(D,6,0, acc_two / ug_seven);
                 gsl_matrix_set(D,12,0, acc_three / ug_seven);
+            // if j is 7 set those values in matrix D
             case 7:
                 gsl_matrix_set(C,1,0, acc_one / ug_eight);
                 gsl_matrix_set(C,7,0, acc_two / ug_eight);
                 gsl_matrix_set(C,13,0, acc_three / ug_eight);
+            // if j is 8 set those values in matrix D
             case 8:
                 gsl_matrix_set(C,2,0, acc_one / ug_nine);
                 gsl_matrix_set(C,8,0, acc_two / ug_nine);
@@ -540,6 +584,8 @@ void SystemmatrixBerechnen() {
                 break;
         }
     }
+
+    // Set acc as the new acc_alt
     acc_alt = acc;
 }
 
