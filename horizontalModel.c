@@ -4,8 +4,6 @@
 
 #include "horizontalModel.h"
 #include <math.h>
-//#include <gsl/gsl_matrix.h>
-//#include <gsl/gsl_vector.h>
 
 
 #define KS 5                        // linearized mu-slip about 5
@@ -19,7 +17,8 @@
 #define SQRT3 1.73205               // square root of 3
 
 /*
- * Declaration of System matrices and inner System vector for further use in methods
+ * Declaration of System matrices and inner System vector for further use in methods.
+ * Stored here to get acces to each scalar, vector and matrix.
  */
 
     gsl_vector* xg;       // Vector xg
@@ -30,8 +29,8 @@
     gsl_vector* delta_x;  // Vector delta_x
     gsl_vector* delta_u;  // Vector delta_u
     gsl_vector* alpha_r;  // Vector alpha_r
-    gsl_vector* alphax;   // Vector alpha_x
-    gsl_vector* alphay;   // Vector alpha_y
+    gsl_vector* alpha_x;   // Vector alpha_x
+    gsl_vector* alpha_y;   // Vector alpha_y
     gsl_matrix* C;        // Matrix C
     gsl_matrix* D;        // Matrix D
     double v_1;           // Velocity No.1
@@ -68,8 +67,8 @@ void initializeVector(){
     delta_x = gsl_vector_alloc(3);  // Vector delta_x
     delta_u = gsl_vector_alloc(9);  // Vector delta_u
     alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
-    alphax = gsl_vector_alloc(3);   // Vector alpha_x
-    alphay = gsl_vector_alloc(3);   // Vector alpha_y
+    alpha_x = gsl_vector_alloc(3);   // Vector alpha_x
+    alpha_y = gsl_vector_alloc(3);   // Vector alpha_y
     C = gsl_matrix_calloc(18,1);    // Matrix C
     D = gsl_matrix_calloc(18,1);    // Matrix D
     beta = gsl_vector_alloc(3);     // Vector beta
@@ -77,8 +76,8 @@ void initializeVector(){
     vr = gsl_vector_alloc(3);       // Vector vr
     sr = gsl_vector_alloc(3);       // Vector sr
     mu = gsl_vector_alloc(3);       // Vector mu
-    mux = gsl_vector_alloc(3);      // Vector mx
-    muy = gsl_vector_alloc(3);      // Vector my
+    mux = gsl_vector_alloc(3);      // Vector mux
+    muy = gsl_vector_alloc(3);      // Vector muy
     Fz = gsl_vector_alloc(3);       // Vector Fz
     Fx = gsl_vector_alloc(3);       // Vector Fx
     Fy = gsl_vector_alloc(3);       // Vector Fy
@@ -99,6 +98,13 @@ void initializeVector(){
  * 8  -> alpha_r
  * 9  -> alpha_x
  * 10 -> alpha_y
+ * 11 -> beta
+ * 12 -> v
+ * 13 -> vr
+ * 14 -> sr
+ * 15 -> mu
+ * 16 -> mux
+ * 17 -> muy
  */
 gsl_vector* getVector(int n) {
     // Declaration of output vector
@@ -130,9 +136,9 @@ gsl_vector* getVector(int n) {
         case 8:
             out = alpha_r;
         case 9:
-            out = alphax;
+            out = alpha_x;
         case 10:
-            out = alphay;
+            out = alpha_y;
         case 11:
             out = beta;
         case 12:
@@ -203,24 +209,25 @@ void slipage() {
     gsl_vector_set(alpha_r, 2, gsl_vector_get(ug, 5) - gsl_vector_get(ug, 8));      // Index 3
 
     // Calculation of Vector indices alpha_x
-    gsl_vector_set(alphax, 0, gsl_vector_get(alpha_r, 0) * sin(gsl_vector_get(ug, 3)));       // Index 1
-    gsl_vector_set(alphax, 1, gsl_vector_get(alpha_r, 1) * sin(gsl_vector_get(ug, 4)));       // Index 2
-    gsl_vector_set(alphax, 2, gsl_vector_get(alpha_r, 2) * sin(gsl_vector_get(ug, 5)));       // Index 3
+    gsl_vector_set(alpha_x, 0, gsl_vector_get(alpha_r, 0) * sin(gsl_vector_get(ug, 3)));       // Index 1
+    gsl_vector_set(alpha_x, 1, gsl_vector_get(alpha_r, 1) * sin(gsl_vector_get(ug, 4)));       // Index 2
+    gsl_vector_set(alpha_x, 2, gsl_vector_get(alpha_r, 2) * sin(gsl_vector_get(ug, 5)));       // Index 3
 
     // Calculation of Vector indices alpha_y
-    gsl_vector_set(alphay, 0, gsl_vector_get(alpha_r, 0) * cos(gsl_vector_get(ug, 3)));       // Index 1
-    gsl_vector_set(alphay, 1, gsl_vector_get(alpha_r, 1) * cos(gsl_vector_get(ug, 4)));       // Index 2
-    gsl_vector_set(alphay, 2, gsl_vector_get(alpha_r, 2) * cos(gsl_vector_get(ug, 5)));       // Index 3
+    gsl_vector_set(alpha_y, 0, gsl_vector_get(alpha_r, 0) * cos(gsl_vector_get(ug, 3)));       // Index 1
+    gsl_vector_set(alpha_y, 1, gsl_vector_get(alpha_r, 1) * cos(gsl_vector_get(ug, 4)));       // Index 2
+    gsl_vector_set(alpha_y, 2, gsl_vector_get(alpha_r, 2) * cos(gsl_vector_get(ug, 5)));       // Index 3
 
 }
 
 /*
  * This method calculates the velocity of the driving simulator given by ADMA sensor Data
  * Formula taken from Jan's Horizontal model in line 30 -40
+ * Function get access on xg and do the calculations
  */
 void adma_velocity() {
 
-    // Current vector indices v_x, v_y and psi_p
+    // Current values of vector indices v_x, v_y and psi_p
     double v_x = gsl_vector_get(xg, 0);
     double v_y = gsl_vector_get(xg, 1);
     double psi_p = gsl_vector_get(xg, 2);
@@ -239,6 +246,7 @@ void adma_velocity() {
 
     // TODO Unbedingt ueberpruefen ob die Werte in Vector form vorliegen muessen
     // Calculation of beta vector and velocity vector
+    // Setting the values in vector beta and v
     gsl_vector_set(beta, 0, beta_1);
     gsl_vector_set(beta, 1, beta_2);
     gsl_vector_set(beta, 2, beta_3);
@@ -250,10 +258,16 @@ void adma_velocity() {
 /*
  * This method gets the vector indices of ug and calculates the slip
  * Formula taken from Jan's horizontal model in line 46 - 54
+ * Function get access on the values of vector ug and set into
+ * vector vr after some Calculation
+ * Two cases are calculated, one for Propulsion and one for braking
  */
 void slip() {
 
-    // Velocity of tire calculated by its rotation speed
+    /* Velocity of tire calculated by its rotation speed
+     * Get value of ug divide it by 30 and multiply by radius
+     * of tire and Pi
+     */
     gsl_vector_set(vr, 0, (M_PI * R * gsl_vector_get(ug, 0)/ 30));
     gsl_vector_set(vr, 1, (M_PI * R * gsl_vector_get(ug, 1)/ 30));
     gsl_vector_set(vr, 2, (M_PI * R * gsl_vector_get(ug, 2)/ 30));
@@ -271,6 +285,9 @@ void slip() {
 
 /*
  * Method calculates the Friction for x and y-axes
+ * Function gets access on values of vector sr and
+ * saves information into vector mu and later on in
+ * vector mux and muy
  */
 void friction() {
 
@@ -310,8 +327,8 @@ double Bewegungsgleichung_ax() {
      */
     double mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
     double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    double alphax_all = gsl_vector_get(alphax,0) + gsl_vector_get(alphax, 1) + gsl_vector_get(alphax, 2);
-    double alphay_all = gsl_vector_get(alphay,0) + gsl_vector_get(alphay, 1) + gsl_vector_get(alphay, 2);
+    double alphax_all = gsl_vector_get(alpha_x,0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
+    double alphay_all = gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
     // The firstPart is a summary of the first to additions in the big equitation of motion
     // g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
@@ -351,7 +368,7 @@ double Bewegungsgleichung_ax() {
 double Bewegungsgleichung_ay() {
     double ay;
     double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    double alphay_all = gsl_vector_get(alphay,0) + gsl_vector_get(alphay, 1) + gsl_vector_get(alphay, 2);
+    double alphay_all = gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
     ay = (G/3 * muy_all + HCG / L / SQRT3 * (gsl_vector_get(muy,1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0))
             * Bewegungsgleichung_ax() + C_a / M * alphay_all) / (1 - HCG / L *  (gsl_vector_get(muy, 1) - gsl_vector_get(muy,2)));
@@ -385,14 +402,14 @@ gsl_vector * AufstandsKraefte() {
  */
 void RadKraefte() {
     // Putting the calculated scalar into the vector Fx
-    gsl_vector_set(Fx,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alphax,0));
-    gsl_vector_set(Fx,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alphax,1));
-    gsl_vector_set(Fx,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(mux,2) + C_a * gsl_vector_get(alphax,2));
+    gsl_vector_set(Fx,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alpha_x,0));
+    gsl_vector_set(Fx,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alpha_x,1));
+    gsl_vector_set(Fx,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(mux,2) + C_a * gsl_vector_get(alpha_x,2));
 
     // Putting the calculated scalar into the vector Fy
-    gsl_vector_set(Fy,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(muy,0) + C_a * gsl_vector_get(alphay,0));
-    gsl_vector_set(Fy,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(muy,1) + C_a * gsl_vector_get(alphay,1));
-    gsl_vector_set(Fy,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(muy,2) + C_a * gsl_vector_get(alphay,2));
+    gsl_vector_set(Fy,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(muy,0) + C_a * gsl_vector_get(alpha_y,0));
+    gsl_vector_set(Fy,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(muy,1) + C_a * gsl_vector_get(alpha_y,1));
+    gsl_vector_set(Fy,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(muy,2) + C_a * gsl_vector_get(alpha_y,2));
 }
 
 /*
@@ -437,27 +454,39 @@ void SystemmatrixBerechnen() {
     double ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
     double ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
     double ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
-    double ug_eigth = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
+    double ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
     double ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
 
     // TODO Unbedingt kommentieren
     /*
      * This for loop calculates the three rows in the Matrix D
      * In the first if-Statement the difference between xg and xg_alt
-     * bla bla
+     * leads to an increase of xg_alt if the difference is not zero
+     * After updating xg_alt the values of the D matrix are calculated
+     * and put into special places.
+     * The formula for each indices is written in matrix_setter
+     * For further information look in manual gsl_matrix_set or
+     * Jan's Horizontal model
      */
     for (int i = 0; i <3 ; i++) {
+
+        // Proof if difference between xg and xg_alt is zero or not and increase xg_alt by 0.0001
         if ((gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i)) != 0)
             gsl_vector_set(xg_alt, i, gsl_vector_get(xg_alt, i) + 0.0001);
+
+        // Switch case puts fraction of acc and xg into the matrix
         switch (i) {
+            // for i equals 0 fill 4th, 10th and 16th index of D
             case 0:
                 gsl_matrix_set(D, 3, 0, acc_one / xg_one);
                 gsl_matrix_set(D, 9, 0, acc_two / xg_one);
                 gsl_matrix_set(D, 15, 0, acc_three / xg_one);
+            // for i equals 1 fill 5th, 11th and 17th index of D
             case 1:
                 gsl_matrix_set(D, 4, 0, acc_one / xg_two);
                 gsl_matrix_set(D, 10, 0, acc_two / xg_two);
                 gsl_matrix_set(D, 16, 0, acc_three / xg_two);
+            // for i equals 1 fill 6th, 12th and 18th index of D
             case 2:
                 gsl_matrix_set(D, 5, 0, acc_one / xg_three);
                 gsl_matrix_set(D, 11, 0, acc_two / xg_three);
@@ -500,9 +529,9 @@ void SystemmatrixBerechnen() {
                 gsl_matrix_set(D,6,0, acc_two / ug_seven);
                 gsl_matrix_set(D,12,0, acc_three / ug_seven);
             case 7:
-                gsl_matrix_set(C,1,0, acc_one / ug_eigth);
-                gsl_matrix_set(C,7,0, acc_two / ug_eigth);
-                gsl_matrix_set(C,13,0, acc_three / ug_eigth);
+                gsl_matrix_set(C,1,0, acc_one / ug_eight);
+                gsl_matrix_set(C,7,0, acc_two / ug_eight);
+                gsl_matrix_set(C,13,0, acc_three / ug_eight);
             case 8:
                 gsl_matrix_set(C,2,0, acc_one / ug_nine);
                 gsl_matrix_set(C,8,0, acc_two / ug_nine);
