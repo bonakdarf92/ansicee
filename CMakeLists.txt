@@ -4,6 +4,9 @@ project(ansicee)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -I/usr/include/gsl -lgsl")
 
 include_directories(-I/usr/include/gsl)
-set(SOURCE_FILES main.c linear.h linear.c modelAntrieb.c modelAntrieb.h calcMatrix_A_B.c calcMatrix_A_B.h horizontalModel.c
-        horizontalModel.h DGL_Berechnen.c DGL_Berechnen.h Subsysteme.c Subsysteme.h Lenkmotoren.c Lenkmotoren.h matrizeCalculator.c matrizeCalculator.h)
+include_directories(include)
+include_directories(src)
+
+set(SOURCE_FILES main.c include/linear.h src/linear.c src/modelAntrieb.c include/modelAntrieb.h src/calcMatrix_A_B.c include/calcMatrix_A_B.h src/horizontalModel.c
+        include/horizontalModel.h src/DGL_Berechnen.c include/DGL_Berechnen.h src/Subsysteme.c include/Subsysteme.h src/Lenkmotoren.c include/Lenkmotoren.h src/matrizeCalculator.c include/matrizeCalculator.h)
 add_executable(ansicee ${SOURCE_FILES})

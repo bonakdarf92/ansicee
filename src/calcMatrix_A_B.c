@@ -2,7 +2,7 @@
 // Created by Farid Bonakdar on 30.06.16.
 //
 
-#include "calcMatrix_A_B.h"
+#include "../include/calcMatrix_A_B.h"
 
 /*
  * Hier werden die Berechnungsvorschriften fuer die Matrixoperationen geschrieben.

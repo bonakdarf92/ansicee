@@ -1,6 +1,6 @@
 #include <stdio.h>
 //#include "modelAntrieb.h"
-//#include "DGL_Berechnen.h"
+#include "DGL_Berechnen.h"
 //#include "Subsysteme.h"
 //#include "calcMatrix_A_B.h"
 #include "horizontalModel.h"
@@ -16,7 +16,7 @@ int main() {
     initializeVector();
     int zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 100000) {
+    while (zaehler < 100) {
         clock_t begin = clock();
         testVector();
         gsl_vector* anfordern1 = getVector(3);

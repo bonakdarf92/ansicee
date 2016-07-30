@@ -2,7 +2,7 @@
 // Created by Farid Bonakdar on 30.06.16.
 //
 
-#include "DGL_Berechnen.h"
+#include "../include/DGL_Berechnen.h"
 
 /*
  * Aufgeführt sind einige Beispielfunktionen wie es mal aussehen koennte :
