@@ -5,6 +5,7 @@
 #include "horizontalModel.h"
 #include <math.h>
 
+
 /*
  * Declaration of System matrices and inner System vector for further use in methods.
  * Stored here to get acces to each scalar, vector and matrix.
@@ -564,7 +565,6 @@ void SystemmatrixBerechnen() {
                 gsl_matrix_set(C,1,0, acc_one / ug_eight);
                 gsl_matrix_set(C,7,0, acc_two / ug_eight);
                 gsl_matrix_set(C,13,0, acc_three / ug_eight);
-            // if j is 8 set those values in matrix D
             case 8:
                 gsl_matrix_set(C,2,0, acc_one / ug_nine);
                 gsl_matrix_set(C,8,0, acc_two / ug_nine);
