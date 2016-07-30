@@ -8,6 +8,16 @@
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H
 
+#define KS 5                        // linearized mu-slip about 5
+#define C_a 9095                    // slippage
+#define R 0.15                      // radius of tire
+#define M 1200                      // total mass kg originally 308.52
+#define HCG 0.48303                 // height of the center of gravity m  -- CarMaker self calculated // 0.55m platform
+#define L 2.28                      // equilateral triangle setup m initially 2.54
+#define G 9.81                      // gravity constant
+#define THETA 944.8465962           // Angle Theta
+#define SQRT3 1.73205               // square root of 3
+
 //TODO Anpassen des Infotextes
 /*
  * This Model is transcribed from Jan's Horizontal Model.
@@ -20,6 +30,7 @@
  * For further Information take a look in the readme, Bachelor-
  * thesis of Farid Bonakdar or Masterthesis of Jan Steier
  */
+
 
 void initializeVector();
 
