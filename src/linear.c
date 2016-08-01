@@ -14,6 +14,11 @@ gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
 gsl_matrix* C_in;           // Declaration of input Matrix C
 gsl_matrix* D_in;           // Declaration of input Matrix D
+gsl_matrix* C_op;           // Declaration of operation Matrix C
+gsl_matrix* D_op;           // Declaration of operation Matrix D
+gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
+double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 
 
 
@@ -22,6 +27,10 @@ void initMatrix(){
     B = gsl_matrix_alloc(12,12);
     A_Inv = gsl_matrix_alloc(12,12);
     KS = gsl_matrix_alloc(12,3);
+    C_op = gsl_matrix_alloc(12,3);
+    D_op = gsl_matrix_alloc(12,3);
+    temp1 = gsl_matrix_alloc(12,12);
+    temp2 = gsl_matrix_alloc(12,3);
     // TODO initialize all matrices
 
 
@@ -114,13 +123,79 @@ void matrixPresetting(){
 
 }
 
+
+/*
+ * This Method calls the function getMatrix from horizontal model and
+ * store its returns in Matrix C_in and D_in.
+ */
+
 void getInputParameter(){
     C_in = getMatrix(1);
     D_in = getMatrix(2);
-
 }
 
-//TODO Methode zur Berechnung der K_p Matrix
+
+/*
+ * This method calculates the matrix KS
+ * The formula is taken from Jan's linearized model
+ *
+ *                         product 2
+ *                      |-----+------|
+ * --->         KS = D - C * A_inv * B
+ * --->                     |----+---|
+ * --->                      product 1
+ * --->
+ * --->             |--------+-------|
+ *                      difference 3
+ *
+ * For performance purposes temporary matrices are generated to calculate
+ * product 1, product 2 and at least difference 3
+ */
+void calculate_KS(){
+    KS = D_op;
+    temp1 = A_Inv;
+    temp2 = C_op;
+    gsl_matrix_mul_elements(temp1, B);
+    gsl_matrix_alloc(temp2, temp1);
+    gsl_matrix_sub(D_op, temp2);
+
+}
+// TODO might be a BOTTLENECK !!!
+
+
+
+
+/*
+ * This method calculates the matrix KI
+ * The formula is taken from Jan's linearized model
+ *
+ *                         division 2
+ *                    |------+-------|
+ * --->     KS = A0 * (KS' / (KS*KS'))
+ * --->                     |----+---|
+ * --->                      product 1
+ * --->
+ * --->         |----------+---------|
+ *                      const 3
+ *
+ * For performance purposes temporary matrices are generated to calculate
+ * product 1, product 2 and at least difference 3
+ */
+
+
+void calculate_KI(){
+    KI = D_op;
+
+    temp1 = gsl_matrix_transpose(KS);
+    temp2 = C_op;
+    gsl_matrix_mul_elements(temp1, B);
+    gsl_matrix_alloc(temp2, temp1);
+    gsl_matrix_sub(D_op, temp2);
+
+}
+// TODO might be a BOTTLENECK !!!
+
+
 /*
  * Eingabeparameter unter anderem Tuningfaktor bEnd
  * und die Matrix K_s.

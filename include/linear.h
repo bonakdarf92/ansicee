@@ -17,6 +17,7 @@
 #define T_DELTA 0.1603
 #define T_N_CONSTUP 0.0739
 #define T_N_CONSTDN 0.6211
+#define A0 10
 
 
 
@@ -34,7 +35,9 @@ void matrixPresetting();
 
 void getInputParameter();
 
-double fun(double one, double two);
+void calculate_KS();
+
+void calculate_KI();
 
 double Matrix_KP(double bEnd, double Matrix_KS);
 
