@@ -16,7 +16,7 @@ int main() {
     initializeVector();
     int zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 100) {
+    while (zaehler < 1000) {
         clock_t begin = clock();
         testVector();
         gsl_vector* anfordern1 = getVector(3);
@@ -32,6 +32,7 @@ int main() {
         GierbewegungBerechnen();
         SystemmatrixBerechnen();
         deltasBerechnen();
+        getMatrix(1);
 
         // Zum testen fuer Vectoren
         /*

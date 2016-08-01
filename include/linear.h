@@ -5,12 +5,35 @@
 #ifndef ANSICEE_LINEAR_H
 #define ANSICEE_LINEAR_H
 
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include "horizontalModel.h"
+
+#define K 1.0
+#define R 3.0
+#define S 12.0
+#define I_MAX_A 10
+#define I_MAX_B 1000
+#define T_DELTA 0.1603
+#define T_N_CONSTUP 0.0739
+#define T_N_CONSTDN 0.6211
+
+
+
 /*
  * Kontrollieren ob alle Methoden Implementiert wurden
  * und pruefen ob evtl. etwas weiter modularisiert werden kann.
  */
 
 // Test funktion
+
+
+void initMatrix();
+
+void matrixPresetting();
+
+void getInputParameter();
+
 double fun(double one, double two);
 
 double Matrix_KP(double bEnd, double Matrix_KS);

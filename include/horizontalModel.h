@@ -8,7 +8,7 @@
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H
 
-#define KS 5                        // linearized mu-slip about 5
+#define K 5                        // linearized mu-slip about 5
 #define C_a 9095                    // slippage
 #define R 0.15                      // radius of tire
 #define M 1200                      // total mass kg originally 308.52

@@ -8,7 +8,7 @@
 
 /*
  * Declaration of System matrices and inner System vector for further use in methods.
- * Stored here to get acces to each scalar, vector and matrix.
+ * Stored here to get access to each scalar, vector and matrix.
  */
 
     gsl_vector* xg;       // Vector xg
@@ -97,56 +97,44 @@ void initializeVector(){
  * 17 -> muy
  */
 gsl_vector* getVector(int n) {
-    // Declaration of output vector
-    gsl_vector* out;
+    // Building the if structure
 
-    // If vector ug, ug_alt or delta_u is called allocate
-    // out with size 9
-    // Else allocate out with size 3
-    if (n == 2 || n == 4 || n == 7)
-        out = gsl_vector_alloc(9);
+    if (n == 1)
+        return xg;
+    if (n == 2)
+        return ug;
+    if (n == 3)
+        return xg_alt;
+    if (n == 4)
+        return ug_alt;
+    if (n == 5)
+        return acc_alt;
+    if (n == 6)
+        return delta_x;
+    if (n == 7)
+        return delta_u;
+    if (n == 8)
+        return alpha_r;
+    if (n == 9)
+        return alpha_x;
+    if (n == 10)
+        return alpha_y;
+    if (n == 11)
+        return beta;
+    if (n == 12)
+        return v;
+    if (n == 13)
+        return vr;
+    if (n == 14)
+        return sr;
+    if (n == 15)
+        return mu;
+    if (n == 16)
+        return mux;
+    if (n == 17)
+        return muy;
     else
-        out = gsl_vector_alloc(3);
-
-    switch (n) {
-        case 1:
-            out = xg;
-        case 2:
-            out = ug;
-        case 3:
-            out = xg_alt;
-        case 4:
-            out = ug_alt;
-        case 5:
-            out = acc_alt;
-        case 6:
-            out = delta_x;
-        case 7:
-            out = delta_u;
-        case 8:
-            out = alpha_r;
-        case 9:
-            out = alpha_x;
-        case 10:
-            out = alpha_y;
-        case 11:
-            out = beta;
-        case 12:
-            out = v;
-        case 13:
-            out = vr;
-        case 14:
-            out = sr;
-        case 15:
-            out = mu;
-        case 16:
-            out = mux;
-        case 17:
-            out = muy;
-        default:
-            break;
-    }
-    return out;
+        return 0;
 }
 
 /*
@@ -156,16 +144,14 @@ gsl_vector* getVector(int n) {
  * 2 -> D
  */
 gsl_matrix* getMatrix(int n){
-    gsl_matrix* out = gsl_matrix_alloc(18,1);
     switch (n) {
         case 1:
-            out = C;
+            return C;
         case 2:
-            out = D;
+            return D;
         default:
-            break;
+            return 0;
     }
-    return out;
 }
 
 /*
@@ -174,12 +160,12 @@ gsl_matrix* getMatrix(int n){
  */
 void testVector(){
 
-    for (double j = 0; j < 3 ; j++) {
+    for (size_t j = 0; j < 3 ; j++) {
         gsl_vector_set(xg, j, j + 2.3);
         gsl_vector_set(xg_alt, j, j + 2.3);
     }
 
-    for (double i = 0; i < 9 ; i++) {
+    for (size_t i = 0; i < 9 ; i++) {
         gsl_vector_set(ug, i, i+2.7);
         gsl_vector_set(ug_alt, i, i + 3.5);
     }
@@ -263,7 +249,7 @@ void slip() {
     gsl_vector_set(vr, 2, (M_PI * R * gsl_vector_get(ug, 2)/ 30));
 
     // TODO herausfinden was der Vector sr fuer eine Bedeutung hat
-    for (int i = 0; i <3 ; i++) {
+    for (size_t i = 0; i <3 ; i++) {
         if (gsl_vector_get(vr,i) >= gsl_vector_get(v,i))
             // Propulsion
             gsl_vector_set(sr, i, (1 - gsl_vector_get(v, i)/ gsl_vector_get(vr, i)) );
@@ -282,9 +268,9 @@ void slip() {
 void friction() {
 
     // Filling up vector mu with linearized slip KS and indices of vector sr
-    gsl_vector_set(mu, 0, KS * gsl_vector_get(sr, 0));
-    gsl_vector_set(mu, 1, KS * gsl_vector_get(sr, 1));
-    gsl_vector_set(mu, 2, KS * gsl_vector_get(sr, 2));
+    gsl_vector_set(mu, 0, K * gsl_vector_get(sr, 0));
+    gsl_vector_set(mu, 1, K * gsl_vector_get(sr, 1));
+    gsl_vector_set(mu, 2, K * gsl_vector_get(sr, 2));
 
     // Filling the vector mx with indices of vector mu and cosine of vector ug
     gsl_vector_set(mux, 0, gsl_vector_get(mu,0) * cos(gsl_vector_get(ug, 3)));
@@ -342,7 +328,7 @@ double Bewegungsgleichung_ax() {
     double p2 = muy_all + C_a / M * alphay_all;
 
     // The numerator of the big fraction
-    double frac1 = firstPart + p1 * p2;
+    double fraction_1 = firstPart + p1 * p2;
 
     // The first quotient part for the big denominator
     double q1 = 1 - HCG / L / SQRT3 * (gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2) - 2*gsl_vector_get(mux, 0)) - HCG/L * (gsl_vector_get(mux,1) - gsl_vector_get(mux,2));
@@ -351,9 +337,9 @@ double Bewegungsgleichung_ax() {
     double q2 = (L / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2)) * (HCG / L * (gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0)) );
 
     // The denominator of the big fraction
-    double frac2 = q1 / q2 ;
+    double fraction_2 = q1 / q2 ;
 
-    ax = frac1 / frac2;
+    ax = fraction_1 / fraction_2;
 
     return ax;
 }
@@ -361,7 +347,7 @@ double Bewegungsgleichung_ax() {
 
 /*
  * This Method calculates the acceleration ay.
- * It discribes the acceleration in y-axes and is important for the understanding
+ * It describes the acceleration in y-axes and is important for the understanding
  * of vehicle motion. With ay you could reconstruct how the vehicle moves
  * and which action forces affect it.
  * It Solves the equitation with Jan's Formula from Horizontal model.
@@ -481,7 +467,7 @@ void SystemmatrixBerechnen() {
      * For further information look in manual gsl_matrix_set or
      * Jan's Horizontal model
      */
-    for (int i = 0; i <3 ; i++) {
+    for (size_t i = 0; i <3 ; i++) {
 
         // Proof if difference between xg and xg_alt is zero or not and increase xg_alt by 0.0001
         if ((gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i)) != 0)
@@ -516,7 +502,7 @@ void SystemmatrixBerechnen() {
      * Therefore the switch-case block is bigger then before and
      * the auxiliary vectors ug are more then xg
      */
-    for (int j = 0; j <8 ; j++) {
+    for (size_t j = 0; j <8 ; j++) {
 
         // Proof if difference between ug and ug_alt is 0
         if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0)
