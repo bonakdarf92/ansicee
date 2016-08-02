@@ -12,8 +12,11 @@ gsl_matrix* KS;             // Declaration of Matrix KS
 gsl_matrix* Ai;             // Declaration of Matrix A iterator
 gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
+
+// TODO check what kind of data C_in and D_in are: Vector or Matrix
 gsl_matrix* C_in;           // Declaration of input Matrix C
 gsl_matrix* D_in;           // Declaration of input Matrix D
+
 gsl_matrix* C_op;           // Declaration of operation Matrix C
 gsl_matrix* D_op;           // Declaration of operation Matrix D
 gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
@@ -21,7 +24,10 @@ gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 
 
-
+/*
+ * Initialing all matrices and setting up some matrix with zero for easy setup in further code
+ * These steps are necessary because the calculations are made every iteration
+ */
 void initMatrix(){
     A = gsl_matrix_alloc(12,12);
     B = gsl_matrix_alloc(12,12);
@@ -37,6 +43,8 @@ void initMatrix(){
     gsl_matrix_set_zero(A);
     gsl_matrix_set_zero(B);
     gsl_matrix_set_zero(A_Inv);
+    gsl_matrix_set_zero(C_op);
+    gsl_matrix_set_zero(D_op);
 
 }
 
@@ -221,6 +229,93 @@ void changing_engineSpeed(int n_updn){
 
 
 
+// TODO clearify what index of C_in must be stored in C_op
+/*
+ * For better understanding look up in Jan's linearized model line 72 to 74
+ *          ,_____________________________________________________________,
+ *          | 0  C_in1  0  C_in2  0  C_in3  0  C_in4  0  C_in5  0  C_in6  |
+ *      C = | 0  C_in7  0  C_in8  0  C_in9  0  C_in10 0  C_in11 0  C_in12 |
+ *          | 0  C_in13 0  C_in14 0  C_in15 0  C_in16 0  C_in17 0  C_in18 |
+ *          +-------------------------------------------------------------+
+ *
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!! Attention !!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!                                                     !!!!!
+ *          !!!!!   C_in is very likely a time-dependent vector with  !!!!!
+ *          !!!!!   a size of 18. This should not lead to any weird   !!!!!
+ *          !!!!!   confusion. So get the data out of the vector      !!!!!
+ *          !!!!!                                                     !!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+void calculate_Cop(){
+
+    // Setting the values of C_in in the Matrix C_op
+    gsl_matrix_set(C_op, 0, 1, gsl_matrix_get(C_in, 0, 0));
+    gsl_matrix_set(C_op, 0, 3, gsl_matrix_get(C_in, 1, 0));
+    gsl_matrix_set(C_op, 0, 5, gsl_matrix_get(C_in, 2, 0));
+    gsl_matrix_set(C_op, 0, 7, gsl_matrix_get(C_in, 3, 0));
+    gsl_matrix_set(C_op, 0, 9, gsl_matrix_get(C_in, 4, 0));
+    gsl_matrix_set(C_op, 0,11, gsl_matrix_get(C_in, 5, 0));
+    gsl_matrix_set(C_op, 1, 1, gsl_matrix_get(C_in, 6, 0));
+    gsl_matrix_set(C_op, 1, 3, gsl_matrix_get(C_in, 7, 0));
+    gsl_matrix_set(C_op, 1, 5, gsl_matrix_get(C_in, 8, 0));
+    gsl_matrix_set(C_op, 1, 7, gsl_matrix_get(C_in, 9, 0));
+    gsl_matrix_set(C_op, 1, 9, gsl_matrix_get(C_in,10, 0));
+    gsl_matrix_set(C_op, 1,11, gsl_matrix_get(C_in,11, 0));
+    gsl_matrix_set(C_op, 2, 1, gsl_matrix_get(C_in,12, 0));
+    gsl_matrix_set(C_op, 2, 3, gsl_matrix_get(C_in,13, 0));
+    gsl_matrix_set(C_op, 2, 5, gsl_matrix_get(C_in,14, 0));
+    gsl_matrix_set(C_op, 2, 7, gsl_matrix_get(C_in,15, 0));
+    gsl_matrix_set(C_op, 2, 9, gsl_matrix_get(C_in,16, 0));
+    gsl_matrix_set(C_op, 2,11, gsl_matrix_get(C_in,17, 0));
+
+
+}
+/*
+ * For better understanding look up in Jan's linearized model line 76 to 78
+ *          ,_____________________________________________________________,
+ *          | 0  0  0  0  0  0  D_in1  D_in2  D_in3  D_in4  D_in5  D_in6  |
+ *      D = | 0  0  0  0  0  0  D_in7  D_in8  D_in9  D_in10 D_in11 D_in12 |
+ *          | 0  0  0  0  0  0  D_in13 D_in14 D_in15 D_in16 D_in17 D_in18 |
+ *          +-------------------------------------------------------------+
+ *
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!! Attention !!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!                                                     !!!!!
+ *          !!!!!   D_in is very likely a time-dependent vector with  !!!!!
+ *          !!!!!   a size of 18. This should not lead to any weird   !!!!!
+ *          !!!!!   confusion. So get the data out of the vector      !!!!!
+ *          !!!!!                                                     !!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+void calculate_Dop(){
+
+    // Setting the values of D_in in the Matrix D_op
+    gsl_matrix_set(D_op, 0, 6, gsl_matrix_get(D_in, 0, 0));
+    gsl_matrix_set(D_op, 0, 7, gsl_matrix_get(D_in, 1, 0));
+    gsl_matrix_set(D_op, 0, 8, gsl_matrix_get(D_in, 2, 0));
+    gsl_matrix_set(D_op, 0, 9, gsl_matrix_get(D_in, 3, 0));
+    gsl_matrix_set(D_op, 0,10, gsl_matrix_get(D_in, 4, 0));
+    gsl_matrix_set(D_op, 0,11, gsl_matrix_get(D_in, 5, 0));
+    gsl_matrix_set(D_op, 1, 6, gsl_matrix_get(D_in, 6, 0));
+    gsl_matrix_set(D_op, 1, 7, gsl_matrix_get(D_in, 7, 0));
+    gsl_matrix_set(D_op, 1, 8, gsl_matrix_get(D_in, 8, 0));
+    gsl_matrix_set(D_op, 1, 9, gsl_matrix_get(D_in, 9, 0));
+    gsl_matrix_set(D_op, 1,10, gsl_matrix_get(D_in,10, 0));
+    gsl_matrix_set(D_op, 1,11, gsl_matrix_get(D_in,11, 0));
+    gsl_matrix_set(D_op, 2, 6, gsl_matrix_get(D_in,12, 0));
+    gsl_matrix_set(D_op, 2, 7, gsl_matrix_get(D_in,13, 0));
+    gsl_matrix_set(D_op, 2, 8, gsl_matrix_get(D_in,14, 0));
+    gsl_matrix_set(D_op, 2, 9, gsl_matrix_get(D_in,15, 0));
+    gsl_matrix_set(D_op, 2,10, gsl_matrix_get(D_in,16, 0));
+    gsl_matrix_set(D_op, 2,11, gsl_matrix_get(D_in,17, 0));
+
+
+}
 
 /*
  * Eingabeparameter unter anderem Tuningfaktor bEnd

@@ -59,8 +59,8 @@ void initializeVector(){
     alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
     alpha_x = gsl_vector_alloc(3);   // Vector alpha_x
     alpha_y = gsl_vector_alloc(3);   // Vector alpha_y
-    C = gsl_matrix_calloc(18,1);    // Matrix C
-    D = gsl_matrix_calloc(18,1);    // Matrix D
+    C = gsl_matrix_calloc(18,1);    // Matrix/Vector C
+    D = gsl_matrix_calloc(18,1);    // Matrix/Vector D
     beta = gsl_vector_alloc(3);     // Vector beta
     v = gsl_vector_alloc(3);        // Vector v
     vr = gsl_vector_alloc(3);       // Vector vr
