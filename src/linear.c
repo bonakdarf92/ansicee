@@ -86,19 +86,14 @@ void matrixPresetting(){
     gsl_matrix_set(A, 10, 11, -183.0609);       // Setting value in Matrix A_11_12
     gsl_matrix_set(A, 11, 10, 1);               // Setting value in Matrix A_12_11
 
-
+    //TODO T_n1, T_n2 und T_n3
     // Setting all the indexes for Matrix B
     gsl_matrix_set(B, 0, 0, K / (T_DELTA*T_DELTA) );
     gsl_matrix_set(B, 2, 1, K / (T_DELTA*T_DELTA) );
-    gsl_matrix_set(B, 4, 3, K / (T_DELTA*T_DELTA));
-    gsl_matrix_set(B, 0, 0, -7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
-    gsl_matrix_set(B, 0,0,-7.2384);
+    gsl_matrix_set(B, 4, 2, K / (T_DELTA*T_DELTA));
+    gsl_matrix_set(B, 6, 3, K / (T_N_CONSTUP*T_N_CONSTDN));     // TODO T_n_1
+    gsl_matrix_set(B, 8, 4, K / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
+    gsl_matrix_set(B, 10, 5, K / (T_N_CONSTDN*T_N_CONSTDN));    // TODO T_n_3
 
 
     // Setting all the indexes for Matrix A inverse
@@ -161,10 +156,6 @@ void calculate_KS(){
 
 }
 // TODO might be a BOTTLENECK !!!
-
-
-
-
 /*
  * This method calculates the matrix KI
  * The formula is taken from Jan's linearized model
@@ -194,6 +185,41 @@ void calculate_KI(){
 
 }
 // TODO might be a BOTTLENECK !!!
+
+
+/*
+ * This method changes the matrix indexes for direction change in engine speed
+ * For example the direction of movement converts from forward to reverse
+ * Then the changes have to be made in System matrix A and A_inverse
+ */
+
+// TODO check what information is given in n_up down and how the differential observation takes place
+
+void changing_engineSpeed(int n_updn){
+
+    switch (n_updn) {
+        case 1:
+            gsl_matrix_set(A, 6, 6, -1.9964);
+            gsl_matrix_set(A, 6, 7, -2.5921);
+            gsl_matrix_set(A_Inv, 7, 6, -0.3858);
+            gsl_matrix_set(A_Inv, 7, 7, -0.7702);
+
+        case 2:
+            gsl_matrix_set(A, 8, 8, -1.9964);
+            gsl_matrix_set(A, 8, 9, -2.5921);
+            gsl_matrix_set(A_Inv, 9, 8, -0.3858);
+            gsl_matrix_set(A_Inv, 9, 9, -0.7702);
+        case 3:
+            gsl_matrix_set(A, 10, 10, -0.9964);
+            gsl_matrix_set(A, 10, 11, -2.5921);
+            gsl_matrix_set(A_Inv, 11, 10, -0.3858);
+            gsl_matrix_set(A_Inv, 11, 11, -0.7702);
+        default:
+            break;
+    }
+}
+
+
 
 
 /*

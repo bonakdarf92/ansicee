@@ -39,6 +39,8 @@ void calculate_KS();
 
 void calculate_KI();
 
+void changing_engineSpeed(int n_updn);
+
 double Matrix_KP(double bEnd, double Matrix_KS);
 
 double EigenwertI(double EigenwertAI, int i, int a0);
