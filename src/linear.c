@@ -11,10 +11,12 @@ gsl_matrix* B;              // Declaration of Matrix B
 gsl_matrix* A_Inv;          // Declaration of Matrix A inverse
 gsl_matrix* KI;             // Declaration of Matrix KI
 gsl_matrix* KS;             // Declaration of Matrix KS
+gsl_matrix* KP;
 gsl_matrix* Ai;             // Declaration of Matrix A iterator
 gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
-gsl_matrix* EW_I1;
+gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
+gsl_matrix* EWI_output;      // Declaration of output Matrix EWI
 
 // TODO check what kind of data C_in and D_in are: Vector or Matrix
 gsl_matrix* C_in;           // Declaration of input Matrix C
@@ -27,8 +29,10 @@ gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
 gsl_matrix * temporary;
+gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 double A0 = 10;
+double b_min = 0.00001;     // Declaration and initialization of tuning factor b_min
 
 gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
 gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
@@ -47,6 +51,8 @@ void initMatrix(){
     A_Inv = gsl_matrix_alloc(12,12);
     Ai = gsl_matrix_alloc(15,15);
     KS = gsl_matrix_alloc(12,3);
+    KI = gsl_matrix_alloc(12,3);
+    KP = gsl_matrix_alloc(12,3);
     C_op = gsl_matrix_alloc(12,3);
     D_op = gsl_matrix_alloc(12,3);
     temp1 = gsl_matrix_alloc(12,12);
@@ -54,6 +60,8 @@ void initMatrix(){
     temp3 = gsl_matrix_alloc(3,3);
     temp4 = gsl_matrix_alloc(3,12);
     temporary = gsl_matrix_alloc(12,3);
+    eye = gsl_matrix_alloc(12,12);
+    gsl_matrix_set_identity(eye);
     workspace = gsl_eigen_nonsymm_alloc(15);
     eigenvalue = gsl_vector_complex_alloc(15);
 
@@ -166,6 +174,8 @@ void matrixPresetting(){
  * 10 --> Ai
  * 11 --> EW_G
  * 12 --> EW_I
+ * 13 --> EWI_end
+ * 14 --> KP
  */
 gsl_matrix * get_Matrix(size_t n){
     switch (n){
@@ -193,6 +203,11 @@ gsl_matrix * get_Matrix(size_t n){
             return EW_G;
         case 12:
             return EW_I;
+        case 13:
+            EWI_output = EW_I1;
+            return EWI_output;
+        case 14:
+            return KP;
         default:
             return 0;
     }
@@ -544,14 +559,105 @@ void tune_matrix_EWI(){
         EW_I = EW_I1;
     }
 }
-
 // TODO Very Important!!! Test this method
+
+
 /*
- * Laut Code von Jan muessen die Systemmatrizen A und Ainverse bei
- * Richtungsaenderung oder grossen Drehzahlaenderungen veraendert werden.
- * Fall abfrage aus Matlab Modell entnehmen
+ * Same method as calculate_KI, instead of using b0 as tuningfactor
+ * and the second part calculating the new KP matrix
  */
-void drehzahlAenderung(double (*Matrix)[12]) {
+void calculate_KP(gsl_matrix* KS, double b0){
 
+    // temporary storage of matrix KS for later usage
+    temp2 = KS;
+
+    // Transpose the matrix KS and save into temp4
+    temp4 = (gsl_matrix *) gsl_matrix_transpose(KS);
+
+    // Calculating the product of KS and KS_transpose
+    temp3 = (gsl_matrix *) gsl_matrix_mul_elements(KS, temp4);
+
+    // Dividing the matrix KS with the Product of KS and KS_transpose
+    KP = (gsl_matrix *) gsl_matrix_div_elements(temp4, temp3);
+
+    // Scaling KI with b0
+    gsl_matrix_scale(KP, b0);
+
+    // Saving the current matrix of KP into KP_current for calculations
+    gsl_matrix* KP_current = getMatrix(14);
+
+    // Saving the current subtrahend into sub for calculations
+    gsl_matrix* sub = (gsl_matrix*)gsl_matrix_sub(eye,(gsl_matrix*)gsl_matrix_mul_elements(KP_current, D_op));
+
+    // Calculating the Division of sub and KP_current
+    KP = (gsl_matrix *) gsl_matrix_div_elements(sub, KP_current);
 }
+// TODO check if its working
 
+/*
+ * The structure of this method is nearly the same as calculate_Ai.
+ * It computes the System matrix Ag with respect to (A - B * Kp * C) -> [L], (-B * Ki) -> [T], C and zeros
+ *
+ *              +---------------------------------------------------------------------------------------+
+ *              | L11   L12   L13   L14   L15   L16   L17   L18   L19  L110  L111  L112 | T11  T12  T13 |
+ *              | L21   L22   L23   L24   L25   L26   L27   L28   L29  L210  L211  L212 | T21  T22  T23 |
+ *              | L31         L33   L34   L35   L36   L37   L38   L39  L310  L311  L312 | T31  T32  T33 |
+ *              | L41               L44                                                 | T41  T42  T43 |
+ *              | L51                     L55             . . .                 .       | T51  T52  T53 |
+ *              | L61         .                 L66                             .       | T61  T62  T63 |
+ *              | L71         .                       L77                       .       | T71  T72  T73 |
+ *              | L81         .                             L88                         | T81  T82  T83 |
+ *              | L91                           .                 L99                   | T91  T92  T93 |
+ *              | L101                          .                      L1010            | T101 T102 T103|
+ *              | L111                          .                            L1111      | T111 T112 T113|
+ *              | L121        . . .                  . . .                        L1212 | T121 T122 T123|
+ *              |---------------------------------------------------------------------------------------+
+ *              | C11   C12   C13   C14   C15   C16   C17   C18   C19  C110  C111  C112 |  0    0     0 |
+ *              | C21   C22   C23   C24   C25   C26   C27   C28   C29  C210  C211  C212 |  0    0     0 |
+ *              | C31   C32   C33   C34   C35   C36   C37   C38   C39  C310  C311  C312 |  0    0     0 |
+ *              +---------------------------------------------------------------------------------------+
+ *
+ */
+void calculating_AG(){
+
+    gsl_matrix* B_current = getMatrix(3);
+    gsl_matrix* B_current2 = B_current;
+    gsl_matrix* KI_current = getMatrix(5);
+    gsl_matrix* temp_calc1 = (gsl_matrix*) gsl_matrix_mul_elements(B_current, KI_current);
+    gsl_matrix_scale(temp_calc1, -1);
+
+    gsl_matrix* A_current = getMatrix(1);
+    gsl_matrix* KP_current = getMatrix(14);
+    gsl_matrix* C_current = getMatrix(7);
+    gsl_matrix* temp_calc2 = (gsl_matrix*) gsl_matrix_sub(A_current, gsl_matrix_mul_elements(B_current2, gsl_matrix_mul_elements(KP_current, C_current)));
+    // TODO check it --> will probably not work
+
+    // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
+    for (size_t i = 0; i < 12; i++) {
+        for (size_t j = 0; j < 12; j++) {
+            gsl_matrix_set(Ai,i, j, gsl_matrix_get(A, i, j));
+        }
+    }
+
+    // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
+    for (size_t k = 0; k < 12 ; k++) {
+        for (size_t m = 0; m < 3 ; m++) {
+            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temporary, k, m));
+        }
+    }
+
+    // Copying the elements of Matrix C_op in bottom left corner of Ai
+    for (size_t l = 0; l < 3 ; l++) {
+        for (size_t n = 0; n < 12; n++) {
+            gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
+        }
+    }
+
+    // Setting zeros in the bottom right corner of Ai
+    for (size_t v = 0; v < 3; v++) {
+        for (size_t w = 0; w < 3; w++) {
+            gsl_matrix_set(Ai, 12+v, 12+w, 0);
+        }
+    }
+}
+// TODO Standard check

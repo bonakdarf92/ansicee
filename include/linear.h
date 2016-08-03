@@ -15,7 +15,7 @@
 
 #define K 1.0
 #define R 3.0
-#define S 12.0
+#define S 12
 #define I_MAX_A 10
 #define I_MAX_B 1000
 #define T_DELTA 0.1603
@@ -59,7 +59,9 @@ void matrix_Calculator_EWI();
 
 void tune_matrix_EWI();
 
-void drehzahlAenderung(double Matrix[12][12]);
+void calculate_KP(gsl_matrix* KS, double b0);
+
+void calculating_AG();
 
 
 #endif //ANSICEE_LINEAR_H
