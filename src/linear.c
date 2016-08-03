@@ -1,6 +1,8 @@
 //
 // Created by Farid Bonakdar on 30.06.16.
 //
+#include <tkDecls.h>
+#include <gsl/gsl_vector.h>
 #include "linear.h"
 
 
@@ -25,6 +27,11 @@ gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
 gsl_matrix * temporary;
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
+double A0 = 10;
+
+gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
+gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
+gsl_vector_view* a;
 
 
 /*
@@ -44,6 +51,9 @@ void initMatrix(){
     temp3 = gsl_matrix_alloc(3,3);
     temp4 = gsl_matrix_alloc(3,12);
     temporary = gsl_matrix_alloc(12,3);
+    workspace = gsl_eigen_nonsymm_alloc(15);
+    eigenvalue = gsl_vector_complex_alloc(15);
+
     // TODO initialize all matrices
 
 
@@ -283,6 +293,20 @@ void calculate_Ai(){
 }
 
 //TODO Test this method properly
+
+
+/*
+ * This method calculates the eigenvalues of Matrix Ai
+ * and stores the data in complex vector eigenvalue
+ * The computation is done with help of a computational
+ * workspace
+ */
+void calculate_EWI(){
+    EW_I = Ai;
+    gsl_eigen_nonsymm(EW_I, eigenvalue, workspace);
+}
+
+// TODO Test the method and compare with matlab data
 /*
  * This method gets an matrix KS and an integer a0
  * and calculates the matrix KI with the formula taken
@@ -293,7 +317,7 @@ void calculate_Ai(){
  */
 
 
-void calculate_KI(gsl_matrix* KS, int a0){
+void calculate_KI(gsl_matrix* KS, double a0){
 
     // temporary storage of matrix KS for later usage
     temp2 = KS;
@@ -442,15 +466,46 @@ void calculate_Dop(){
 
 
 /*
- * Eingabeparameter unter anderem Tuningfaktor bEnd
- * und die Matrix K_s.
- * Auf weitere Input parameter pruefen
+ * This method calculates the system matrix Ewi
+ * It does the calculations with obtaining the
+ * maximum real part of the eigenvalues of the system
+ * and adapt it via iteration.
  */
-double Matrix_KP(double bEnd, double Matrix_KS) {
-    return 0;
+void matrix_Calculator_EWI(){
+
+    // Counter for termination of while loop
+    size_t i = 0;
+
+    // Pointer on vector_view containing all real parts of complex vector eigenvalue
+    *a = gsl_vector_complex_real(eigenvalue);
+
+    // Storing the structural element vector of vector_view a into gsl_vector real
+    gsl_vector* real = &a->vector;
+
+    // Finding the biggest value of vector real
+    double max = gsl_vector_max(real);
+
+    /*
+     * This while loop calculates all Matrices via iteration of tuning factor a0
+     * and the maximum real component.
+     * This leads to adaptation of the system matrix in respect to its poles
+     *
+     */
+    while ((max > 0) && (A0 >= a_min) && (i <= I_MAX_A)){
+        // If a0 is to big get the half for next iteration
+        A0 *= 0.5;
+
+        // Function calls for the iteration
+        calculate_KI(KS, A0);
+        calculate_Ai();
+        calculate_EWI();
+
+        // Increment counter for while loop
+        i++;
+    }
 }
 
-//TODO Methode zur Berechnung der Eigenewert des I-Reglers
+//TODO Test if pointer or address is needed
 
 /*
  * Vorerst die Laufvariablen aus der Matlab datei uebernommen.

@@ -9,8 +9,9 @@
 #include <gsl/gsl_matrix.h>
 #include "horizontalModel.h"
 // #include <gsl/gsl_blas.h>
-#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_vector_complex.h>
 #include <stdio.h>
+#include <gsl/gsl_eigen.h>
 
 #define K 1.0
 #define R 3.0
@@ -20,7 +21,7 @@
 #define T_DELTA 0.1603
 #define T_N_CONSTUP 0.0739
 #define T_N_CONSTDN 0.6211
-#define A0 10
+
 
 
 
@@ -42,7 +43,7 @@ void getInputParameter();
 
 void calculate_KS();
 
-void calculate_KI(gsl_matrix* KS, int a0);
+void calculate_KI(gsl_matrix* KS, double a0);
 
 void calculate_Ai();
 
@@ -54,7 +55,7 @@ void calculate_Cop();
 
 void calculate_Dop();
 
-double Matrix_KP(double bEnd, double Matrix_KS);
+void matrix_Calculator_EWI();
 
 double EigenwertI(double EigenwertAI, int i, int a0);
 
