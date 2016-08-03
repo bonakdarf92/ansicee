@@ -8,6 +8,9 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include "horizontalModel.h"
+// #include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
+#include <stdio.h>
 
 #define K 1.0
 #define R 3.0
@@ -33,11 +36,17 @@ void initMatrix();
 
 void matrixPresetting();
 
+gsl_matrix * get_Matrix(size_t n);
+
 void getInputParameter();
 
 void calculate_KS();
 
-void calculate_KI();
+void calculate_KI(gsl_matrix* KS, int a0);
+
+void calculate_Ai();
+
+void calculate_EWI();
 
 void changing_engineSpeed(int n_updn);
 

@@ -21,6 +21,9 @@ gsl_matrix* C_op;           // Declaration of operation Matrix C
 gsl_matrix* D_op;           // Declaration of operation Matrix D
 gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
+gsl_matrix * temporary;
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 
 
@@ -32,11 +35,15 @@ void initMatrix(){
     A = gsl_matrix_alloc(12,12);
     B = gsl_matrix_alloc(12,12);
     A_Inv = gsl_matrix_alloc(12,12);
+    Ai = gsl_matrix_alloc(15,15);
     KS = gsl_matrix_alloc(12,3);
     C_op = gsl_matrix_alloc(12,3);
     D_op = gsl_matrix_alloc(12,3);
     temp1 = gsl_matrix_alloc(12,12);
     temp2 = gsl_matrix_alloc(12,3);
+    temp3 = gsl_matrix_alloc(3,3);
+    temp4 = gsl_matrix_alloc(3,12);
+    temporary = gsl_matrix_alloc(12,3);
     // TODO initialize all matrices
 
 
@@ -128,6 +135,54 @@ void matrixPresetting(){
 
 
 /*
+ * This function is written as a getter
+ * It returns the called Matrix
+ * 1  --> A
+ * 2  --> A_inv
+ * 3  --> B
+ * 4  --> KS
+ * 5  --> KI
+ * 6  --> C_in
+ * 7  --> C_op
+ * 8  --> D_in
+ * 9  --> D_op
+ * 10 --> Ai
+ * 11 --> EW_G
+ * 12 --> EW_I
+ */
+gsl_matrix * get_Matrix(size_t n){
+    switch (n){
+        case 1:
+            return A;
+        case 2:
+            return A_Inv;
+        case 3:
+            return B;
+        case 4:
+            return KS;
+        case 5:
+            return KI;
+        case 6:
+            return C_in;
+        case 7:
+            return C_op;
+        case 8:
+            return D_in;
+        case 9:
+            return D_op;
+        case 10:
+            return Ai;
+        case 11:
+            return EW_G;
+        case 12:
+            return EW_I;
+        default:
+            return 0;
+    }
+
+}
+
+/*
  * This Method calls the function getMatrix from horizontal model and
  * store its returns in Matrix C_in and D_in.
  */
@@ -163,34 +218,97 @@ void calculate_KS(){
     gsl_matrix_sub(D_op, temp2);
 
 }
+
 // TODO might be a BOTTLENECK !!!
+
+
+
 /*
- * This method calculates the matrix KI
- * The formula is taken from Jan's linearized model
+ * This method calculates the matrix -B * Ki (T) and copy all its elements
+ * in to the Matrix Ai combined with System matrix A, C and zeros
  *
- *                         division 2
- *                    |------+-------|
- * --->     KS = A0 * (KS' / (KS*KS'))
- * --->                     |----+---|
- * --->                      product 1
- * --->
- * --->         |----------+---------|
- *                      const 3
  *
- * For performance purposes temporary matrices are generated to calculate
- * product 1, product 2 and at least difference 3
+ *              +---------------------------------------------------------------------------------------+
+ *              | A11   A12   A13   A14   A15   A16   A17   A18   A19  A110  A111  A112 | T11  T12  T13 |
+ *              | A21   A22   A23   A24   A25   A26   A27   A28   A29  A210  A211  A212 | T21  T22  T23 |
+ *              | A31         A33   A34   A35   A36   A37   A38   A39  A310  A311  A312 | T31  T32  T33 |
+ *              | A41               A44                                                 | T41  T42  T43 |
+ *              | A51                     A55             . . .                 .       | T51  T52  T53 |
+ *              | A61         .                 A66                             .       | T61  T62  T63 |
+ *              | A71         .                       A77                       .       | T71  T72  T73 |
+ *              | A81         .                             A88                         | T81  T82  T83 |
+ *              | A91                           .                 A99                   | T91  T92  T93 |
+ *              | A101                          .                      A1010            | T101 T102 T103|
+ *              | A111                          .                            A1111      | T111 T112 T113|
+ *              | A121        . . .                  . . .                        A1212 | T121 T122 T123|
+ *              |---------------------------------------------------------------------------------------+
+ *              | C11   C12   C13   C14   C15   C16   C17   C18   C19  C110  C111  C112 |  0    0     0 |
+ *              | C21   C22   C23   C24   C25   C26   C27   C28   C29  C210  C211  C212 |  0    0     0 |
+ *              | C31   C32   C33   C34   C35   C36   C37   C38   C39  C310  C311  C312 |  0    0     0 |
+ *              +---------------------------------------------------------------------------------------+
+ *
+ */
+
+void calculate_Ai(){
+
+    temporary = (gsl_matrix *) gsl_matrix_scale((gsl_matrix *)gsl_matrix_mul_elements(getMatrix(3), getMatrix(5)), -1);
+
+    // Copying the Systemmatrix A (12 x 12) into top left corner of Ai (15 x 15)
+    for (size_t i = 0; i < 12; i++) {
+        for (size_t j = 0; j < 12; j++) {
+            gsl_matrix_set(Ai,i, j, gsl_matrix_get(A, i, j));
+        }
+    }
+
+    // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
+    for (size_t k = 0; k < 12 ; k++) {
+        for (size_t m = 0; m < 3 ; m++) {
+            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temporary, k, m));
+        }
+    }
+
+    // Copying the elements of Matrix C_op in bottom left corner of Ai
+    for (size_t l = 0; l < 3 ; l++) {
+        for (size_t n = 0; n < 12; n++) {
+            gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
+        }
+    }
+
+    // Setting zeros in the bottom right corner of Ai
+    for (size_t v = 0; v < 3; v++) {
+        for (size_t w = 0; w < 3; w++) {
+            gsl_matrix_set(Ai, 12+v, 12+w, 0);
+        }
+    }
+}
+
+//TODO Test this method properly
+/*
+ * This method gets an matrix KS and an integer a0
+ * and calculates the matrix KI with the formula taken
+ * from Jan's linearized modell line 94
+ *
+ *      --->  Ki = a0 * (KS' / (KS * KS') )
+ *  and stored in the matrix KI
  */
 
 
-void calculate_KI(){
-    KI = D_op;
+void calculate_KI(gsl_matrix* KS, int a0){
 
-    temp1 = gsl_matrix_transpose(KS);
-    temp2 = C_op;
-    gsl_matrix_mul_elements(temp1, B);
-    gsl_matrix_alloc(temp2, temp1);
-    gsl_matrix_sub(D_op, temp2);
+    // temporary storage of matrix KS for later usage
+    temp2 = KS;
 
+    // Transpose the matrix KS and save into temp4
+    temp4 = (gsl_matrix *) gsl_matrix_transpose(KS);
+
+    // Calculating the product of KS and KS_transpose
+    temp3 = (gsl_matrix *) gsl_matrix_mul_elements(KS, temp4);
+
+    // Dividing the matrix KS with the Product of KS and KS_transpose
+    KI = (gsl_matrix *) gsl_matrix_div_elements(temp4, temp3);
+
+    // Scaling KI with a0
+    gsl_matrix_scale(KI, a0);
 }
 // TODO might be a BOTTLENECK !!!
 
@@ -200,8 +318,6 @@ void calculate_KI(){
  * For example the direction of movement converts from forward to reverse
  * Then the changes have to be made in System matrix A and A_inverse
  */
-
-// TODO check what information is given in n_up down and how the differential observation takes place
 
 void changing_engineSpeed(int n_updn){
 
@@ -229,7 +345,8 @@ void changing_engineSpeed(int n_updn){
 
 
 
-// TODO clearify what index of C_in must be stored in C_op
+// TODO check what information is given in n_up down and how the differential observation takes place
+
 /*
  * For better understanding look up in Jan's linearized model line 72 to 74
  *          ,_____________________________________________________________,
@@ -273,6 +390,10 @@ void calculate_Cop(){
 
 
 }
+
+// TODO clarify what index of C_in must be stored in C_op
+
+
 /*
  * For better understanding look up in Jan's linearized model line 76 to 78
  *          ,_____________________________________________________________,
@@ -316,6 +437,9 @@ void calculate_Dop(){
 
 
 }
+
+// TODO clarify what index of D_in must be stored in D_op
+
 
 /*
  * Eingabeparameter unter anderem Tuningfaktor bEnd
