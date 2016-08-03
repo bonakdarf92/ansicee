@@ -3,10 +3,10 @@
 ##Herzlich Willkommen !!!
 
 Dieses Repository beinhaltet alle Programmteile für die Regelung des Fahrsimulator Prototyps Morpheus.
-Hier sind alle wichitgen Dokumente aufgelistet und kommentiert.
-In nächster Zeit werden hier alle C-Programme und Matlab Codes zusammen mit den Regelungsmodelle
+Hier sind alle wichtigen Dokumente aufgelistet und kommentiert.
+In nächster Zeit werden hier alle C-Programme und Matlab Codes zusammen mit den Regelungsmodellen
 gespeichert.
-Damit Struktur dieses Projekt erhalten bleibt, ein gute kommunikative Basis zur problemorientierten
+Damit die Struktur dieses Projekt erhalten bleibt, ein gute kommunikative Basis zur problemorientierten
 Lösungsfindung führt, wird das **Lesen der Codes** und die **Kommentar funktion** wärmstens empfohlen.
 
 - - - -
