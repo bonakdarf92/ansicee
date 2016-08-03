@@ -13,6 +13,7 @@ gsl_matrix* KI;             // Declaration of Matrix KI
 gsl_matrix* KS;             // Declaration of Matrix KS
 gsl_matrix* KP;
 gsl_matrix* Ai;             // Declaration of Matrix A iterator
+gsl_matrix* Ag;
 gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
 gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
@@ -50,6 +51,7 @@ void initMatrix(){
     B = gsl_matrix_alloc(12,12);
     A_Inv = gsl_matrix_alloc(12,12);
     Ai = gsl_matrix_alloc(15,15);
+    Ag = gsl_matrix_alloc(15,15);
     KS = gsl_matrix_alloc(12,3);
     KI = gsl_matrix_alloc(12,3);
     KP = gsl_matrix_alloc(12,3);
@@ -620,43 +622,64 @@ void calculate_KP(gsl_matrix* KS, double b0){
  */
 void calculating_AG(){
 
+    // Storing the Matrix B into the new Matrix B_current for further calculations
     gsl_matrix* B_current = getMatrix(3);
-    gsl_matrix* B_current2 = B_current;
-    gsl_matrix* KI_current = getMatrix(5);
-    gsl_matrix* temp_calc1 = (gsl_matrix*) gsl_matrix_mul_elements(B_current, KI_current);
-    gsl_matrix_scale(temp_calc1, -1);
 
-    gsl_matrix* A_current = getMatrix(1);
-    gsl_matrix* KP_current = getMatrix(14);
-    gsl_matrix* C_current = getMatrix(7);
-    gsl_matrix* temp_calc2 = (gsl_matrix*) gsl_matrix_sub(A_current, gsl_matrix_mul_elements(B_current2, gsl_matrix_mul_elements(KP_current, C_current)));
+    // Copying the matrix B_current in B_current2 for second calculation
+    gsl_matrix* B_current2 = B_current;
+
+    // Storing the matrix KI in new matrix KI_current
+    gsl_matrix* KI_current = getMatrix(5);
+
+    // Computing temp_calc1: -->  temp_calc1 = B_current * KI_current
+    gsl_matrix* temp_calc1 = (gsl_matrix*) gsl_matrix_mul_elements(B_current, KI_current);
+
+    gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
+    gsl_matrix* A_current = getMatrix(1);       // Storing the Matrix A in new Matrix A_current
+    gsl_matrix* KP_current = getMatrix(14);     // Storing the Matrix KP in new Matrix KP_current
+    gsl_matrix* C_current = getMatrix(7);       // Storing the Matrix C_current in new Matrix C_current
+
+    /*
+     * Computing the next three steps can be summarized into this picture:
+     *
+     *      --> temp_calc2 = KP_current * C_current
+     *      --> temp_calc3 = B_current2 * temp_calc2 = B_current * KP_current * C_current
+     *      --> temp_calc4 = A_current - temp_calc3 = ...
+     *
+     *  These steps are necessary to obtain the big Matrix [L]
+     *      --> [L] = A - B * KP * C
+     *
+     */
+    gsl_matrix* temp_calc2 = (gsl_matrix*) gsl_matrix_mul_elements(KP_current, C_current);
+    gsl_matrix* temp_calc3 = (gsl_matrix*) gsl_matrix_mul_elements(B_current2, temp_calc2);
+    gsl_matrix* temp_calc4 = (gsl_matrix*) gsl_matrix_sub(A_current, temp_calc3);
     // TODO check it --> will probably not work
 
-    // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
+    // Copying the System matrix L (12 x 12) into top left corner of AG (15 x 15)
     for (size_t i = 0; i < 12; i++) {
         for (size_t j = 0; j < 12; j++) {
-            gsl_matrix_set(Ai,i, j, gsl_matrix_get(A, i, j));
+            gsl_matrix_set(Ag,i, j, gsl_matrix_get(temp_calc4, i, j));
         }
     }
 
-    // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
+    // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ag
     for (size_t k = 0; k < 12 ; k++) {
         for (size_t m = 0; m < 3 ; m++) {
-            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temporary, k, m));
+            gsl_matrix_set(Ag, k, 12 + m, gsl_matrix_get(temp_calc1, k, m));
         }
     }
 
-    // Copying the elements of Matrix C_op in bottom left corner of Ai
+    // Copying the elements of Matrix C_op in bottom left corner of Ag
     for (size_t l = 0; l < 3 ; l++) {
         for (size_t n = 0; n < 12; n++) {
-            gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
+            gsl_matrix_set(Ag, 12 + l, n, gsl_matrix_get(C_op, l, n));
         }
     }
 
-    // Setting zeros in the bottom right corner of Ai
+    // Setting zeros in the bottom right corner of Ag
     for (size_t v = 0; v < 3; v++) {
         for (size_t w = 0; w < 3; w++) {
-            gsl_matrix_set(Ai, 12+v, 12+w, 0);
+            gsl_matrix_set(Ag, 12+v, 12+w, 0);
         }
     }
 }

@@ -96,45 +96,47 @@ void initializeVector(){
  * 16 -> mux
  * 17 -> muy
  */
-gsl_vector* getVector(int n) {
-    // Building the if structure
+gsl_vector* getVector(size_t n) {
+    // Building the switch case structure
 
-    if (n == 1)
-        return xg;
-    if (n == 2)
-        return ug;
-    if (n == 3)
-        return xg_alt;
-    if (n == 4)
-        return ug_alt;
-    if (n == 5)
-        return acc_alt;
-    if (n == 6)
-        return delta_x;
-    if (n == 7)
-        return delta_u;
-    if (n == 8)
-        return alpha_r;
-    if (n == 9)
-        return alpha_x;
-    if (n == 10)
-        return alpha_y;
-    if (n == 11)
-        return beta;
-    if (n == 12)
-        return v;
-    if (n == 13)
-        return vr;
-    if (n == 14)
-        return sr;
-    if (n == 15)
-        return mu;
-    if (n == 16)
-        return mux;
-    if (n == 17)
-        return muy;
-    else
-        return 0;
+    switch (n) {
+        case 1:
+            return xg;
+        case 2:
+            return ug;
+        case 3:
+            return xg_alt;
+        case 4:
+            return ug_alt;
+        case 5:
+            return acc_alt;
+        case 6:
+            return delta_x;
+        case 7:
+            return delta_u;
+        case 8:
+            return alpha_r;
+        case 9:
+            return alpha_x;
+        case 10:
+            return alpha_y;
+        case 11:
+            return beta;
+        case 12:
+            return v;
+        case 13:
+            return vr;
+        case 14:
+            return sr;
+        case 15:
+            return mu;
+        case 16:
+            return mux;
+        case 17:
+            return muy;
+        default:
+            return 0;
+    }
 }
 
 /*
@@ -143,7 +145,7 @@ gsl_vector* getVector(int n) {
  * 1 -> C
  * 2 -> D
  */
-gsl_matrix* getMatrix(int n){
+gsl_matrix* getMatrix(size_t n){
     switch (n) {
         case 1:
             return C;

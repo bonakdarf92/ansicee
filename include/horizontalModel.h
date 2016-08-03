@@ -34,9 +34,9 @@
 
 void initializeVector();
 
-gsl_vector * getVector(int n);
+gsl_vector * getVector(size_t n);
 
-gsl_matrix * getMatrix(int n);
+gsl_matrix * getMatrix(size_t n);
 
 void testVector();
 
