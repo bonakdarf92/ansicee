@@ -1,7 +1,7 @@
 //
 // Created by Farid Bonakdar on 30.06.16.
 //
-#include <tkDecls.h>
+
 #include <gsl/gsl_vector.h>
 #include "linear.h"
 
@@ -14,6 +14,7 @@ gsl_matrix* KS;             // Declaration of Matrix KS
 gsl_matrix* Ai;             // Declaration of Matrix A iterator
 gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
+gsl_matrix* EW_I1;
 
 // TODO check what kind of data C_in and D_in are: Vector or Matrix
 gsl_matrix* C_in;           // Declaration of input Matrix C
@@ -31,7 +32,9 @@ double A0 = 10;
 
 gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
 gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenvalues
 gsl_vector_view* a;
+double delta_a [] = {1.8, 1.3, 1.05};
 
 
 /*
@@ -65,6 +68,10 @@ void initMatrix(){
 
 }
 
+
+/*
+ *
+ */
 void matrixPresetting(){
 
     /*
@@ -192,11 +199,11 @@ gsl_matrix * get_Matrix(size_t n){
 
 }
 
+
 /*
  * This Method calls the function getMatrix from horizontal model and
  * store its returns in Matrix C_in and D_in.
  */
-
 void getInputParameter(){
     C_in = getMatrix(1);
     D_in = getMatrix(2);
@@ -224,13 +231,10 @@ void calculate_KS(){
     temp1 = A_Inv;
     temp2 = C_op;
     gsl_matrix_mul_elements(temp1, B);
-    gsl_matrix_alloc(temp2, temp1);
+    gsl_matrix_mul_elements(temp2, temp1);
     gsl_matrix_sub(D_op, temp2);
-
 }
-
 // TODO might be a BOTTLENECK !!!
-
 
 
 /*
@@ -258,12 +262,11 @@ void calculate_KS(){
  *              +---------------------------------------------------------------------------------------+
  *
  */
-
 void calculate_Ai(){
 
     temporary = (gsl_matrix *) gsl_matrix_scale((gsl_matrix *)gsl_matrix_mul_elements(getMatrix(3), getMatrix(5)), -1);
 
-    // Copying the Systemmatrix A (12 x 12) into top left corner of Ai (15 x 15)
+    // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
     for (size_t i = 0; i < 12; i++) {
         for (size_t j = 0; j < 12; j++) {
             gsl_matrix_set(Ai,i, j, gsl_matrix_get(A, i, j));
@@ -291,7 +294,6 @@ void calculate_Ai(){
         }
     }
 }
-
 //TODO Test this method properly
 
 
@@ -305,8 +307,9 @@ void calculate_EWI(){
     EW_I = Ai;
     gsl_eigen_nonsymm(EW_I, eigenvalue, workspace);
 }
-
 // TODO Test the method and compare with matlab data
+
+
 /*
  * This method gets an matrix KS and an integer a0
  * and calculates the matrix KI with the formula taken
@@ -315,8 +318,6 @@ void calculate_EWI(){
  *      --->  Ki = a0 * (KS' / (KS * KS') )
  *  and stored in the matrix KI
  */
-
-
 void calculate_KI(gsl_matrix* KS, double a0){
 
     // temporary storage of matrix KS for later usage
@@ -342,7 +343,6 @@ void calculate_KI(gsl_matrix* KS, double a0){
  * For example the direction of movement converts from forward to reverse
  * Then the changes have to be made in System matrix A and A_inverse
  */
-
 void changing_engineSpeed(int n_updn){
 
     switch (n_updn) {
@@ -366,10 +366,8 @@ void changing_engineSpeed(int n_updn){
             break;
     }
 }
-
-
-
 // TODO check what information is given in n_up down and how the differential observation takes place
+
 
 /*
  * For better understanding look up in Jan's linearized model line 72 to 74
@@ -414,7 +412,6 @@ void calculate_Cop(){
 
 
 }
-
 // TODO clarify what index of C_in must be stored in C_op
 
 
@@ -461,7 +458,6 @@ void calculate_Dop(){
 
 
 }
-
 // TODO clarify what index of D_in must be stored in D_op
 
 
@@ -504,21 +500,52 @@ void matrix_Calculator_EWI(){
         i++;
     }
 }
-
 //TODO Test if pointer or address is needed
 
-/*
- * Vorerst die Laufvariablen aus der Matlab datei uebernommen.
- * Bei Gelegenheit ueberpruefen ob diese benoetigt werden und
- * ob vereinfachung vorgenommen werden koennen.
- */
 
-double EigenwertI(double EigenwertAI, int i, int a0) {
-    return 0;
+/*
+ * This method do shit
+ */
+void tune_matrix_EWI(){
+    // Initialize matrix EW_I1 with ground matrix EW_I
+    EW_I1 = EW_I;
+    gsl_eigen_nonsymm(EW_I1,eigenvalue2,workspace);
+
+    // counter for while loop
+    size_t j = 0;
+    size_t i = 1;
+
+    // The biggest real number of complex eigenvalue vector of EW_I
+    double real1 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue).vector);
+
+    // The biggest real number of complex eigenvalue vector of EW_I1 which represents the current state
+    double real2 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue2).vector);
+
+    // This for loop iterates over the constant factors of delta_a and compute the while loop
+    for (size_t c = 0; c < 3; c++) {
+
+        /*
+         * If real1 is negative and real1 of current state is smaller the real2 of previous
+         * state and counter is less then 10 then
+         */
+        while ((real1 <= 0) && (real1 <= real2) && (i+j <= I_MAX_A)){
+            A0 *= delta_a[c];       // Adapt Factor A0
+            EW_I1 = EW_I;           // Save current Eigenvalues to new one
+            calculate_KI(KS,A0);    // Calculates the new matrix KS
+            calculate_Ai();         // Calculates the new System matrix Ai
+            calculate_EWI();        // Calculates the new eigenvalues
+            j++;                    // Increment the counter for while loop
+        }
+
+        // Undo the previous multiplication in the while loop for next computation
+        A0 /= delta_a[c];
+
+        // Save the new calculated Matrix into the old one
+        EW_I = EW_I1;
+    }
 }
 
-
-//TODO Methode fuer Matrixmanipulation wenn Drehzahl sich veraendert
+// TODO Very Important!!! Test this method
 /*
  * Laut Code von Jan muessen die Systemmatrizen A und Ainverse bei
  * Richtungsaenderung oder grossen Drehzahlaenderungen veraendert werden.

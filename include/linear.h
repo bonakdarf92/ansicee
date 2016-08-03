@@ -57,7 +57,7 @@ void calculate_Dop();
 
 void matrix_Calculator_EWI();
 
-double EigenwertI(double EigenwertAI, int i, int a0);
+void tune_matrix_EWI();
 
 void drehzahlAenderung(double Matrix[12][12]);
 
