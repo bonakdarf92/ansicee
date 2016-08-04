@@ -61,7 +61,15 @@ void tune_matrix_EWI();
 
 void calculate_KP(gsl_matrix* KS, double b0);
 
-void calculating_AG();
+void calculate_AG();
+
+void calculate_EWG();
+
+void matrix_Calculator_EWG();
+
+void tune_matrix_EWG();
+
+void tune_KP();
 
 
 #endif //ANSICEE_LINEAR_H

@@ -17,7 +17,9 @@ gsl_matrix* Ag;
 gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
 gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
+gsl_matrix* EW_G1;
 gsl_matrix* EWI_output;      // Declaration of output Matrix EWI
+gsl_matrix* EWG_output;
 
 // TODO check what kind of data C_in and D_in are: Vector or Matrix
 gsl_matrix* C_in;           // Declaration of input Matrix C
@@ -34,12 +36,18 @@ gsl_matrix* eye;            // Declaration of identity matrix for calculations K
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 double A0 = 10;
 double b_min = 0.00001;     // Declaration and initialization of tuning factor b_min
+double B0 = 10;             // TODO check which value B0 has
 
 gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
 gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
 gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
+
+
 gsl_vector_view* a;
 double delta_a [] = {1.8, 1.3, 1.05};
+double delta_b [] = {5, 1.8, 1.2, 1.02};
 
 
 /*
@@ -66,6 +74,7 @@ void initMatrix(){
     gsl_matrix_set_identity(eye);
     workspace = gsl_eigen_nonsymm_alloc(15);
     eigenvalue = gsl_vector_complex_alloc(15);
+    eigenvalue3 = gsl_vector_complex_alloc(15);
 
     // TODO initialize all matrices
 
@@ -620,7 +629,7 @@ void calculate_KP(gsl_matrix* KS, double b0){
  *              +---------------------------------------------------------------------------------------+
  *
  */
-void calculating_AG(){
+void calculate_AG(){
 
     // Storing the Matrix B into the new Matrix B_current for further calculations
     gsl_matrix* B_current = getMatrix(3);
@@ -684,3 +693,107 @@ void calculating_AG(){
     }
 }
 // TODO Standard check
+
+
+/*
+ * Comment
+ */
+void calculate_EWG(){
+    EW_G = Ag;
+    gsl_eigen_nonsymm(EW_G, eigenvalue3, workspace);
+}
+// TODO check this methd, pretty same like calculate_EWI
+
+
+/*
+ * Comment
+ */
+void matrix_Calculator_EWG(){
+    // Counter for termination of while loop
+    size_t i = 0;
+
+    // Pointer on vector_view containing all real parts of complex vector eigenvalue3
+    *a = gsl_vector_complex_real(eigenvalue3);
+
+    // Storing the structural element vector of vector_view a into gsl_vector real
+    gsl_vector* real = &a->vector;
+
+    // Finding the biggest value of vector real
+    double max = gsl_vector_max(real);
+
+    /*
+     * This while loop calculates all Matrices via iteration of tuning factor a0
+     * and the maximum real component.
+     * This leads to adaptation of the system matrix in respect to its poles
+     *
+     */
+    while ((max > 0) && (B0 >= b_min) && (i <= I_MAX_B)){
+        // If a0 is to big get the half for next iteration
+        B0 *= 0.5;
+
+        // Function calls for the iteration
+        calculate_KP(KS, B0);
+        calculate_AG();
+        calculate_EWG();
+
+        // Increment counter for while loop
+        i++;
+    }
+}
+// TODO check it
+
+
+/*
+ * Comment
+ */
+void tune_matrix_EWG(){
+
+    // Initialize matrix EW_I1 with ground matrix EW_I
+    EW_G1 = EW_G;
+    gsl_eigen_nonsymm(EW_G1,eigenvalue4,workspace);
+
+    // counter for while loop
+    size_t j = 0;
+    size_t i = 1;
+
+    // The biggest real number of complex eigenvalue vector of EW_G
+    double real1 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue3).vector);
+
+    // The biggest real number of complex eigenvalue vector of EW_G1 which represents the current state
+    double real2 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue4).vector);
+
+    // This for loop iterates over the constant factors of delta_a and compute the while loop
+    for (size_t c = 0; c < 4; c++) {
+
+        /*
+         * If real1 is negative and real1 of current state is smaller the real2 of previous
+         * state and counter is less then 10 then
+         */
+        while ((real1 <= 0) && (real1 <= real2) && (i+j <= I_MAX_B)){
+            B0 *= delta_b[c];       // Adapt Factor A0
+            EW_G1 = EW_G;           // Save current Eigenvalues to new one
+            calculate_KP(KS,B0);    // Calculates the new matrix KS
+            calculate_AG();         // Calculates the new System matrix Ai
+            calculate_EWG();        // Calculates the new eigenvalues
+            j++;                    // Increment the counter for while loop
+        }
+
+        // Undo the previous multiplication in the while loop for next computation
+        B0 /= delta_b[c];
+
+        // Save the new calculated Matrix into the old one
+        EW_G = EW_G1;
+    }
+}
+// TODO check it
+
+
+/*
+ * Comment
+ */
+void tune_KP(){
+    double b_end = B0;
+    EWG_output = EW_G1;
+
+
+}
