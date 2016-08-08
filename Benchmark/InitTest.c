@@ -22,7 +22,8 @@ FILE* delta_3;
 FILE* delta_dyn_1;
 FILE* delta_dyn_2;
 FILE* delta_dyn_3;
-FILE* geschwindigkeit;
+FILE* geschwindigkeit_x;
+FILE* geschwindigkeit_y;
 FILE* gierrate;
 gsl_vector* n1;
 gsl_vector* n2;
@@ -33,7 +34,8 @@ gsl_vector* delta3;
 gsl_vector* deltaDyn1;
 gsl_vector* deltaDyn2;
 gsl_vector* deltaDyn3;
-gsl_vector* velocity;
+gsl_vector* velocity_x;
+gsl_vector* velocity_y;
 gsl_vector* yawrate;
 
 
@@ -52,7 +54,8 @@ void start_initializing() {
     deltaDyn1 = gsl_vector_alloc(6001);
     deltaDyn2 = gsl_vector_alloc(6001);
     deltaDyn3 = gsl_vector_alloc(6001);
-    velocity = gsl_vector_alloc(6001);
+    velocity_x = gsl_vector_alloc(6001);
+    velocity_y = gsl_vector_alloc(6001);
     yawrate = gsl_vector_alloc(6001);
 
 }
@@ -71,7 +74,8 @@ void start_reading() {
     gsl_vector_fscanf(delta_dyn_1, deltaDyn1);
     gsl_vector_fscanf(delta_dyn_2, deltaDyn2);
     gsl_vector_fscanf(delta_dyn_3, deltaDyn3);
-    gsl_vector_fscanf(geschwindigkeit, velocity);
+    gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
+    gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
     gsl_vector_fscanf(gierrate, yawrate);
 
 }
@@ -97,8 +101,10 @@ gsl_vector* saving(size_t n) {
         case 9:
             return deltaDyn3;
         case 10:
-            return velocity;
+            return velocity_x;
         case 11:
+            return velocity_y;
+        case 12:
             return yawrate;
     }
 }
@@ -132,6 +138,7 @@ void open_files() {
     delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_1.txt", "rw");
     delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_2.txt", "rw");
     delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_3.txt", "rw");
-    geschwindigkeit = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt", "rw");
+    geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt", "rw");
+    geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt", "rw");
     gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
 }

@@ -23,8 +23,8 @@ gsl_matrix* EWI_output;      // Declaration of output Matrix EWI
 gsl_matrix* EWG_output;
 
 // TODO check what kind of data C_in and D_in are: Vector or Matrix
-gsl_matrix* C_in;           // Declaration of input Matrix C
-gsl_matrix* D_in;           // Declaration of input Matrix D
+gsl_vector* C_in;           // Declaration of input Matrix C
+gsl_vector* D_in;           // Declaration of input Matrix D
 
 gsl_matrix* C_op;           // Declaration of operation Matrix C
 gsl_matrix* D_op;           // Declaration of operation Matrix D
@@ -66,6 +66,8 @@ void initMatrix(){
     KP = gsl_matrix_alloc(12,3);
     C_op = gsl_matrix_alloc(12,3);
     D_op = gsl_matrix_alloc(12,3);
+    C_in = gsl_vector_alloc(18);
+    D_in = gsl_vector_alloc(18);
     temp1 = gsl_matrix_alloc(12,12);
     temp2 = gsl_matrix_alloc(12,3);
     temp3 = gsl_matrix_alloc(3,3);
@@ -201,12 +203,12 @@ gsl_matrix * get_Matrix(size_t n){
             return KS;
         case 5:
             return KI;
-        case 6:
-            return C_in;
+        //case 6:
+          //  return C_in;
         case 7:
             return C_op;
-        case 8:
-            return D_in;
+        //case 8:
+          //  return D_in;
         case 9:
             return D_op;
         case 10:
@@ -234,6 +236,7 @@ gsl_matrix * get_Matrix(size_t n){
 void getInputParameter(){
     C_in = getMatrix(1);
     D_in = getMatrix(2);
+
 }
 
 
@@ -426,24 +429,24 @@ void changing_engineSpeed(int n_updn){
 void calculate_Cop(){
 
     // Setting the values of C_in in the Matrix C_op
-    gsl_matrix_set(C_op, 0, 1, gsl_matrix_get(C_in, 0, 0));
-    gsl_matrix_set(C_op, 0, 3, gsl_matrix_get(C_in, 1, 0));
-    gsl_matrix_set(C_op, 0, 5, gsl_matrix_get(C_in, 2, 0));
-    gsl_matrix_set(C_op, 0, 7, gsl_matrix_get(C_in, 3, 0));
-    gsl_matrix_set(C_op, 0, 9, gsl_matrix_get(C_in, 4, 0));
-    gsl_matrix_set(C_op, 0,11, gsl_matrix_get(C_in, 5, 0));
-    gsl_matrix_set(C_op, 1, 1, gsl_matrix_get(C_in, 6, 0));
-    gsl_matrix_set(C_op, 1, 3, gsl_matrix_get(C_in, 7, 0));
-    gsl_matrix_set(C_op, 1, 5, gsl_matrix_get(C_in, 8, 0));
-    gsl_matrix_set(C_op, 1, 7, gsl_matrix_get(C_in, 9, 0));
-    gsl_matrix_set(C_op, 1, 9, gsl_matrix_get(C_in,10, 0));
-    gsl_matrix_set(C_op, 1,11, gsl_matrix_get(C_in,11, 0));
-    gsl_matrix_set(C_op, 2, 1, gsl_matrix_get(C_in,12, 0));
-    gsl_matrix_set(C_op, 2, 3, gsl_matrix_get(C_in,13, 0));
-    gsl_matrix_set(C_op, 2, 5, gsl_matrix_get(C_in,14, 0));
-    gsl_matrix_set(C_op, 2, 7, gsl_matrix_get(C_in,15, 0));
-    gsl_matrix_set(C_op, 2, 9, gsl_matrix_get(C_in,16, 0));
-    gsl_matrix_set(C_op, 2,11, gsl_matrix_get(C_in,17, 0));
+    gsl_matrix_set(C_op, 0, 1, gsl_vector_get(C_in, 0));
+    gsl_matrix_set(C_op, 0, 3, gsl_vector_get(C_in, 1));
+    gsl_matrix_set(C_op, 0, 5, gsl_vector_get(C_in, 2));
+    gsl_matrix_set(C_op, 0, 7, gsl_vector_get(C_in, 3));
+    gsl_matrix_set(C_op, 0, 9, gsl_vector_get(C_in, 4));
+    gsl_matrix_set(C_op, 0,11, gsl_vector_get(C_in, 5));
+    gsl_matrix_set(C_op, 1, 1, gsl_vector_get(C_in, 6));
+    gsl_matrix_set(C_op, 1, 3, gsl_vector_get(C_in, 7));
+    gsl_matrix_set(C_op, 1, 5, gsl_vector_get(C_in, 8));
+    gsl_matrix_set(C_op, 1, 7, gsl_vector_get(C_in, 9));
+    gsl_matrix_set(C_op, 1, 9, gsl_vector_get(C_in,10));
+    gsl_matrix_set(C_op, 1,11, gsl_vector_get(C_in,11));
+    gsl_matrix_set(C_op, 2, 1, gsl_vector_get(C_in,12));
+    gsl_matrix_set(C_op, 2, 3, gsl_vector_get(C_in,13));
+    gsl_matrix_set(C_op, 2, 5, gsl_vector_get(C_in,14));
+    gsl_matrix_set(C_op, 2, 7, gsl_vector_get(C_in,15));
+    gsl_matrix_set(C_op, 2, 9, gsl_vector_get(C_in,16));
+    gsl_matrix_set(C_op, 2,11, gsl_vector_get(C_in,17));
 
 
 }
@@ -472,24 +475,24 @@ void calculate_Cop(){
 void calculate_Dop(){
 
     // Setting the values of D_in in the Matrix D_op
-    gsl_matrix_set(D_op, 0, 6, gsl_matrix_get(D_in, 0, 0));
-    gsl_matrix_set(D_op, 0, 7, gsl_matrix_get(D_in, 1, 0));
-    gsl_matrix_set(D_op, 0, 8, gsl_matrix_get(D_in, 2, 0));
-    gsl_matrix_set(D_op, 0, 9, gsl_matrix_get(D_in, 3, 0));
-    gsl_matrix_set(D_op, 0,10, gsl_matrix_get(D_in, 4, 0));
-    gsl_matrix_set(D_op, 0,11, gsl_matrix_get(D_in, 5, 0));
-    gsl_matrix_set(D_op, 1, 6, gsl_matrix_get(D_in, 6, 0));
-    gsl_matrix_set(D_op, 1, 7, gsl_matrix_get(D_in, 7, 0));
-    gsl_matrix_set(D_op, 1, 8, gsl_matrix_get(D_in, 8, 0));
-    gsl_matrix_set(D_op, 1, 9, gsl_matrix_get(D_in, 9, 0));
-    gsl_matrix_set(D_op, 1,10, gsl_matrix_get(D_in,10, 0));
-    gsl_matrix_set(D_op, 1,11, gsl_matrix_get(D_in,11, 0));
-    gsl_matrix_set(D_op, 2, 6, gsl_matrix_get(D_in,12, 0));
-    gsl_matrix_set(D_op, 2, 7, gsl_matrix_get(D_in,13, 0));
-    gsl_matrix_set(D_op, 2, 8, gsl_matrix_get(D_in,14, 0));
-    gsl_matrix_set(D_op, 2, 9, gsl_matrix_get(D_in,15, 0));
-    gsl_matrix_set(D_op, 2,10, gsl_matrix_get(D_in,16, 0));
-    gsl_matrix_set(D_op, 2,11, gsl_matrix_get(D_in,17, 0));
+    gsl_matrix_set(D_op, 0, 6, gsl_vector_get(D_in, 0));
+    gsl_matrix_set(D_op, 0, 7, gsl_vector_get(D_in, 1));
+    gsl_matrix_set(D_op, 0, 8, gsl_vector_get(D_in, 2));
+    gsl_matrix_set(D_op, 0, 9, gsl_vector_get(D_in, 3));
+    gsl_matrix_set(D_op, 0,10, gsl_vector_get(D_in, 4));
+    gsl_matrix_set(D_op, 0,11, gsl_vector_get(D_in, 5));
+    gsl_matrix_set(D_op, 1, 6, gsl_vector_get(D_in, 6));
+    gsl_matrix_set(D_op, 1, 7, gsl_vector_get(D_in, 7));
+    gsl_matrix_set(D_op, 1, 8, gsl_vector_get(D_in, 8));
+    gsl_matrix_set(D_op, 1, 9, gsl_vector_get(D_in, 9));
+    gsl_matrix_set(D_op, 1,10, gsl_vector_get(D_in,10));
+    gsl_matrix_set(D_op, 1,11, gsl_vector_get(D_in,11));
+    gsl_matrix_set(D_op, 2, 6, gsl_vector_get(D_in,12));
+    gsl_matrix_set(D_op, 2, 7, gsl_vector_get(D_in,13));
+    gsl_matrix_set(D_op, 2, 8, gsl_vector_get(D_in,14));
+    gsl_matrix_set(D_op, 2, 9, gsl_vector_get(D_in,15));
+    gsl_matrix_set(D_op, 2,10, gsl_vector_get(D_in,16));
+    gsl_matrix_set(D_op, 2,11, gsl_vector_get(D_in,17));
 
 
 }
@@ -608,7 +611,7 @@ void calculate_KP(gsl_matrix* KS, double b0){
     gsl_matrix_scale(KP, b0);
 
     // Saving the current matrix of KP into KP_current for calculations
-    gsl_matrix* KP_current = getMatrix(14);
+    gsl_matrix* KP_current = get_Matrix(14);
 
     // Saving the current subtrahend into sub for calculations
     gsl_matrix_mul_elements(KP_current, D_op);
@@ -648,22 +651,22 @@ void calculate_KP(gsl_matrix* KS, double b0){
 void calculate_AG(){
 
     // Storing the Matrix B into the new Matrix B_current for further calculations
-    gsl_matrix* B_current = getMatrix(3);
+    gsl_matrix* B_current = get_Matrix(3);
 
     // Copying the matrix B_current in B_current2 for second calculation
     gsl_matrix* B_current2 = B_current;
 
     // Storing the matrix KI in new matrix KI_current
-    gsl_matrix* KI_current = getMatrix(5);
+    gsl_matrix* KI_current = get_Matrix(5);
 
     // Computing temp_calc1: -->  temp_calc1 = B_current * KI_current
     gsl_matrix* temp_calc1 = B_current;
     gsl_matrix_mul_elements(temp_calc1, KI_current);
 
     gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
-    gsl_matrix* A_current = getMatrix(1);       // Storing the Matrix A in new Matrix A_current
-    gsl_matrix* KP_current = getMatrix(14);     // Storing the Matrix KP in new Matrix KP_current
-    gsl_matrix* C_current = getMatrix(7);       // Storing the Matrix C_current in new Matrix C_current
+    gsl_matrix* A_current = get_Matrix(1);       // Storing the Matrix A in new Matrix A_current
+    gsl_matrix* KP_current = get_Matrix(14);     // Storing the Matrix KP in new Matrix KP_current
+    gsl_matrix* C_current = get_Matrix(7);       // Storing the Matrix C_current in new Matrix C_current
 
     /*
      * Computing the next three steps can be summarized into this picture:

@@ -22,8 +22,8 @@
     gsl_vector* alpha_r;  // Vector alpha_r
     gsl_vector* alpha_x;   // Vector alpha_x
     gsl_vector* alpha_y;   // Vector alpha_y
-    gsl_matrix* C;        // Matrix C
-    gsl_matrix* D;        // Matrix D
+    gsl_vector* C;        // Vector C
+    gsl_vector* D;        // Vector D
     double v_1;           // Velocity No.1
     double v_2;           // Velocity No.2
     double v_3;           // Velocity No.3
@@ -41,6 +41,8 @@
     gsl_vector* Fx;       // Force Fx
     gsl_vector* Fy;       // Force Fy
     gsl_vector* acc;      // Vector acc
+    gsl_matrix* test_ug;  // Matrix for testing and simulation ug
+    gsl_matrix* test_xg;  // Matrix for testing and simulation xg
 
 
 /*
@@ -60,8 +62,8 @@ void initializeVector(){
     alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
     alpha_x = gsl_vector_alloc(3);   // Vector alpha_x
     alpha_y = gsl_vector_alloc(3);   // Vector alpha_y
-    C = gsl_matrix_calloc(18,1);    // Matrix/Vector C
-    D = gsl_matrix_calloc(18,1);    // Matrix/Vector D
+    C = gsl_vector_alloc(18);    // Matrix/Vector C
+    D = gsl_vector_alloc(18);    // Matrix/Vector D
     beta = gsl_vector_alloc(3);     // Vector beta
     v = gsl_vector_alloc(3);        // Vector v
     vr = gsl_vector_alloc(3);       // Vector vr
@@ -73,6 +75,8 @@ void initializeVector(){
     Fx = gsl_vector_alloc(3);       // Vector Fx
     Fy = gsl_vector_alloc(3);       // Vector Fy
     acc = gsl_vector_alloc(3);      // Vector acc
+    test_ug = gsl_matrix_alloc(9, 6001);
+    test_xg = gsl_matrix_alloc(3, 6001);
 
 }
 
@@ -146,7 +150,7 @@ gsl_vector* getVector(size_t n) {
  * 1 -> C
  * 2 -> D
  */
-gsl_matrix* getMatrix(size_t n){
+gsl_vector* getMatrix(size_t n){
     switch (n) {
         case 1:
             return C;
@@ -161,9 +165,28 @@ gsl_matrix* getMatrix(size_t n){
  * For debugging purposes
  * All Vectors and matrices should be saved here
  */
-void testVector(){
+void testVector(size_t n){
 
-ug = saving(1);
+    gsl_matrix_get_col(ug, test_ug, n);
+    gsl_matrix_get_col(xg, test_xg, n);
+}
+
+void initTest(){
+
+    // Creating matrix test_ug for 60 sec simulation
+    gsl_matrix_set_row(test_ug, 0, saving(1));      // col with 6001 values of n_1
+    gsl_matrix_set_row(test_ug, 1, saving(2));      // col with 6001 values of n_2
+    gsl_matrix_set_row(test_ug, 2, saving(3));      // col with 6001 values of n_3
+    gsl_matrix_set_row(test_ug, 3, saving(7));      // col with 6001 values of delta_dyn_1
+    gsl_matrix_set_row(test_ug, 4, saving(8));      // col with 6001 values of delta_dyn_2
+    gsl_matrix_set_row(test_ug, 5, saving(9));      // col with 6001 values of delta_dyn_3
+    gsl_matrix_set_row(test_ug, 6, saving(4));      // col with 6001 values of delta_1
+    gsl_matrix_set_row(test_ug, 7, saving(5));      // col with 6001 values of delta_2
+    gsl_matrix_set_row(test_ug, 8, saving(6));      // col with 6001 values of delta_3
+
+    gsl_matrix_set_row(test_xg, 0, saving(10));     // col with 6001 values of v_x
+    gsl_matrix_set_row(test_xg, 1, saving(11));     // col with 6001 values of v_y
+    gsl_matrix_set_row(test_xg, 2, saving(12));     // col with 6001 values of psi_p
 }
 
 /*
@@ -471,19 +494,19 @@ void SystemmatrixBerechnen() {
         switch (i) {
             // for i equals 0 fill 4th, 10th and 16th index of D
             case 0:
-                gsl_matrix_set(D, 3, 0, acc_one / xg_one);
-                gsl_matrix_set(D, 9, 0, acc_two / xg_one);
-                gsl_matrix_set(D, 15, 0, acc_three / xg_one);
+                gsl_vector_set(D, 3, acc_one / xg_one);
+                gsl_vector_set(D, 9, acc_two / xg_one);
+                gsl_vector_set(D, 15, acc_three / xg_one);
             // for i equals 1 fill 5th, 11th and 17th index of D
             case 1:
-                gsl_matrix_set(D, 4, 0, acc_one / xg_two);
-                gsl_matrix_set(D, 10, 0, acc_two / xg_two);
-                gsl_matrix_set(D, 16, 0, acc_three / xg_two);
+                gsl_vector_set(D, 4, acc_one / xg_two);
+                gsl_vector_set(D, 10, acc_two / xg_two);
+                gsl_vector_set(D, 16, acc_three / xg_two);
             // for i equals 1 fill 6th, 12th and 18th index of D
             case 2:
-                gsl_matrix_set(D, 5, 0, acc_one / xg_three);
-                gsl_matrix_set(D, 11, 0, acc_two / xg_three);
-                gsl_matrix_set(D, 17, 0, acc_three / xg_three);
+                gsl_vector_set(D, 5, acc_one / xg_three);
+                gsl_vector_set(D, 11, acc_two / xg_three);
+                gsl_vector_set(D, 17, acc_three / xg_three);
             default:
                 break;
         }
@@ -507,48 +530,48 @@ void SystemmatrixBerechnen() {
 
             // if j is 0 set those values in matrix C
             case 0:
-                gsl_matrix_set(C,3,0, acc_one / ug_one);
-                gsl_matrix_set(C,9,0, acc_two / ug_one);
-                gsl_matrix_set(C,15,0, acc_three / ug_one);
+                gsl_vector_set(C, 3, acc_one / ug_one);
+                gsl_vector_set(C, 9, acc_two / ug_one);
+                gsl_vector_set(C, 15, acc_three / ug_one);
             // if j is 1 set those values in matrix C
             case 1:
-                gsl_matrix_set(C,4,0, acc_one / ug_two);
-                gsl_matrix_set(C,10,0, acc_two / ug_two);
-                gsl_matrix_set(C,16,0, acc_three / ug_two);
+                gsl_vector_set(C, 4, acc_one / ug_two);
+                gsl_vector_set(C, 10, acc_two / ug_two);
+                gsl_vector_set(C, 16, acc_three / ug_two);
             // if j is 2 set those values in matrix C
             case 2:
-                gsl_matrix_set(C,5,0, acc_one / ug_three);
-                gsl_matrix_set(C,11,0, acc_two / ug_three);
-                gsl_matrix_set(C,17,0, acc_three / ug_three);
+                gsl_vector_set(C, 5, acc_one / ug_three);
+                gsl_vector_set(C, 11, acc_two / ug_three);
+                gsl_vector_set(C, 17, acc_three / ug_three);
             // if j is 3 set those values in matrix C
             case 3:
-                gsl_matrix_set(C,0,0, acc_one / ug_four);
-                gsl_matrix_set(C,6,0, acc_two / ug_four);
-                gsl_matrix_set(C,12,0, acc_three / ug_four);
+                gsl_vector_set(C, 0, acc_one / ug_four);
+                gsl_vector_set(C, 6, acc_two / ug_four);
+                gsl_vector_set(C, 12, acc_three / ug_four);
             // if j is 4 set those values in matrix C
             case 4:
-                gsl_matrix_set(C,1,0, acc_one / ug_five);
-                gsl_matrix_set(C,7,0, acc_two / ug_five);
-                gsl_matrix_set(C,13,0, acc_three / ug_five);
+                gsl_vector_set(C, 1, acc_one / ug_five);
+                gsl_vector_set(C, 7, acc_two / ug_five);
+                gsl_vector_set(C, 13, acc_three / ug_five);
             // if j is 5 set those values in matrix C
             case 5:
-                gsl_matrix_set(C,2,0, acc_one / ug_six);
-                gsl_matrix_set(C,8,0, acc_two / ug_six);
-                gsl_matrix_set(C,14,0, acc_three / ug_six);
+                gsl_vector_set(C, 2, acc_one / ug_six);
+                gsl_vector_set(C, 8, acc_two / ug_six);
+                gsl_vector_set(C, 14, acc_three / ug_six);
             // if j is 6 set those values in matrix D
             case 6:
-                gsl_matrix_set(D,0,0, acc_one / ug_seven);
-                gsl_matrix_set(D,6,0, acc_two / ug_seven);
-                gsl_matrix_set(D,12,0, acc_three / ug_seven);
+                gsl_vector_set(D, 0, acc_one / ug_seven);
+                gsl_vector_set(D, 6, acc_two / ug_seven);
+                gsl_vector_set(D, 12, acc_three / ug_seven);
             // if j is 7 set those values in matrix D
             case 7:
-                gsl_matrix_set(C,1,0, acc_one / ug_eight);
-                gsl_matrix_set(C,7,0, acc_two / ug_eight);
-                gsl_matrix_set(C,13,0, acc_three / ug_eight);
+                gsl_vector_set(D, 1, acc_one / ug_eight);
+                gsl_vector_set(D, 7, acc_two / ug_eight);
+                gsl_vector_set(D, 13, acc_three / ug_eight);
             case 8:
-                gsl_matrix_set(C,2,0, acc_one / ug_nine);
-                gsl_matrix_set(C,8,0, acc_two / ug_nine);
-                gsl_matrix_set(C,14,0, acc_three / ug_nine);
+                gsl_vector_set(D, 2, acc_one / ug_nine);
+                gsl_vector_set(D, 8, acc_two / ug_nine);
+                gsl_vector_set(D, 14, acc_three / ug_nine);
             default:
                 break;
         }

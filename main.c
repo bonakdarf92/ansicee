@@ -18,13 +18,14 @@ int main() {
     open_files();
     start_initializing();
     start_reading();
-    int zaehler = 0;
+    initTest();
+    initMatrix();
+    matrixPresetting();
+    size_t zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 10) {
+    while (zaehler < 6000) {
         clock_t begin = clock();
-        testVector();
-        gsl_vector* anfordern1 = getVector(3);
-        gsl_matrix* anfordern2 = getMatrix(2);
+        testVector(zaehler);
         slipage();
         adma_velocity();
         slip();
@@ -36,7 +37,10 @@ int main() {
         GierbewegungBerechnen();
         SystemmatrixBerechnen();
         deltasBerechnen();
-        getMatrix(1);
+        getInputParameter();
+        calculate_Cop();
+        //calculate_Dop();
+        //calculate_KS();
 
         // Zum testen fuer Vectoren
         /*
@@ -83,6 +87,5 @@ int main() {
         printf("Berechnung dauert %.4f ms\n", time);
         zaehler++;
     }
-    // printf("Gesamte Berechnungsdauer beträgt %.4f ms", gesamtzeit);
     return 0;
 }

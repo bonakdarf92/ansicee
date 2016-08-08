@@ -36,9 +36,11 @@ void initializeVector();
 
 gsl_vector * getVector(size_t n);
 
-gsl_matrix * getMatrix(size_t n);
+gsl_vector * getMatrix(size_t n);
 
-void testVector();
+void testVector(size_t n);
+
+void initTest();
 
 void slipage();
 
