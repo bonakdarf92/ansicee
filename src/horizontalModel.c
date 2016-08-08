@@ -4,6 +4,7 @@
 
 #include "horizontalModel.h"
 #include <math.h>
+#include "InitTest.h"
 
 
 /*
@@ -162,16 +163,7 @@ gsl_matrix* getMatrix(size_t n){
  */
 void testVector(){
 
-    for (size_t j = 0; j < 3 ; j++) {
-        gsl_vector_set(xg, j, j + 2.3);
-        gsl_vector_set(xg_alt, j, j + 2.3);
-    }
-
-    for (size_t i = 0; i < 9 ; i++) {
-        gsl_vector_set(ug, i, i+2.7);
-        gsl_vector_set(ug_alt, i, i + 3.5);
-    }
-
+ug = saving(1);
 }
 
 /*
@@ -246,9 +238,9 @@ void slip() {
      * Get value of ug divide it by 30 and multiply by radius
      * of tire and Pi
      */
-    gsl_vector_set(vr, 0, (M_PI * R * gsl_vector_get(ug, 0)/ 30));
-    gsl_vector_set(vr, 1, (M_PI * R * gsl_vector_get(ug, 1)/ 30));
-    gsl_vector_set(vr, 2, (M_PI * R * gsl_vector_get(ug, 2)/ 30));
+    gsl_vector_set(vr, 0, (M_PI * RADIUS * gsl_vector_get(ug, 0)/ 30));
+    gsl_vector_set(vr, 1, (M_PI * RADIUS * gsl_vector_get(ug, 1)/ 30));
+    gsl_vector_set(vr, 2, (M_PI * RADIUS * gsl_vector_get(ug, 2)/ 30));
 
     // TODO herausfinden was der Vector sr fuer eine Bedeutung hat
     for (size_t i = 0; i <3 ; i++) {
@@ -270,9 +262,9 @@ void slip() {
 void friction() {
 
     // Filling up vector mu with linearized slip KS and indices of vector sr
-    gsl_vector_set(mu, 0, K * gsl_vector_get(sr, 0));
-    gsl_vector_set(mu, 1, K * gsl_vector_get(sr, 1));
-    gsl_vector_set(mu, 2, K * gsl_vector_get(sr, 2));
+    gsl_vector_set(mu, 0, KMU * gsl_vector_get(sr, 0));
+    gsl_vector_set(mu, 1, KMU * gsl_vector_get(sr, 1));
+    gsl_vector_set(mu, 2, KMU * gsl_vector_get(sr, 2));
 
     // Filling the vector mx with indices of vector mu and cosine of vector ug
     gsl_vector_set(mux, 0, gsl_vector_get(mu,0) * cos(gsl_vector_get(ug, 3)));

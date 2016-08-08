@@ -8,9 +8,9 @@
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H
 
-#define K 5                        // linearized mu-slip about 5
+#define KMU 5                         // linearized mu-slip about 5
 #define C_a 9095                    // slippage
-#define R 0.15                      // radius of tire
+#define RADIUS 0.15                 // radius of tire
 #define M 1200                      // total mass kg originally 308.52
 #define HCG 0.48303                 // height of the center of gravity m  -- CarMaker self calculated // 0.55m platform
 #define L 2.28                      // equilateral triangle setup m initially 2.54

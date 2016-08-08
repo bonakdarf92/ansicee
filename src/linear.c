@@ -3,6 +3,7 @@
 //
 
 #include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
 #include "linear.h"
 
 
@@ -31,7 +32,7 @@ gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
-gsl_matrix * temporary;
+gsl_matrix* temporary;
 gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 double A0 = 10;
@@ -289,8 +290,14 @@ void calculate_KS(){
  *
  */
 void calculate_Ai(){
+    // Scheint zu funktionieren
 
-    temporary = (gsl_matrix *) gsl_matrix_scale((gsl_matrix *)gsl_matrix_mul_elements(getMatrix(3), getMatrix(5)), -1);
+    gsl_matrix* educt = (gsl_matrix*)getMatrix(5)->data;
+    gsl_matrix* product = (gsl_matrix*) getMatrix(3)->data;
+    int testVec = gsl_matrix_mul_elements(product, educt);
+    printf("%d", testVec);
+    gsl_matrix_scale(product, -1);
+    temporary = product;
 
     // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
     for (size_t i = 0; i < 12; i++) {
@@ -350,13 +357,15 @@ void calculate_KI(gsl_matrix* KS, double a0){
     temp2 = KS;
 
     // Transpose the matrix KS and save into temp4
-    temp4 = (gsl_matrix *) gsl_matrix_transpose(KS);
+    gsl_matrix_transpose_memcpy(temp4,KS);
 
     // Calculating the product of KS and KS_transpose
-    temp3 = (gsl_matrix *) gsl_matrix_mul_elements(KS, temp4);
+    temp3 = KS;
+    gsl_matrix_mul_elements(temp3, temp4);
 
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    KI = (gsl_matrix *) gsl_matrix_div_elements(temp4, temp3);
+    KI = KS;
+    gsl_matrix_div_elements(KI, temp3);
 
     // Scaling KI with a0
     gsl_matrix_scale(KI, a0);
@@ -542,10 +551,12 @@ void tune_matrix_EWI(){
     size_t i = 1;
 
     // The biggest real number of complex eigenvalue vector of EW_I
-    double real1 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue).vector);
+    const gsl_vector saving = gsl_vector_complex_real(eigenvalue).vector;
+    double real1 = gsl_vector_max(&saving);
 
     // The biggest real number of complex eigenvalue vector of EW_I1 which represents the current state
-    double real2 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue2).vector);
+    const gsl_vector saving2 = gsl_vector_complex_real(eigenvalue2).vector;
+    double real2 = gsl_vector_max(&saving2);
 
     // This for loop iterates over the constant factors of delta_a and compute the while loop
     for (size_t c = 0; c < 3; c++) {
@@ -583,13 +594,15 @@ void calculate_KP(gsl_matrix* KS, double b0){
     temp2 = KS;
 
     // Transpose the matrix KS and save into temp4
-    temp4 = (gsl_matrix *) gsl_matrix_transpose(KS);
+    gsl_matrix_transpose_memcpy(temp4,KS);
 
     // Calculating the product of KS and KS_transpose
-    temp3 = (gsl_matrix *) gsl_matrix_mul_elements(KS, temp4);
+    temp3 = KS;
+    gsl_matrix_mul_elements(temp3, temp4);
 
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    KP = (gsl_matrix *) gsl_matrix_div_elements(temp4, temp3);
+    KP = KS;
+    gsl_matrix_div_elements(KP, temp3);
 
     // Scaling KI with b0
     gsl_matrix_scale(KP, b0);
@@ -598,10 +611,13 @@ void calculate_KP(gsl_matrix* KS, double b0){
     gsl_matrix* KP_current = getMatrix(14);
 
     // Saving the current subtrahend into sub for calculations
-    gsl_matrix* sub = (gsl_matrix*)gsl_matrix_sub(eye,(gsl_matrix*)gsl_matrix_mul_elements(KP_current, D_op));
+    gsl_matrix_mul_elements(KP_current, D_op);
+    gsl_matrix* sub = eye;
+    gsl_matrix_sub(sub, KP_current);
 
     // Calculating the Division of sub and KP_current
-    KP = (gsl_matrix *) gsl_matrix_div_elements(sub, KP_current);
+    KP = sub;
+    gsl_matrix_div_elements(KP, KP_current);
 }
 // TODO check if its working
 
@@ -641,7 +657,8 @@ void calculate_AG(){
     gsl_matrix* KI_current = getMatrix(5);
 
     // Computing temp_calc1: -->  temp_calc1 = B_current * KI_current
-    gsl_matrix* temp_calc1 = (gsl_matrix*) gsl_matrix_mul_elements(B_current, KI_current);
+    gsl_matrix* temp_calc1 = B_current;
+    gsl_matrix_mul_elements(temp_calc1, KI_current);
 
     gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
     gsl_matrix* A_current = getMatrix(1);       // Storing the Matrix A in new Matrix A_current
@@ -659,9 +676,12 @@ void calculate_AG(){
      *      --> [L] = A - B * KP * C
      *
      */
-    gsl_matrix* temp_calc2 = (gsl_matrix*) gsl_matrix_mul_elements(KP_current, C_current);
-    gsl_matrix* temp_calc3 = (gsl_matrix*) gsl_matrix_mul_elements(B_current2, temp_calc2);
-    gsl_matrix* temp_calc4 = (gsl_matrix*) gsl_matrix_sub(A_current, temp_calc3);
+    gsl_matrix* temp_calc2 = KP_current;
+    gsl_matrix_mul_elements(temp_calc2, C_current);
+    gsl_matrix* temp_calc3 = B_current2;
+    gsl_matrix_mul_elements(B_current2, temp_calc2);
+    gsl_matrix* temp_calc4 = A_current;
+    gsl_matrix_sub(A_current, temp_calc3);
     // TODO check it --> will probably not work
 
     // Copying the System matrix L (12 x 12) into top left corner of AG (15 x 15)
@@ -757,10 +777,12 @@ void tune_matrix_EWG(){
     size_t i = 1;
 
     // The biggest real number of complex eigenvalue vector of EW_G
-    double real1 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue3).vector);
+    const gsl_vector saving = gsl_vector_complex_real(eigenvalue3).vector;
+    double real1 = gsl_vector_max(&saving);
 
     // The biggest real number of complex eigenvalue vector of EW_G1 which represents the current state
-    double real2 = gsl_vector_max(&gsl_vector_complex_real(eigenvalue4).vector);
+    const gsl_vector saving2 = gsl_vector_complex_real(eigenvalue4).vector;
+    double real2 = gsl_vector_max(&saving2);
 
     // This for loop iterates over the constant factors of delta_a and compute the while loop
     for (size_t c = 0; c < 4; c++) {
@@ -794,6 +816,7 @@ void tune_matrix_EWG(){
 void tune_KP(){
     double b_end = B0;
     EWG_output = EW_G1;
-
+    calculate_KP(KS, b_end);
 
 }
+// TODO check

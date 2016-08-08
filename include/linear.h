@@ -14,8 +14,6 @@
 #include <gsl/gsl_eigen.h>
 
 #define K 1.0
-#define R 3.0
-#define S 12
 #define I_MAX_A 10
 #define I_MAX_B 1000
 #define T_DELTA 0.1603

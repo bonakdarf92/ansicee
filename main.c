@@ -4,19 +4,23 @@
 //#include "Subsysteme.h"
 //#include "calcMatrix_A_B.h"
 #include "horizontalModel.h"
-//#include "linear.h"
+#include "linear.h"
 //#include "Lenkmotoren.h"
 #include <time.h>
 //#include "matrizeCalculator.h"
+#include "InitTest.h"
 
 
 
 int main() {
 
     initializeVector();
+    open_files();
+    start_initializing();
+    start_reading();
     int zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 1000) {
+    while (zaehler < 10) {
         clock_t begin = clock();
         testVector();
         gsl_vector* anfordern1 = getVector(3);
@@ -79,7 +83,6 @@ int main() {
         printf("Berechnung dauert %.4f ms\n", time);
         zaehler++;
     }
-
-    printf("Gesamte Berechnungsdauer beträgt %.4f ms", gesamtzeit);
+    // printf("Gesamte Berechnungsdauer beträgt %.4f ms", gesamtzeit);
     return 0;
 }
