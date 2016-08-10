@@ -5,10 +5,12 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include "linear.h"
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
 
 
-gsl_matrix* A;              // Declaration of Matrix A
-gsl_matrix* B;              // Declaration of Matrix B
+gsl_matrix* ASystem;              // Declaration of Matrix A
+gsl_matrix* BSystem;              // Declaration of Matrix B
 gsl_matrix* A_Inv;          // Declaration of Matrix A inverse
 gsl_matrix* KI;             // Declaration of Matrix KI
 gsl_matrix* KS;             // Declaration of Matrix KS
@@ -22,7 +24,6 @@ gsl_matrix* EW_G1;
 gsl_matrix* EWI_output;      // Declaration of output Matrix EWI
 gsl_matrix* EWG_output;
 
-// TODO check what kind of data C_in and D_in are: Vector or Matrix
 gsl_vector* C_in;           // Declaration of input Matrix C
 gsl_vector* D_in;           // Declaration of input Matrix D
 
@@ -32,6 +33,7 @@ gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp5;
 gsl_matrix* temporary;
 gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
@@ -56,22 +58,23 @@ double delta_b [] = {5, 1.8, 1.2, 1.02};
  * These steps are necessary because the calculations are made every iteration
  */
 void initMatrix(){
-    A = gsl_matrix_alloc(12,12);
-    B = gsl_matrix_alloc(12,12);
+    ASystem = gsl_matrix_alloc(12,12);
+    BSystem = gsl_matrix_alloc(12,12);
     A_Inv = gsl_matrix_alloc(12,12);
     Ai = gsl_matrix_alloc(15,15);
     Ag = gsl_matrix_alloc(15,15);
-    KS = gsl_matrix_alloc(12,3);
+    KS = gsl_matrix_alloc(3,12);
     KI = gsl_matrix_alloc(12,3);
     KP = gsl_matrix_alloc(12,3);
-    C_op = gsl_matrix_alloc(12,3);
-    D_op = gsl_matrix_alloc(12,3);
+    C_op = gsl_matrix_alloc(3,12);
+    D_op = gsl_matrix_alloc(3,12);
     C_in = gsl_vector_alloc(18);
     D_in = gsl_vector_alloc(18);
     temp1 = gsl_matrix_alloc(12,12);
     temp2 = gsl_matrix_alloc(12,3);
     temp3 = gsl_matrix_alloc(3,3);
     temp4 = gsl_matrix_alloc(3,12);
+    temp5 = gsl_matrix_alloc(12,3);
     temporary = gsl_matrix_alloc(12,3);
     eye = gsl_matrix_alloc(12,12);
     gsl_matrix_set_identity(eye);
@@ -82,8 +85,8 @@ void initMatrix(){
     // TODO initialize all matrices
 
 
-    gsl_matrix_set_zero(A);
-    gsl_matrix_set_zero(B);
+    gsl_matrix_set_zero(ASystem);
+    gsl_matrix_set_zero(BSystem);
     gsl_matrix_set_zero(A_Inv);
     gsl_matrix_set_zero(C_op);
     gsl_matrix_set_zero(D_op);
@@ -121,33 +124,33 @@ void matrixPresetting(){
 
 
     // Setting all the indexes for Matrix A
-    gsl_matrix_set(A, 0, 0, -7.2384);           // Setting value in Matrix A_1_1
-    gsl_matrix_set(A, 0, 1, -38.9376);          // Setting value in Matrix A_1_2
-    gsl_matrix_set(A, 1, 0, 1);                 // Setting value in Matrix A_2_1
-    gsl_matrix_set(A, 2, 2, -7.2384);           // Setting value in Matrix A_3_3
-    gsl_matrix_set(A, 2, 3, -38.9376);          // Setting value in Matrix A_3_4
-    gsl_matrix_set(A, 3, 2, 1);                 // Setting value in Matrix A_4_3
-    gsl_matrix_set(A, 4, 4, -7.2384);           // Setting value in Matrix A_5_5
-    gsl_matrix_set(A, 4, 5, -38.9376);          // Setting value in Matrix A_5_6
-    gsl_matrix_set(A, 5, 4, 1);                 // Setting value in Matrix A_6_5
-    gsl_matrix_set(A, 6, 6, -7.0356);           // Setting value in Matrix A_7_7
-    gsl_matrix_set(A, 6, 7, -183.0609);         // Setting value in Matrix A_7_8
-    gsl_matrix_set(A, 7, 6, 1);                 // Setting value in Matrix A_8_7
-    gsl_matrix_set(A, 8, 8, -7.0356);           // Setting value in Matrix A_9_9
-    gsl_matrix_set(A, 8, 9, -183.0609);         // Setting value in Matrix A_9_10
-    gsl_matrix_set(A, 9, 8, 1);                 // Setting value in Matrix A_10_9
-    gsl_matrix_set(A, 10, 10, -7.0356);         // Setting value in Matrix A_11_11
-    gsl_matrix_set(A, 10, 11, -183.0609);       // Setting value in Matrix A_11_12
-    gsl_matrix_set(A, 11, 10, 1);               // Setting value in Matrix A_12_11
+    gsl_matrix_set(ASystem, 0, 0, -7.2384);           // Setting value in Matrix A_1_1
+    gsl_matrix_set(ASystem, 0, 1, -38.9376);          // Setting value in Matrix A_1_2
+    gsl_matrix_set(ASystem, 1, 0, 1);                 // Setting value in Matrix A_2_1
+    gsl_matrix_set(ASystem, 2, 2, -7.2384);           // Setting value in Matrix A_3_3
+    gsl_matrix_set(ASystem, 2, 3, -38.9376);          // Setting value in Matrix A_3_4
+    gsl_matrix_set(ASystem, 3, 2, 1);                 // Setting value in Matrix A_4_3
+    gsl_matrix_set(ASystem, 4, 4, -7.2384);           // Setting value in Matrix A_5_5
+    gsl_matrix_set(ASystem, 4, 5, -38.9376);          // Setting value in Matrix A_5_6
+    gsl_matrix_set(ASystem, 5, 4, 1);                 // Setting value in Matrix A_6_5
+    gsl_matrix_set(ASystem, 6, 6, -7.0356);           // Setting value in Matrix A_7_7
+    gsl_matrix_set(ASystem, 6, 7, -183.0609);         // Setting value in Matrix A_7_8
+    gsl_matrix_set(ASystem, 7, 6, 1);                 // Setting value in Matrix A_8_7
+    gsl_matrix_set(ASystem, 8, 8, -7.0356);           // Setting value in Matrix A_9_9
+    gsl_matrix_set(ASystem, 8, 9, -183.0609);         // Setting value in Matrix A_9_10
+    gsl_matrix_set(ASystem, 9, 8, 1);                 // Setting value in Matrix A_10_9
+    gsl_matrix_set(ASystem, 10, 10, -7.0356);         // Setting value in Matrix A_11_11
+    gsl_matrix_set(ASystem, 10, 11, -183.0609);       // Setting value in Matrix A_11_12
+    gsl_matrix_set(ASystem, 11, 10, 1);               // Setting value in Matrix A_12_11
 
     //TODO T_n1, T_n2 und T_n3
     // Setting all the indexes for Matrix B
-    gsl_matrix_set(B, 0, 0, K / (T_DELTA*T_DELTA) );
-    gsl_matrix_set(B, 2, 1, K / (T_DELTA*T_DELTA) );
-    gsl_matrix_set(B, 4, 2, K / (T_DELTA*T_DELTA));
-    gsl_matrix_set(B, 6, 3, K / (T_N_CONSTUP*T_N_CONSTDN));     // TODO T_n_1
-    gsl_matrix_set(B, 8, 4, K / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
-    gsl_matrix_set(B, 10, 5, K / (T_N_CONSTDN*T_N_CONSTDN));    // TODO T_n_3
+    gsl_matrix_set(BSystem, 0, 0, KONSTANTE / (T_DELTA*T_DELTA) );
+    gsl_matrix_set(BSystem, 2, 1, KONSTANTE / (T_DELTA*T_DELTA) );
+    gsl_matrix_set(BSystem, 4, 2, KONSTANTE / (T_DELTA*T_DELTA));
+    gsl_matrix_set(BSystem, 6, 3, KONSTANTE / (T_N_CONSTUP*T_N_CONSTDN));     // TODO T_n_1
+    gsl_matrix_set(BSystem, 8, 4, KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
+    gsl_matrix_set(BSystem, 10, 5, KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));    // TODO T_n_3
 
 
     // Setting all the indexes for Matrix A inverse
@@ -194,11 +197,11 @@ void matrixPresetting(){
 gsl_matrix * get_Matrix(size_t n){
     switch (n){
         case 1:
-            return A;
+            return ASystem;
         case 2:
             return A_Inv;
         case 3:
-            return B;
+            return BSystem;
         case 4:
             return KS;
         case 5:
@@ -234,9 +237,10 @@ gsl_matrix * get_Matrix(size_t n){
  * store its returns in Matrix C_in and D_in.
  */
 void getInputParameter(){
-    C_in = getMatrix(1);
-    D_in = getMatrix(2);
-
+    const gsl_vector* save = getMatrix(1);
+    const gsl_vector* save2 = getMatrix(2);
+    gsl_vector_memcpy(C_in, save);
+    gsl_vector_memcpy(D_in, save2);
 }
 
 
@@ -260,9 +264,21 @@ void calculate_KS(){
     KS = D_op;
     temp1 = A_Inv;
     temp2 = C_op;
-    gsl_matrix_mul_elements(temp1, B);
-    gsl_matrix_mul_elements(temp2, temp1);
-    gsl_matrix_sub(D_op, temp2);
+    gsl_matrix_mul_elements(temp1, BSystem);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, temp1, 0.0, temp2);
+    gsl_matrix_sub(KS, temp2);
+
+
+    printf("KS_________->\n");
+    for (int i = 0; i < 3 ; i++) {
+        for (int j = 0; j < 12 ; j++) {
+            printf("%g ", gsl_matrix_get(KS,i,j));
+        }
+        printf("\n ");
+    }
+
+    printf("<-_________KS\n");
+
 }
 // TODO might be a BOTTLENECK !!!
 
@@ -294,34 +310,59 @@ void calculate_KS(){
  */
 void calculate_Ai(){
     // Scheint zu funktionieren
+    //temp1 = BSystem;
+    //gsl_matrix_scale(temp1,-1);
+    temp2 = KI;
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp2);
 
-    gsl_matrix* educt = (gsl_matrix*)getMatrix(5)->data;
-    gsl_matrix* product = (gsl_matrix*) getMatrix(3)->data;
-    int testVec = gsl_matrix_mul_elements(product, educt);
-    printf("%d", testVec);
-    gsl_matrix_scale(product, -1);
-    temporary = product;
+    printf("%f ", gsl_matrix_get(temp2,0,0));
+    printf("%f ", gsl_matrix_get(temp2,0,1));
+    printf("%f ", gsl_matrix_get(temp2,0,2));
+    printf("%f ", gsl_matrix_get(temp2,1,0));
+    printf("%f ", gsl_matrix_get(temp2,1,1));
+    printf("%f ", gsl_matrix_get(temp2,1,2));
+    printf("%f ", gsl_matrix_get(temp2,2,0));
+    printf("%f ", gsl_matrix_get(temp2,2,1));
+    printf("%f ", gsl_matrix_get(temp2,2,2));
+    printf("%f ", gsl_matrix_get(temp2,3,0));
+    printf("%f ", gsl_matrix_get(temp2,3,1));
+    printf("%f ", gsl_matrix_get(temp2,3,2));
 
+    //printf(" >>>>>>>>> A\n");
     // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
     for (size_t i = 0; i < 12; i++) {
         for (size_t j = 0; j < 12; j++) {
-            gsl_matrix_set(Ai,i, j, gsl_matrix_get(A, i, j));
+            gsl_matrix_set(Ai,i, j, gsl_matrix_get(ASystem, i, j));
+            //printf("%f ", gsl_matrix_get(ASystem, i,j));
         }
+        //printf("\n");
     }
 
+    //printf("<<<<<<<<<<< A\n");
+
+    printf(">>>>>>>>>>> T\n");
     // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
     for (size_t k = 0; k < 12 ; k++) {
         for (size_t m = 0; m < 3 ; m++) {
-            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temporary, k, m));
+            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temp2, k, m));
+            printf("%f ", gsl_matrix_get(temp2,k,m));
         }
+        printf("\n");
     }
 
+    printf("<<<<<<<<<<< T\n");
+
+    printf(">>>>>>>>>>> C_op\n");
     // Copying the elements of Matrix C_op in bottom left corner of Ai
     for (size_t l = 0; l < 3 ; l++) {
         for (size_t n = 0; n < 12; n++) {
             gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
+            printf("%f", gsl_matrix_get(C_op,l,n));
         }
+        printf("\n");
     }
+
+    printf("<<<<<<<<<<< C_op\n");
 
     // Setting zeros in the bottom right corner of Ai
     for (size_t v = 0; v < 3; v++) {
@@ -329,6 +370,7 @@ void calculate_Ai(){
             gsl_matrix_set(Ai, 12+v, 12+w, 0);
         }
     }
+
 }
 //TODO Test this method properly
 
@@ -360,18 +402,34 @@ void calculate_KI(gsl_matrix* KS, double a0){
     temp2 = KS;
 
     // Transpose the matrix KS and save into temp4
-    gsl_matrix_transpose_memcpy(temp4,KS);
+    gsl_matrix_transpose_memcpy(temp5,KS);
 
     // Calculating the product of KS and KS_transpose
-    temp3 = KS;
-    gsl_matrix_mul_elements(temp3, temp4);
+    //temp3 = KS;
+    //gsl_matrix_mul_elements(temp3, temp4);
 
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp2,temp5,0.0,temp3);
+    //gsl_linalg_cholesky_decomp(temp3);
+    //gsl_linalg_cholesky_invert(temp3);
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    KI = KS;
-    gsl_matrix_div_elements(KI, temp3);
+    //KI = KS;
+    // gsl_matrix_mul_elements(KI, temp3);
+    // TODO Berechnung überprüfen Werte Stimmen nicht überein
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KI);
+    gsl_blas_dtrsm(CblasRight,CblasLower,CblasNoTrans,CblasNonUnit,1.0,temp3,KI);
 
     // Scaling KI with a0
     gsl_matrix_scale(KI, a0);
+
+    printf("KI_________->\n");
+    for (int i = 0; i < 12 ; i++) {
+        for (int j = 0; j < 3 ; j++) {
+            printf("%g ", gsl_matrix_get(KI,i,j));
+        }
+        printf("\n ");
+    }
+
+    printf("<-_________KI\n");
 }
 // TODO might be a BOTTLENECK !!!
 
@@ -385,19 +443,19 @@ void changing_engineSpeed(int n_updn){
 
     switch (n_updn) {
         case 1:
-            gsl_matrix_set(A, 6, 6, -1.9964);
-            gsl_matrix_set(A, 6, 7, -2.5921);
+            gsl_matrix_set(ASystem, 6, 6, -1.9964);
+            gsl_matrix_set(ASystem, 6, 7, -2.5921);
             gsl_matrix_set(A_Inv, 7, 6, -0.3858);
             gsl_matrix_set(A_Inv, 7, 7, -0.7702);
 
         case 2:
-            gsl_matrix_set(A, 8, 8, -1.9964);
-            gsl_matrix_set(A, 8, 9, -2.5921);
+            gsl_matrix_set(ASystem, 8, 8, -1.9964);
+            gsl_matrix_set(ASystem, 8, 9, -2.5921);
             gsl_matrix_set(A_Inv, 9, 8, -0.3858);
             gsl_matrix_set(A_Inv, 9, 9, -0.7702);
         case 3:
-            gsl_matrix_set(A, 10, 10, -0.9964);
-            gsl_matrix_set(A, 10, 11, -2.5921);
+            gsl_matrix_set(ASystem, 10, 10, -0.9964);
+            gsl_matrix_set(ASystem, 10, 11, -2.5921);
             gsl_matrix_set(A_Inv, 11, 10, -0.3858);
             gsl_matrix_set(A_Inv, 11, 11, -0.7702);
         default:
@@ -448,6 +506,17 @@ void calculate_Cop(){
     gsl_matrix_set(C_op, 2, 9, gsl_vector_get(C_in,16));
     gsl_matrix_set(C_op, 2,11, gsl_vector_get(C_in,17));
 
+    printf("Cop_________->\n");
+    for (int i = 0; i < 3 ; i++) {
+        for (int j = 0; j < 12 ; j++) {
+            printf("%g ", gsl_matrix_get(C_op,i,j));
+        }
+        printf("\n ");
+    }
+
+    printf("<-_________Cop\n");
+
+
 
 }
 // TODO clarify what index of C_in must be stored in C_op
@@ -493,6 +562,17 @@ void calculate_Dop(){
     gsl_matrix_set(D_op, 2, 9, gsl_vector_get(D_in,15));
     gsl_matrix_set(D_op, 2,10, gsl_vector_get(D_in,16));
     gsl_matrix_set(D_op, 2,11, gsl_vector_get(D_in,17));
+
+    printf("Dop_________->\n");
+    for (int i = 0; i < 3 ; i++) {
+        for (int j = 0; j < 12 ; j++) {
+            printf("%g ", gsl_matrix_get(D_op,i,j));
+        }
+        printf("\n ");
+    }
+
+    printf("<-_________Dop\n");
+
 
 
 }
@@ -823,3 +903,18 @@ void tune_KP(){
 
 }
 // TODO check
+
+/*
+ * This method returns the saved values A0 and B0
+ */
+
+double scalar(size_t n){
+    switch (n){
+        case 1:
+            return A0;
+        case 2:
+            return B0;
+        default:
+            return 0;
+    }
+}

@@ -7,6 +7,8 @@
 #include "linear.h"
 //#include "Lenkmotoren.h"
 #include <time.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
 //#include "matrizeCalculator.h"
 #include "InitTest.h"
 
@@ -23,7 +25,8 @@ int main() {
     matrixPresetting();
     size_t zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 6000) {
+    while (zaehler < 8) {
+        printf("_______________ %zu  ______________\n",zaehler);
         clock_t begin = clock();
         testVector(zaehler);
         slipage();
@@ -32,52 +35,55 @@ int main() {
         friction();
         double ax = Bewegungsgleichung_ax();
         double ay = Bewegungsgleichung_ay();
-        gsl_vector *aufstand = AufstandsKraefte();
+        AufstandsKraefte();
         RadKraefte();
         GierbewegungBerechnen();
-        SystemmatrixBerechnen();
         deltasBerechnen();
-        getInputParameter();
-        calculate_Cop();
+        SystemmatrixBerechnen();
+        saving_current_state();
+        //getInputParameter();
+        //calculate_Cop();
         //calculate_Dop();
         //calculate_KS();
+        //calculate_KI(get_Matrix(4),scalar(1));
+        //calculate_Ai();
 
-        // Zum testen fuer Vectoren
-        /*
-        printf("[");
-        for (int l = 0; l < 3; l++) {
-            printf("%.3f ", gsl_vector_get(getVector(8), l));
-        }
-        printf("]");
 
         //Zum testen fuer Vectoren
-        printf("\n[");
-        for (int l = 0; l < 3; l++) {
-            printf("%.3f ", gsl_vector_get(getVector(9), l));
+
+
+        printf(" ug --> [");
+        for (size_t l = 0; l < 9; l++) {
+            printf("%g ", gsl_vector_get(getVector(2), l));
         }
         printf("]\n");
-
-        printf("[");
-        for (int l = 0; l < 3; l++) {
-            printf("%.3f ", gsl_vector_get(getVector(10), l));
-        }
-        printf("]\n");
-        printf("[");
-
-        for (int m = 0; m < 17; m++) {
-            printf("%.2f ", gsl_matrix_get(getMatrix(1), m, 0));
+        printf(" xg --> [");
+        for (size_t l = 0; l < 3; l++) {
+            printf("%g ", gsl_vector_get(getVector(1), l));
         }
         printf("]\n");
 
 
-        printf("[");
-
-        for (int m = 0; m < 17; m++) {
-            printf("%.2f ", gsl_matrix_get(getMatrix(2), m, 0));
+        printf(" ug_alt --> [");
+        for (size_t l = 0; l < 9; l++) {
+            printf("%g ", gsl_vector_get(getVector(4), l));
         }
         printf("]\n");
 
-        */
+        printf(" xg_alt --> [");
+        for (size_t l = 0; l < 3; l++) {
+            printf("%g ", gsl_vector_get(getVector(3), l));
+        }
+        printf("]\n");
+        printf(" D --> [");
+
+        for (size_t m = 0; m < 18; m++) {
+            printf("%g ", gsl_vector_get(getMatrix(2), m));
+        }
+        printf("]\n");
+        saving_current_state();
+
+
 
         printf("%f\n%f\n", ax, ay);
         // Ende Zeitstop und Ausgabe der Zeit
@@ -86,6 +92,21 @@ int main() {
         gesamtzeit += time;
         printf("Berechnung dauert %.4f ms\n", time);
         zaehler++;
+/*
+        gsl_vector* ausgabe = get_Matrix(7);
+        printf(" C_op -->\n");
+        for (size_t i = 0; i < 3; i++) {
+            for (size_t j = 0; j < 12; j++) {
+                printf("%f ", gsl_matrix_get(ausgabe, i,j));
+            }
+            printf("\n");
+        }
+        printf(" <--- C_op\n");
+        */
+
+        printf("++++++++++++++++++++++++++++++++++++\n");
     }
+
+
     return 0;
 }

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <gsl/gsl_eigen.h>
 
-#define K 1.0
+#define KONSTANTE 1.0
 #define I_MAX_A 10
 #define I_MAX_B 1000
 #define T_DELTA 0.1603
@@ -68,6 +68,8 @@ void matrix_Calculator_EWG();
 void tune_matrix_EWG();
 
 void tune_KP();
+
+double scalar(size_t n);
 
 
 #endif //ANSICEE_LINEAR_H

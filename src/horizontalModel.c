@@ -100,6 +100,7 @@ void initializeVector(){
  * 15 -> mu
  * 16 -> mux
  * 17 -> muy
+ * 18 -> acc
  */
 gsl_vector* getVector(size_t n) {
     // Building the switch case structure
@@ -139,6 +140,8 @@ gsl_vector* getVector(size_t n) {
             return mux;
         case 17:
             return muy;
+        case 18:
+            return acc;
         default:
             return 0;
     }
@@ -226,16 +229,16 @@ void adma_velocity() {
     double psi_p = gsl_vector_get(xg, 2);
 
     // Calculation of velocity v1 and angle beta1
-    v_1 = sqrt( pow(v_x ,2) + pow((v_y + psi_p* L / SQRT3),2 ));
-    beta_1 = atan2((v_y + psi_p* L / SQRT3),v_x);
+    v_1 = sqrt( pow(v_x ,2) + pow((v_y + psi_p* LAENGE / SQRT3),2 ));
+    beta_1 = atan2((v_y + psi_p* LAENGE / SQRT3),v_x);
 
     // Calculation of velocity v2 and angle beta2
-    v_2 = sqrt(pow((v_x + (psi_p * L / SQRT3) * cos(7 * M_PI / 6) ),2) + pow((v_y + (psi_p * L / SQRT3) * sin(7 * M_PI / 6) ),2));
-    beta_2 = atan2((v_y + (psi_p * L / SQRT3) * sin(7 * M_PI / 6) ), (v_x + (psi_p * L / SQRT3) * cos(7 * M_PI / 6) ));
+    v_2 = sqrt(pow((v_x + (psi_p * LAENGE / SQRT3) * cos(7 * M_PI / 6) ),2) + pow((v_y + (psi_p * LAENGE / SQRT3) * sin(7 * M_PI / 6) ),2));
+    beta_2 = atan2((v_y + (psi_p * LAENGE / SQRT3) * sin(7 * M_PI / 6) ), (v_x + (psi_p * LAENGE / SQRT3) * cos(7 * M_PI / 6) ));
 
     // Calculation of velocity v3 and angle beta3
-    v_3 = sqrt(pow((v_x + (psi_p * L / SQRT3) * cos(11 * M_PI / 6) ),2) + pow((v_y + (psi_p * L / SQRT3) * sin(11 * M_PI / 6) ),2));
-    beta_3 = atan2((v_y + (psi_p * L / SQRT3) * sin(11 * M_PI / 6) ), (v_x + (psi_p * L / SQRT3) * cos(11 * M_PI / 6) ));
+    v_3 = sqrt(pow((v_x + (psi_p * LAENGE / SQRT3) * cos(11 * M_PI / 6) ),2) + pow((v_y + (psi_p * LAENGE / SQRT3) * sin(11 * M_PI / 6) ),2));
+    beta_3 = atan2((v_y + (psi_p * LAENGE / SQRT3) * sin(11 * M_PI / 6) ), (v_x + (psi_p * LAENGE / SQRT3) * cos(11 * M_PI / 6) ));
 
     // TODO Unbedingt ueberpruefen ob die Werte in Vector form vorliegen muessen
     // Calculation of beta vector and velocity vector
@@ -332,26 +335,26 @@ double Bewegungsgleichung_ax() {
     /* The firstPart is a summary of the first to additions in the big equitation of motion
      * g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
      */
-    double firstPart = G/3 * mux_all + C_a / M * alphax_all;
+    double firstPart = GRAVY/3 * mux_all + C_a / MASSE * alphax_all;
 
     /* The Factor p1 is a summary of the first big factor in the big equitation
      * [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
      */
-    double p1 = (HCG/L * (gsl_vector_get(mux, 1) - gsl_vector_get(mux, 2)) ) / ( L / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2));
+    double p1 = (HCG/LAENGE * (gsl_vector_get(mux, 1) - gsl_vector_get(mux, 2)) ) / ( LAENGE / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2));
 
     /* The factor p2 is a summary of the second big factor in the fraction
      * mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
      */
-    double p2 = muy_all + C_a / M * alphay_all;
+    double p2 = muy_all + C_a / MASSE * alphay_all;
 
     // The numerator of the big fraction
     double fraction_1 = firstPart + p1 * p2;
 
     // The first quotient part for the big denominator
-    double q1 = 1 - HCG / L / SQRT3 * (gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2) - 2*gsl_vector_get(mux, 0)) - HCG/L * (gsl_vector_get(mux,1) - gsl_vector_get(mux,2));
+    double q1 = 1 - HCG / LAENGE / SQRT3 * (gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2) - 2*gsl_vector_get(mux, 0)) - HCG/LAENGE * (gsl_vector_get(mux,1) - gsl_vector_get(mux,2));
 
     // The second quotient part for the big denominator
-    double q2 = (L / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2)) * (HCG / L * (gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0)) );
+    double q2 = (LAENGE / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2)) * (HCG / LAENGE * (gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0)) );
 
     // The denominator of the big fraction
     double fraction_2 = q1 / q2 ;
@@ -384,8 +387,8 @@ double Bewegungsgleichung_ay() {
      * For better understanding look up the equitation in Jan's Master Thesis
      * or his Matlab Code in Horizontal Model
      */
-    ay = (G/3 * muy_all + HCG / L / SQRT3 * (gsl_vector_get(muy,1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0))
-            * Bewegungsgleichung_ax() + C_a / M * alphay_all) / (1 - HCG / L *  (gsl_vector_get(muy, 1) - gsl_vector_get(muy,2)));
+    ay = (GRAVY/3 * muy_all + HCG / LAENGE / SQRT3 * (gsl_vector_get(muy,1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0))
+            * Bewegungsgleichung_ax() + C_a / MASSE * alphay_all) / (1 - HCG / LAENGE *  (gsl_vector_get(muy, 1) - gsl_vector_get(muy,2)));
     return ay;
 }
 
@@ -393,21 +396,24 @@ double Bewegungsgleichung_ay() {
  * This Method calculates the contact Forces of each point in the triangle
  * and returns a vector containing all three forces
  */
-gsl_vector * AufstandsKraefte() {
+void AufstandsKraefte() {
 
+    // current saving of ax and ay for caluclations
+    double a_x = Bewegungsgleichung_ax();
+    double a_y = Bewegungsgleichung_ay();
     /* Declaration of output vector and
      * Calculation of the three Forces FZ_1, FZ_2 and FZ_3
      */
-    double FZ_1 = M * G / 3 - 2 * M * HCG / SQRT3 / L * Bewegungsgleichung_ax();
-    double FZ_2 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 - Bewegungsgleichung_ay());
-    double FZ_3 = M * G / 3 + M * HCG / L * (Bewegungsgleichung_ax() / SQRT3 + Bewegungsgleichung_ay());
+    double FZ_1 = MASSE * GRAVY / 3 - 2 * MASSE * HCG / SQRT3 / LAENGE * a_x;
+    double FZ_2 = MASSE * GRAVY / 3 + MASSE * HCG / LAENGE * (a_x / SQRT3 - a_y);
+    double FZ_3 = MASSE * GRAVY / 3 + MASSE * HCG / LAENGE * (a_x / SQRT3 + a_y);
 
     // Putting the three forces into the vector
     gsl_vector_set(Fz,0, FZ_1);
     gsl_vector_set(Fz,1, FZ_2);
     gsl_vector_set(Fz,2, FZ_3);
 
-    return Fz;
+
 }
 
 /*
@@ -418,14 +424,14 @@ gsl_vector * AufstandsKraefte() {
  */
 void RadKraefte() {
     // Putting the calculated scalar into the vector Fx
-    gsl_vector_set(Fx,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alpha_x,0));
-    gsl_vector_set(Fx,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alpha_x,1));
-    gsl_vector_set(Fx,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(mux,2) + C_a * gsl_vector_get(alpha_x,2));
+    gsl_vector_set(Fx,0, gsl_vector_get(Fz,0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alpha_x,0));
+    gsl_vector_set(Fx,1, gsl_vector_get(Fz,1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alpha_x,1));
+    gsl_vector_set(Fx,2, gsl_vector_get(Fz,2) * gsl_vector_get(mux,2) + C_a * gsl_vector_get(alpha_x,2));
 
     // Putting the calculated scalar into the vector Fy
-    gsl_vector_set(Fy,0, gsl_vector_get(AufstandsKraefte(),0) * gsl_vector_get(muy,0) + C_a * gsl_vector_get(alpha_y,0));
-    gsl_vector_set(Fy,1, gsl_vector_get(AufstandsKraefte(),1) * gsl_vector_get(muy,1) + C_a * gsl_vector_get(alpha_y,1));
-    gsl_vector_set(Fy,2, gsl_vector_get(AufstandsKraefte(),2) * gsl_vector_get(muy,2) + C_a * gsl_vector_get(alpha_y,2));
+    gsl_vector_set(Fy,0, gsl_vector_get(Fz,0) * gsl_vector_get(muy,0) + C_a * gsl_vector_get(alpha_y,0));
+    gsl_vector_set(Fy,1, gsl_vector_get(Fz,1) * gsl_vector_get(muy,1) + C_a * gsl_vector_get(alpha_y,1));
+    gsl_vector_set(Fy,2, gsl_vector_get(Fz,2) * gsl_vector_get(muy,2) + C_a * gsl_vector_get(alpha_y,2));
 }
 
 /*
@@ -435,14 +441,20 @@ void RadKraefte() {
 void GierbewegungBerechnen() {
 
     // Calculation of psi_pp with formula taken from Jan's Modell
-    double psi_pp = L/THETA * (gsl_vector_get(Fy,0) / SQRT3 - gsl_vector_get(Fy,1) / 2 / SQRT3 - gsl_vector_get(Fy,2)
+    double psi_pp = LAENGE/THETA * (gsl_vector_get(Fy,0) / SQRT3 - gsl_vector_get(Fy,1) / 2 / SQRT3 - gsl_vector_get(Fy,2)
             / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx,2) / 2);
 
     // Filling the Vector acc with acceleration ax, ay and psi_pp
     gsl_vector_set(acc, 0, Bewegungsgleichung_ax());
     gsl_vector_set(acc, 1, Bewegungsgleichung_ay());
     gsl_vector_set(acc, 2, psi_pp);
-
+    /*
+    printf("  acc--> ");
+    printf("%f ", gsl_vector_get(acc,0));
+    printf("%f ", gsl_vector_get(acc,1));
+    printf("%f ", gsl_vector_get(acc,2));
+    printf("  <--- acc \n");
+    */
 }
 
 /*
@@ -472,6 +484,8 @@ void SystemmatrixBerechnen() {
     double ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
     double ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
     double ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
+
+    //printf("%f, %f , %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f \n", acc_one, acc_two, acc_three, xg_one, xg_two, xg_three, ug_one, ug_two, ug_three, ug_four, ug_five, ug_six, ug_seven, ug_eight, ug_nine);
 
     // TODO Unbedingt kommentieren
     /*
@@ -519,7 +533,7 @@ void SystemmatrixBerechnen() {
      * Therefore the switch-case block is bigger then before and
      * the auxiliary vectors ug are more then xg
      */
-    for (size_t j = 0; j <8 ; j++) {
+    for (size_t j = 0; j <9 ; j++) {
 
         // Proof if difference between ug and ug_alt is 0
         if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0)
@@ -577,8 +591,21 @@ void SystemmatrixBerechnen() {
         }
     }
 
+    /*
+    printf("acc_alt_1  |  acc_alt_2  |  acc_alt_3\n");
+    printf(" %f |", gsl_vector_get(acc_alt,0));
+    printf(" %f   |", gsl_vector_get(acc_alt,1));
+    printf(" %f \n", gsl_vector_get(acc_alt,2));
+    */
     // Set acc as the new acc_alt
-    acc_alt = acc;
+    gsl_vector_memcpy(acc_alt, acc);
+
+    /*
+    printf("acc_1      |     acc_2   |   acc_3\n");
+    printf(" %f |", gsl_vector_get(acc,0));
+    printf(" %f   |", gsl_vector_get(acc,1));
+    printf(" %f \n", gsl_vector_get(acc,2));
+     */
 }
 
 
@@ -594,5 +621,15 @@ void deltasBerechnen(){
     delta_u = ug;       // Copy of vector ug
     gsl_vector_sub(delta_x, xg_alt);
     gsl_vector_sub(delta_u, ug_alt);
+}
 
+
+/*
+ * This method copies the current values of ug and xg into
+ * ug_alt and xg_alt
+ */
+void saving_current_state(){
+    gsl_vector_memcpy(xg_alt, xg);
+    gsl_vector_memcpy(ug_alt,ug);
+    gsl_vector_memcpy(acc_alt,acc);
 }

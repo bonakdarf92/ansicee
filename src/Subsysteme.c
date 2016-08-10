@@ -9,7 +9,7 @@
 #define T_n_const_dn 45
 #define D_n_const_up 46
 #define D_n_const_dn 47
-#define K 1
+#define KONSTANTE 1
 #define Gain 2
 
 

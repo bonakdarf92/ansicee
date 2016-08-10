@@ -106,6 +106,8 @@ gsl_vector* saving(size_t n) {
             return velocity_y;
         case 12:
             return yawrate;
+        default:
+            return 0;
     }
 }
 
