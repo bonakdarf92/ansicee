@@ -1,6 +1,6 @@
 #include <stdio.h>
 //#include "modelAntrieb.h"
-#include "DGL_Berechnen.h"
+//#include "DGL_Berechnen.h"
 //#include "Subsysteme.h"
 //#include "calcMatrix_A_B.h"
 #include "horizontalModel.h"
@@ -14,8 +14,11 @@
 
 
 
+
 int main() {
 
+    double maxTime = 0;
+    double minTime = 0.02;
     initializeVector();
     open_files();
     start_initializing();
@@ -25,33 +28,29 @@ int main() {
     matrixPresetting();
     size_t zaehler = 0;
     double gesamtzeit = 0;
-    while (zaehler < 8) {
-        printf("_______________ %zu  ______________\n",zaehler);
+    while (zaehler < 6000) {
+        // Taking time for performance
         clock_t begin = clock();
-        testVector(zaehler);
-        slipage();
-        adma_velocity();
-        slip();
-        friction();
-        double ax = Bewegungsgleichung_ax();
-        double ay = Bewegungsgleichung_ay();
-        AufstandsKraefte();
-        RadKraefte();
-        GierbewegungBerechnen();
-        deltasBerechnen();
-        SystemmatrixBerechnen();
-        saving_current_state();
-        //getInputParameter();
-        //calculate_Cop();
-        //calculate_Dop();
-        //calculate_KS();
-        //calculate_KI(get_Matrix(4),scalar(1));
-        //calculate_Ai();
 
+        // This method combines all functions written in the File horizontalModel.c
+        calculate_C_and_D(zaehler);
+
+        getInputParameter();
+        changing_engineSpeed(1);
+        calculate_Cop();
+        calculate_Dop();
+        calculate_KS();
+        calculate_KI(get_Matrix(4),scalar(1));
+        calculate_Ai();
+        calculate_EWI();
+        matrix_Calculator_EWI();
+        tune_matrix_EWI();
+        calculate_KP(get_Matrix(4), scalar(2));
+        calculate_AG();
+        //calculate_EWG();
+/*
 
         //Zum testen fuer Vectoren
-
-
         printf(" ug --> [");
         for (size_t l = 0; l < 9; l++) {
             printf("%g ", gsl_vector_get(getVector(2), l));
@@ -81,32 +80,28 @@ int main() {
             printf("%g ", gsl_vector_get(getMatrix(2), m));
         }
         printf("]\n");
-        saving_current_state();
+        //saving_current_state();
 
+*/
 
+        //printf("%f\n%f\n", ax, ay);
 
-        printf("%f\n%f\n", ax, ay);
         // Ende Zeitstop und Ausgabe der Zeit
         clock_t end = clock();
         double time = (double) 1000 * (end - begin) / CLOCKS_PER_SEC;
-        gesamtzeit += time;
-        printf("Berechnung dauert %.4f ms\n", time);
-        zaehler++;
-/*
-        gsl_vector* ausgabe = get_Matrix(7);
-        printf(" C_op -->\n");
-        for (size_t i = 0; i < 3; i++) {
-            for (size_t j = 0; j < 12; j++) {
-                printf("%f ", gsl_matrix_get(ausgabe, i,j));
-            }
-            printf("\n");
+        if (maxTime <= time){
+            maxTime = time;
         }
-        printf(" <--- C_op\n");
-        */
-
-        printf("++++++++++++++++++++++++++++++++++++\n");
+        //if (minTime>=time){
+          //  minTime = time;
+        //}
+        //gesamtzeit += time;
+        //printf("Berechnung dauert %.4f ms\n", time);
+        zaehler++;
     }
 
+    printf("Laengste Berechnung dauert %.4f ms\n", maxTime);
+    //printf("Kuerzeste Berechnung dauert %.4f ms\n", minTime);
 
     return 0;
 }

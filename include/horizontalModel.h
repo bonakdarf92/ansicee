@@ -4,10 +4,18 @@
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H
-
+//#ifndef MATLAB_MEX_FILE
+/*
+#include <tmwtypes.h>
+#else
+#include "rtwtypes.h"
+#endif
+*/
 #define KMU 5                         // linearized mu-slip about 5
 #define C_a 9095                    // slippage
 #define RADIUS 0.15                 // radius of tire
@@ -65,5 +73,8 @@ void SystemmatrixBerechnen();
 void deltasBerechnen();
 
 void saving_current_state();
+
+// For test purposes input parameter is cycle integer
+void calculate_C_and_D(size_t cyc);
 
 #endif //ANSICEE_HORIZONTALMODEL_H

@@ -9,8 +9,8 @@
 #include <gsl/gsl_linalg.h>
 
 
-gsl_matrix* ASystem;              // Declaration of Matrix A
-gsl_matrix* BSystem;              // Declaration of Matrix B
+gsl_matrix* ASystem;        // Declaration of Matrix A
+gsl_matrix* BSystem;        // Declaration of Matrix B
 gsl_matrix* A_Inv;          // Declaration of Matrix A inverse
 gsl_matrix* KI;             // Declaration of Matrix KI
 gsl_matrix* KS;             // Declaration of Matrix KS
@@ -48,7 +48,7 @@ gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenva
 gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
 
 
-gsl_vector_view* a;
+gsl_vector_view a;
 double delta_a [] = {1.8, 1.3, 1.05};
 double delta_b [] = {5, 1.8, 1.2, 1.02};
 
@@ -80,7 +80,9 @@ void initMatrix(){
     gsl_matrix_set_identity(eye);
     workspace = gsl_eigen_nonsymm_alloc(15);
     eigenvalue = gsl_vector_complex_alloc(15);
+    eigenvalue2 = gsl_vector_complex_alloc(15);
     eigenvalue3 = gsl_vector_complex_alloc(15);
+    eigenvalue4 = gsl_vector_complex_alloc(15);
 
     // TODO initialize all matrices
 
@@ -268,7 +270,7 @@ void calculate_KS(){
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, temp1, 0.0, temp2);
     gsl_matrix_sub(KS, temp2);
 
-
+/*
     printf("KS_________->\n");
     for (int i = 0; i < 3 ; i++) {
         for (int j = 0; j < 12 ; j++) {
@@ -278,6 +280,7 @@ void calculate_KS(){
     }
 
     printf("<-_________KS\n");
+    */
 
 }
 // TODO might be a BOTTLENECK !!!
@@ -314,7 +317,7 @@ void calculate_Ai(){
     //gsl_matrix_scale(temp1,-1);
     temp2 = KI;
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp2);
-
+/*
     printf("%f ", gsl_matrix_get(temp2,0,0));
     printf("%f ", gsl_matrix_get(temp2,0,1));
     printf("%f ", gsl_matrix_get(temp2,0,2));
@@ -327,7 +330,7 @@ void calculate_Ai(){
     printf("%f ", gsl_matrix_get(temp2,3,0));
     printf("%f ", gsl_matrix_get(temp2,3,1));
     printf("%f ", gsl_matrix_get(temp2,3,2));
-
+*/
     //printf(" >>>>>>>>> A\n");
     // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
     for (size_t i = 0; i < 12; i++) {
@@ -340,29 +343,29 @@ void calculate_Ai(){
 
     //printf("<<<<<<<<<<< A\n");
 
-    printf(">>>>>>>>>>> T\n");
+    //printf(">>>>>>>>>>> T\n");
     // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
     for (size_t k = 0; k < 12 ; k++) {
         for (size_t m = 0; m < 3 ; m++) {
             gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temp2, k, m));
-            printf("%f ", gsl_matrix_get(temp2,k,m));
+            //printf("%f ", gsl_matrix_get(temp2,k,m));
         }
-        printf("\n");
+        //printf("\n");
     }
 
-    printf("<<<<<<<<<<< T\n");
+    //printf("<<<<<<<<<<< T\n");
 
-    printf(">>>>>>>>>>> C_op\n");
+    //printf(">>>>>>>>>>> C_op\n");
     // Copying the elements of Matrix C_op in bottom left corner of Ai
     for (size_t l = 0; l < 3 ; l++) {
         for (size_t n = 0; n < 12; n++) {
             gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
-            printf("%f", gsl_matrix_get(C_op,l,n));
+      //      printf("%f", gsl_matrix_get(C_op,l,n));
         }
-        printf("\n");
+        //printf("\n");
     }
 
-    printf("<<<<<<<<<<< C_op\n");
+    //printf("<<<<<<<<<<< C_op\n");
 
     // Setting zeros in the bottom right corner of Ai
     for (size_t v = 0; v < 3; v++) {
@@ -420,7 +423,7 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     // Scaling KI with a0
     gsl_matrix_scale(KI, a0);
-
+/*
     printf("KI_________->\n");
     for (int i = 0; i < 12 ; i++) {
         for (int j = 0; j < 3 ; j++) {
@@ -430,6 +433,7 @@ void calculate_KI(gsl_matrix* KS, double a0){
     }
 
     printf("<-_________KI\n");
+    */
 }
 // TODO might be a BOTTLENECK !!!
 
@@ -506,6 +510,7 @@ void calculate_Cop(){
     gsl_matrix_set(C_op, 2, 9, gsl_vector_get(C_in,16));
     gsl_matrix_set(C_op, 2,11, gsl_vector_get(C_in,17));
 
+    /*
     printf("Cop_________->\n");
     for (int i = 0; i < 3 ; i++) {
         for (int j = 0; j < 12 ; j++) {
@@ -515,7 +520,7 @@ void calculate_Cop(){
     }
 
     printf("<-_________Cop\n");
-
+*/
 
 
 }
@@ -563,6 +568,7 @@ void calculate_Dop(){
     gsl_matrix_set(D_op, 2,10, gsl_vector_get(D_in,16));
     gsl_matrix_set(D_op, 2,11, gsl_vector_get(D_in,17));
 
+    /*
     printf("Dop_________->\n");
     for (int i = 0; i < 3 ; i++) {
         for (int j = 0; j < 12 ; j++) {
@@ -573,7 +579,7 @@ void calculate_Dop(){
 
     printf("<-_________Dop\n");
 
-
+*/
 
 }
 // TODO clarify what index of D_in must be stored in D_op
@@ -591,13 +597,13 @@ void matrix_Calculator_EWI(){
     size_t i = 0;
 
     // Pointer on vector_view containing all real parts of complex vector eigenvalue
-    *a = gsl_vector_complex_real(eigenvalue);
+    a = gsl_vector_complex_real(eigenvalue);
 
     // Storing the structural element vector of vector_view a into gsl_vector real
-    gsl_vector* real = &a->vector;
+    //gsl_vector* real = a;//->vector;
 
     // Finding the biggest value of vector real
-    double max = gsl_vector_max(real);
+    double max = gsl_vector_max(&a.vector);
 
     /*
      * This while loop calculates all Matrices via iteration of tuning factor a0
@@ -677,15 +683,19 @@ void calculate_KP(gsl_matrix* KS, double b0){
     temp2 = KS;
 
     // Transpose the matrix KS and save into temp4
-    gsl_matrix_transpose_memcpy(temp4,KS);
+    gsl_matrix_transpose_memcpy(temp5,KS);
 
     // Calculating the product of KS and KS_transpose
-    temp3 = KS;
-    gsl_matrix_mul_elements(temp3, temp4);
+    //temp3 = KS;
+
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp2,temp5,0.0,temp3);
+    //gsl_matrix_mul_elements(temp3, temp5);
 
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    KP = KS;
-    gsl_matrix_div_elements(KP, temp3);
+    //KP = KS;
+    //gsl_matrix_div_elements(KP, temp3);
+    //gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KP);
+    gsl_blas_dtrsm(CblasRight,CblasLower,CblasNoTrans,CblasNonUnit,1.0,temp3,KP);
 
     // Scaling KI with b0
     gsl_matrix_scale(KP, b0);
@@ -694,13 +704,15 @@ void calculate_KP(gsl_matrix* KS, double b0){
     gsl_matrix* KP_current = get_Matrix(14);
 
     // Saving the current subtrahend into sub for calculations
-    gsl_matrix_mul_elements(KP_current, D_op);
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,KP_current,D_op,0.0,temp1);
+    //gsl_matrix_mul_elements(KP_current, D_op);
     gsl_matrix* sub = eye;
-    gsl_matrix_sub(sub, KP_current);
+    gsl_matrix_sub(sub, temp1);
 
     // Calculating the Division of sub and KP_current
-    KP = sub;
-    gsl_matrix_div_elements(KP, KP_current);
+    KP = KP_current;
+    gsl_blas_dtrsm(CblasLeft,CblasLower,CblasNoTrans,CblasNonUnit,1.0,sub,KP);
+    //gsl_matrix_div_elements(KP, KP_current);
 }
 // TODO check if its working
 
@@ -741,7 +753,8 @@ void calculate_AG(){
 
     // Computing temp_calc1: -->  temp_calc1 = B_current * KI_current
     gsl_matrix* temp_calc1 = B_current;
-    gsl_matrix_mul_elements(temp_calc1, KI_current);
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,get_Matrix(3),get_Matrix(5),0.0,temp2);
+    //gsl_matrix_mul_elements(temp_calc1, KI_current);
 
     gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
     gsl_matrix* A_current = get_Matrix(1);       // Storing the Matrix A in new Matrix A_current
@@ -760,6 +773,7 @@ void calculate_AG(){
      *
      */
     gsl_matrix* temp_calc2 = KP_current;
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,KP_current,C_current,0.0,KI);
     gsl_matrix_mul_elements(temp_calc2, C_current);
     gsl_matrix* temp_calc3 = B_current2;
     gsl_matrix_mul_elements(B_current2, temp_calc2);
@@ -816,13 +830,13 @@ void matrix_Calculator_EWG(){
     size_t i = 0;
 
     // Pointer on vector_view containing all real parts of complex vector eigenvalue3
-    *a = gsl_vector_complex_real(eigenvalue3);
+    a = gsl_vector_complex_real(eigenvalue3);
 
     // Storing the structural element vector of vector_view a into gsl_vector real
-    gsl_vector* real = &a->vector;
+    //gsl_vector* real = &a->vector;
 
     // Finding the biggest value of vector real
-    double max = gsl_vector_max(real);
+    double max = gsl_vector_max(&a.vector);
 
     /*
      * This while loop calculates all Matrices via iteration of tuning factor a0

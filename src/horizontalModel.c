@@ -633,3 +633,20 @@ void saving_current_state(){
     gsl_vector_memcpy(ug_alt,ug);
     gsl_vector_memcpy(acc_alt,acc);
 }
+
+void calculate_C_and_D(size_t cyc){
+    testVector(cyc);
+    slipage();
+    adma_velocity();
+    slip();
+    friction();
+    double ax = Bewegungsgleichung_ax();
+    double ay = Bewegungsgleichung_ay();
+    AufstandsKraefte();
+    RadKraefte();
+    GierbewegungBerechnen();
+    deltasBerechnen();
+    SystemmatrixBerechnen();
+    saving_current_state();
+
+}
