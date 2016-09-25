@@ -1,0 +1,75 @@
+# Grundlagen :
+
+## Aufbau eines Computers
+
+#### Kernel
++ Aufgaben
++ Aufbau
++ Funktionsweise
+
+#### Prozessor
+
++ Cache
++ Instruktionen
++ ALU
+
+#### Arbeitspeicher
++ Aufgaben
++ Aufbau
++ Funktionsweise
+
+
+
+## Echtzeitfähigkeit
+
+#### Definition
++ Reale Umgebung
++ bla bla
+
+#### harte vs. weiche Echtzeitgrenze
++ Vorteile
++ Nachteile
+
+
+## Programmiersprachen
+
+#### Skriptsprachen
++ Definition
++ Aufbau
++ Funktionsweise
++ Beispiele
++ Vorteile/Nachteile
+
+#### Compilersprachen
++ Definition
++ Aufbau
++ Funktionsweise
++ Beispiele
++ Vorteile/Nachteile
+
+
+# Aktueller Zustand
+## Systembeschreibung der Hardware
+
+#### Roadbox
++ Prozessor
++ Peripherie
++ ??
+
+#### Messrechner
++ Prozessor
++ RAM
++ ??
+
+## Systembeschreibung der Software
++ IPG
++ Xenomai
++ Matlab
+
+
+## Aktuelle Umsetzung
++ Detaillierte Erklärung der Funktionsweise
++ Analyse des Systems und des Regler
+
+# Überstzung in ANSI C
++ 
