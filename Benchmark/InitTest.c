@@ -44,7 +44,7 @@ gsl_vector* yawrate;
  * This method initialize all vectors
  * The size of the vector must be the same as the file size
  */
-void start_initializing() {
+void start_initializing(void) {
     n1 = gsl_vector_alloc(6001);
     n2 = gsl_vector_alloc(6001);
     n3 = gsl_vector_alloc(6001);
@@ -64,7 +64,7 @@ void start_initializing() {
  * Method starts to scan the values of each file into its vector
  * and saves it
  */
-void start_reading() {
+void start_reading(void) {
     gsl_vector_fscanf(n_1, n1);
     gsl_vector_fscanf(n_2, n2);
     gsl_vector_fscanf(n_3, n3);
@@ -111,10 +111,10 @@ gsl_vector* saving(size_t n) {
     }
 }
 
-void create_data() {
+void create_data(void) {
     // TODO Implement core
 }
-void printer(){
+void printer(void){
 }
 
 /*
@@ -123,7 +123,7 @@ void printer(){
  *
  *
  */
-void open_files() {
+void open_files(void) {
     /*
      * Change your current path for testing
      * Beware of Operating System and use of slash

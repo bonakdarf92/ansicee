@@ -6,6 +6,7 @@
 #include <gsl/gsl_matrix.h>
 #include "linear.h"
 #include <gsl/gsl_blas.h>
+#include <gsl/gsl_complex.h>
 #include <gsl/gsl_linalg.h>
 
 
@@ -57,7 +58,7 @@ double delta_b [] = {5, 1.8, 1.2, 1.02};
  * Initialing all matrices and setting up some matrix with zero for easy setup in further code
  * These steps are necessary because the calculations are made every iteration
  */
-void initMatrix(){
+void initMatrix(void){
     ASystem = gsl_matrix_alloc(12,12);
     BSystem = gsl_matrix_alloc(12,12);
     A_Inv = gsl_matrix_alloc(12,12);
@@ -99,7 +100,7 @@ void initMatrix(){
 /*
  *
  */
-void matrixPresetting(){
+void matrixPresetting(void){
 
     /*
      * This function puts all manually calculated indexes into the zero matrices A, B and A inverse
@@ -238,7 +239,7 @@ gsl_matrix * get_Matrix(size_t n){
  * This Method calls the function getMatrix from horizontal model and
  * store its returns in Matrix C_in and D_in.
  */
-void getInputParameter(){
+void getInputParameter(void){
     const gsl_vector* save = getMatrix(1);
     const gsl_vector* save2 = getMatrix(2);
     gsl_vector_memcpy(C_in, save);
@@ -262,7 +263,7 @@ void getInputParameter(){
  * For performance purposes temporary matrices are generated to calculate
  * product 1, product 2 and at least difference 3
  */
-void calculate_KS(){
+void calculate_KS(void){
     KS = D_op;
     temp1 = A_Inv;
     temp2 = C_op;
@@ -311,7 +312,7 @@ void calculate_KS(){
  *              +---------------------------------------------------------------------------------------+
  *
  */
-void calculate_Ai(){
+void calculate_Ai(void){
     // Scheint zu funktionieren
     //temp1 = BSystem;
     //gsl_matrix_scale(temp1,-1);
@@ -384,7 +385,7 @@ void calculate_Ai(){
  * The computation is done with help of a computational
  * workspace
  */
-void calculate_EWI(){
+void calculate_EWI(void){
     EW_I = Ai;
     gsl_eigen_nonsymm(EW_I, eigenvalue, workspace);
 }
@@ -488,7 +489,7 @@ void changing_engineSpeed(int n_updn){
  *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
-void calculate_Cop(){
+void calculate_Cop(void){
 
     // Setting the values of C_in in the Matrix C_op
     gsl_matrix_set(C_op, 0, 1, gsl_vector_get(C_in, 0));
@@ -546,7 +547,7 @@ void calculate_Cop(){
  *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  *          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  */
-void calculate_Dop(){
+void calculate_Dop(void){
 
     // Setting the values of D_in in the Matrix D_op
     gsl_matrix_set(D_op, 0, 6, gsl_vector_get(D_in, 0));
@@ -591,7 +592,7 @@ void calculate_Dop(){
  * maximum real part of the eigenvalues of the system
  * and adapt it via iteration.
  */
-void matrix_Calculator_EWI(){
+void matrix_Calculator_EWI(void){
 
     // Counter for termination of while loop
     size_t i = 0;
@@ -630,7 +631,7 @@ void matrix_Calculator_EWI(){
 /*
  * This method do shit
  */
-void tune_matrix_EWI(){
+void tune_matrix_EWI(void){
     // Initialize matrix EW_I1 with ground matrix EW_I
     EW_I1 = EW_I;
     gsl_eigen_nonsymm(EW_I1,eigenvalue2,workspace);
@@ -740,26 +741,27 @@ void calculate_KP(gsl_matrix* KS, double b0){
  *              +---------------------------------------------------------------------------------------+
  *
  */
-void calculate_AG(){
+void calculate_AG(void){
 
     // Storing the Matrix B into the new Matrix B_current for further calculations
-    gsl_matrix* B_current = get_Matrix(3);
+    //gsl_matrix* B_current = get_Matrix(3);
 
     // Copying the matrix B_current in B_current2 for second calculation
-    gsl_matrix* B_current2 = B_current;
+    gsl_matrix* B_current2 = BSystem;
 
     // Storing the matrix KI in new matrix KI_current
-    gsl_matrix* KI_current = get_Matrix(5);
+    //gsl_matrix* KI_current = get_Matrix(5);
 
-    // Computing temp_calc1: -->  temp_calc1 = B_current * KI_current
-    gsl_matrix* temp_calc1 = B_current;
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,get_Matrix(3),get_Matrix(5),0.0,temp2);
+    // Computing temp_calc1: -->  temp_calc1 = - BSystem * KI
+    gsl_matrix* temp_calc1 = KI;
+    gsl_matrix* temp_calc3 = BSystem;
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp_calc1);
     //gsl_matrix_mul_elements(temp_calc1, KI_current);
 
-    gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
+    //gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
     gsl_matrix* A_current = get_Matrix(1);       // Storing the Matrix A in new Matrix A_current
-    gsl_matrix* KP_current = get_Matrix(14);     // Storing the Matrix KP in new Matrix KP_current
-    gsl_matrix* C_current = get_Matrix(7);       // Storing the Matrix C_current in new Matrix C_current
+    //gsl_matrix* KP_current = get_Matrix(14);     // Storing the Matrix KP in new Matrix KP_current
+    //gsl_matrix* C_current = C_op;       // Storing the Matrix C_current in new Matrix C_current
 
     /*
      * Computing the next three steps can be summarized into this picture:
@@ -772,19 +774,16 @@ void calculate_AG(){
      *      --> [L] = A - B * KP * C
      *
      */
-    gsl_matrix* temp_calc2 = KP_current;
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,KP_current,C_current,0.0,KI);
-    gsl_matrix_mul_elements(temp_calc2, C_current);
-    gsl_matrix* temp_calc3 = B_current2;
-    gsl_matrix_mul_elements(B_current2, temp_calc2);
-    gsl_matrix* temp_calc4 = A_current;
+    gsl_matrix* temp_calc2 = BSystem;
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, KP, C_op, 0.0, temp_calc2);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, BSystem, temp_calc2, 0.0, temp_calc3);
     gsl_matrix_sub(A_current, temp_calc3);
     // TODO check it --> will probably not work
 
     // Copying the System matrix L (12 x 12) into top left corner of AG (15 x 15)
     for (size_t i = 0; i < 12; i++) {
         for (size_t j = 0; j < 12; j++) {
-            gsl_matrix_set(Ag,i, j, gsl_matrix_get(temp_calc4, i, j));
+            gsl_matrix_set(Ag,i, j, gsl_matrix_get(A_current, i, j));
         }
     }
 
@@ -815,7 +814,7 @@ void calculate_AG(){
 /*
  * Comment
  */
-void calculate_EWG(){
+void calculate_EWG(void){
     EW_G = Ag;
     gsl_eigen_nonsymm(EW_G, eigenvalue3, workspace);
 }
@@ -825,7 +824,7 @@ void calculate_EWG(){
 /*
  * Comment
  */
-void matrix_Calculator_EWG(){
+void matrix_Calculator_EWG(void){
     // Counter for termination of while loop
     size_t i = 0;
 
@@ -863,7 +862,7 @@ void matrix_Calculator_EWG(){
 /*
  * Comment
  */
-void tune_matrix_EWG(){
+void tune_matrix_EWG(void){
 
     // Initialize matrix EW_I1 with ground matrix EW_I
     EW_G1 = EW_G;
@@ -874,12 +873,15 @@ void tune_matrix_EWG(){
     size_t i = 1;
 
     // The biggest real number of complex eigenvalue vector of EW_G
-    const gsl_vector saving = gsl_vector_complex_real(eigenvalue3).vector;
-    double real1 = gsl_vector_max(&saving);
+    gsl_vector_view saving = gsl_vector_complex_real(eigenvalue3);
+    double real1 = gsl_vector_max(&saving.vector);
+    //for (size_t k = 0; k < 15; k++) {
+      //  printf("%f + i%f %e \n",eigenvalue3->data[k*eigenvalue3->stride], gsl_vector_complex_get(eigenvalue3,k), gsl_vector_get(&saving.vector,k));
+    //}
 
     // The biggest real number of complex eigenvalue vector of EW_G1 which represents the current state
-    const gsl_vector saving2 = gsl_vector_complex_real(eigenvalue4).vector;
-    double real2 = gsl_vector_max(&saving2);
+    gsl_vector_view saving2 = gsl_vector_complex_real(eigenvalue4);
+    double real2 = gsl_vector_max(&saving2.vector);
 
     // This for loop iterates over the constant factors of delta_a and compute the while loop
     for (size_t c = 0; c < 4; c++) {
@@ -910,7 +912,7 @@ void tune_matrix_EWG(){
 /*
  * Comment
  */
-void tune_KP(){
+void tune_KP(void){
     double b_end = B0;
     EWG_output = EW_G1;
     calculate_KP(KS, b_end);
@@ -932,3 +934,29 @@ double scalar(size_t n){
             return 0;
     }
 }
+
+/*
+ * This Function executes all methods written above to calculate the
+ * PI state space controller
+ */
+
+void calculating_PI_Controller(void){
+    getInputParameter();
+    changing_engineSpeed(1);
+    calculate_Cop();
+    calculate_Dop();
+    calculate_KS();
+    calculate_KI(get_Matrix(4),scalar(1));
+    calculate_Ai();
+    calculate_EWI();
+    matrix_Calculator_EWI();
+    tune_matrix_EWI();
+    calculate_KP(get_Matrix(4), scalar(2));
+    calculate_AG();
+    calculate_EWG();
+    matrix_Calculator_EWG();
+    //tune_matrix_EWG();
+    tune_KP();
+}
+
+// TODO check if it works correctly and how performance change

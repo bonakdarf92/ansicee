@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ansicee)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lgsl -lgslcblas -lm")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -lgsl -lgslcblas")
 
 #include_directories(-I/usr/include/gsl)
 include_directories(include)

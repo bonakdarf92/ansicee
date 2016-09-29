@@ -50,7 +50,7 @@
  * Allocation of inner System vector xg, ug, xg_alt, ug_alt and acc_alt
  * The size of vector and matrix taken from Jan's Matlab Code (Horizontal model)
  */
-void initializeVector(){
+void initializeVector(void){
 
     xg = gsl_vector_alloc(3);       // Vector xg
     ug = gsl_vector_alloc(9);       // Vector ug
@@ -174,7 +174,7 @@ void testVector(size_t n){
     gsl_matrix_get_col(xg, test_xg, n);
 }
 
-void initTest(){
+void initTest(void){
 
     // Creating matrix test_ug for 60 sec simulation
     gsl_matrix_set_row(test_ug, 0, saving(1));      // col with 6001 values of n_1
@@ -197,7 +197,7 @@ void initTest(){
  * saves it.
  * The formula is taken from Jan's Horizontal model line 25 to 27
  */
-void slipage() {
+void slipage(void) {
 
     // Calculation of Vector indices alpha_r
     gsl_vector_set(alpha_r, 0, gsl_vector_get(ug, 3) - gsl_vector_get(ug, 6));      // Index 1
@@ -221,7 +221,7 @@ void slipage() {
  * Formula taken from Jan's Horizontal model in line 30 -40
  * Function get access on xg and do the calculations
  */
-void adma_velocity() {
+void adma_velocity(void) {
 
     // Current values of vector indices v_x, v_y and psi_p
     double v_x = gsl_vector_get(xg, 0);
@@ -258,7 +258,7 @@ void adma_velocity() {
  * vector vr after some Calculation
  * Two cases are calculated, one for Propulsion and one for braking
  */
-void slip() {
+void slip(void) {
 
     /* Velocity of tire calculated by its rotation speed
      * Get value of ug divide it by 30 and multiply by radius
@@ -285,7 +285,7 @@ void slip() {
  * saves information into vector mu and later on in
  * vector mux and muy
  */
-void friction() {
+void friction(void) {
 
     // Filling up vector mu with linearized slip KS and indices of vector sr
     gsl_vector_set(mu, 0, KMU * gsl_vector_get(sr, 0));
@@ -317,7 +317,7 @@ void friction() {
  * For more Information look up in Jan's MasterThesis or line 63 in Horizontal model
  */
 // TODO alle Einträge nochmal uberpruefen
-double Bewegungsgleichung_ax() {
+double Bewegungsgleichung_ax(void) {
 
     // Declaration of output acceleration ax
     double ax;
@@ -373,7 +373,7 @@ double Bewegungsgleichung_ax() {
  * It Solves the equitation with Jan's Formula from Horizontal model.
  * For getting the result, Bewegungsgleichung_ax() must be called
  */
-double Bewegungsgleichung_ay() {
+double Bewegungsgleichung_ay(void) {
 
     // Declaration of double ay
     double ay;
@@ -396,7 +396,7 @@ double Bewegungsgleichung_ay() {
  * This Method calculates the contact Forces of each point in the triangle
  * and returns a vector containing all three forces
  */
-void AufstandsKraefte() {
+void AufstandsKraefte(void) {
 
     // current saving of ax and ay for caluclations
     double a_x = Bewegungsgleichung_ax();
@@ -422,7 +422,7 @@ void AufstandsKraefte() {
  * The formula is taken from Jan's Horizontal model
  * Fx(x) = Fz(x) * mux(x) + C_a * alpha_x(x)
  */
-void RadKraefte() {
+void RadKraefte(void) {
     // Putting the calculated scalar into the vector Fx
     gsl_vector_set(Fx,0, gsl_vector_get(Fz,0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alpha_x,0));
     gsl_vector_set(Fx,1, gsl_vector_get(Fz,1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alpha_x,1));
@@ -438,7 +438,7 @@ void RadKraefte() {
  * This Method calculate the yaw acceleration and returns the general acceleration
  * in Form of the vector acc
  */
-void GierbewegungBerechnen() {
+void GierbewegungBerechnen(void) {
 
     // Calculation of psi_pp with formula taken from Jan's Modell
     double psi_pp = LAENGE/THETA * (gsl_vector_get(Fy,0) / SQRT3 - gsl_vector_get(Fy,1) / 2 / SQRT3 - gsl_vector_get(Fy,2)
@@ -462,7 +462,7 @@ void GierbewegungBerechnen() {
  * For the equitation some auxiliary parameters are calculated.
  *
  */
-void SystemmatrixBerechnen() {
+void SystemmatrixBerechnen(void) {
 
     // Calculating auxiliary parameters acc for further calculations
     double acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
@@ -616,7 +616,7 @@ void SystemmatrixBerechnen() {
  * Method subtract xg_alt/ug_alt from deltas and saves
  * it in the delta vectors
  */
-void deltasBerechnen(){
+void deltasBerechnen(void){
     delta_x = xg;       // Copy of vector xg
     delta_u = ug;       // Copy of vector ug
     gsl_vector_sub(delta_x, xg_alt);
@@ -628,7 +628,7 @@ void deltasBerechnen(){
  * This method copies the current values of ug and xg into
  * ug_alt and xg_alt
  */
-void saving_current_state(){
+void saving_current_state(void){
     gsl_vector_memcpy(xg_alt, xg);
     gsl_vector_memcpy(ug_alt,ug);
     gsl_vector_memcpy(acc_alt,acc);
@@ -648,5 +648,14 @@ void calculate_C_and_D(size_t cyc){
     deltasBerechnen();
     SystemmatrixBerechnen();
     saving_current_state();
+}
+
+/*
+ * This method is written for debugging purposes.
+ * It calculates the difference between state-space
+ * vector ug/xg and delta_ug/delta_xg
+ */
+
+void difference_debug(void){
 
 }

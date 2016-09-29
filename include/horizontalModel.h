@@ -4,7 +4,7 @@
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 
 #ifndef ANSICEE_HORIZONTALMODEL_H
@@ -40,7 +40,7 @@
  */
 
 
-void initializeVector();
+void initializeVector(void);
 
 gsl_vector * getVector(size_t n);
 
@@ -48,33 +48,35 @@ gsl_vector * getMatrix(size_t n);
 
 void testVector(size_t n);
 
-void initTest();
+void initTest(void);
 
-void slipage();
+void slipage(void);
 
-void adma_velocity();
+void adma_velocity(void);
 
-void slip();
+void slip(void);
 
-void friction();
+void friction(void);
 
-double Bewegungsgleichung_ax();
+double Bewegungsgleichung_ax(void);
 
-double Bewegungsgleichung_ay();
+double Bewegungsgleichung_ay(void);
 
-void AufstandsKraefte();
+void AufstandsKraefte(void);
 
-void RadKraefte();
+void RadKraefte(void);
 
-void GierbewegungBerechnen();
+void GierbewegungBerechnen(void);
 
-void SystemmatrixBerechnen();
+void SystemmatrixBerechnen(void);
 
-void deltasBerechnen();
+void deltasBerechnen(void);
 
-void saving_current_state();
+void saving_current_state(void);
 
 // For test purposes input parameter is cycle integer
 void calculate_C_and_D(size_t cyc);
+
+void difference_debug(void);
 
 #endif //ANSICEE_HORIZONTALMODEL_H

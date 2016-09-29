@@ -5,22 +5,22 @@
 #ifndef ANSICEE_INITTEST_H
 #define ANSICEE_INITTEST_H
 
-#include <stdio.h>
+//#include <stdio.h>
 #include <wchar.h>
 #include <gsl/gsl_vector.h>
 
 
-void open_files();
+void open_files(void);
 
-void start_initializing();
+void start_initializing(void);
 
-void start_reading();
+void start_reading(void);
 
 gsl_vector* saving(size_t n);
 
-void create_data();
+void create_data(void);
 
-void printer();
+void printer(void);
 
 
 

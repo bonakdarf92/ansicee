@@ -10,7 +10,7 @@
 #include "horizontalModel.h"
 // #include <gsl/gsl_blas.h>
 #include <gsl/gsl_vector_complex.h>
-#include <stdio.h>
+//#include <stdio.h>
 #include <gsl/gsl_eigen.h>
 
 #define KONSTANTE 1.0
@@ -31,45 +31,47 @@
 // Test funktion
 
 
-void initMatrix();
+void initMatrix(void);
 
-void matrixPresetting();
+void matrixPresetting(void);
 
 gsl_matrix * get_Matrix(size_t n);
 
-void getInputParameter();
+void getInputParameter(void);
 
-void calculate_KS();
+void calculate_KS(void);
 
 void calculate_KI(gsl_matrix* KS, double a0);
 
-void calculate_Ai();
+void calculate_Ai(void);
 
-void calculate_EWI();
+void calculate_EWI(void);
 
 void changing_engineSpeed(int n_updn);
 
-void calculate_Cop();
+void calculate_Cop(void);
 
-void calculate_Dop();
+void calculate_Dop(void);
 
-void matrix_Calculator_EWI();
+void matrix_Calculator_EWI(void);
 
-void tune_matrix_EWI();
+void tune_matrix_EWI(void);
 
 void calculate_KP(gsl_matrix* KS, double b0);
 
-void calculate_AG();
+void calculate_AG(void);
 
-void calculate_EWG();
+void calculate_EWG(void);
 
-void matrix_Calculator_EWG();
+void matrix_Calculator_EWG(void);
 
-void tune_matrix_EWG();
+void tune_matrix_EWG(void);
 
-void tune_KP();
+void tune_KP(void);
 
 double scalar(size_t n);
+
+void calculating_PI_Controller();
 
 
 #endif //ANSICEE_LINEAR_H
