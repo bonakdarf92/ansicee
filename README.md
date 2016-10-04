@@ -11,7 +11,7 @@ Lösungsfindung führt, wird das **Lesen der Codes** und die **Kommentar funktio
 
 - - - -
 
-Im folgende sind einige wichtige Dine zu nennen.
+Im folgende sind einige wichtige Dinge zu nennen.
 
 * Neue Programmteile sind immer in einem neuen Branch zu führen
 * Vor dem **merge** mit dem master immer Absprache mit Betreuer oder einem zuständigen Hiwi

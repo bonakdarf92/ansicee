@@ -2,8 +2,13 @@
 // Created by Farid Bonakdar on 04.08.16.
 //
 
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_vector.h>
+#include <memory.h>
 #include "InitTest.h"
 #include "horizontalModel.h"
+#include <string.h>
+
 
 /*
  * This Class is generated to initialize all data for
@@ -114,7 +119,38 @@ gsl_vector* saving(size_t n) {
 void create_data(void) {
     // TODO Implement core
 }
-void printer(void){
+
+
+
+/*
+ * This Method is written for debugging process.
+ * It gets a matrix or a vector an show all values of
+ * the structure in the terminal
+ */
+void printer(gsl_matrix* matrix, gsl_vector* vector){
+    if (matrix != NULL && vector == NULL) {
+        size_t rows = matrix->size1;
+        size_t col = matrix->size2;
+        size_t i;
+        size_t j;
+        printf("_________________");
+        for (i = 0; i < rows; i++) {
+            printf(" \n");
+            for (j = 0; j < col; j++) {
+                printf("%f ", gsl_matrix_get(matrix, i, j));
+            }
+        }
+        printf("\n_________________");
+    }
+    if (matrix == NULL && vector != NULL){
+        size_t rows = vector->size;
+        size_t i;
+        printf("[ ");
+        for (i = 0; i < rows; i++) {
+            printf("%f ",gsl_vector_get(vector, i));
+        }
+        printf(" ]\n");
+    }
 }
 
 /*
@@ -143,4 +179,104 @@ void open_files(void) {
     geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt", "rw");
     geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt", "rw");
     gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
+}
+
+/*
+ * This method gets an array of cycle times an prints the
+ * desired output.
+ * --> "MAX" = longest calculation time
+ * --> "MIN" = shortest calculation time
+ * --> "TOTAL" = whole execution time
+ * e.g
+ * .... calculateCycleTime(timings, "MAX");
+ */
+void calculateCycleTime (float timings[], char *auswahl){
+    // Initializing the output times with random values
+    float maxTime = timings[0];
+
+    // Minimal time must be big enough to get a sensible output
+    float minTime = 200.0;
+
+    // Starting with 0
+    float gesamtzeit = 0.0;
+
+    // Declaration of counters used in for-loop
+    size_t i, j, k;
+    size_t count = sizeof(&timings)/ sizeof(float);
+
+    /*
+     * If auswahl is "MAX" iterate over all array entries and
+     * save the bigger time in maxTime
+     * else continue
+     * At the end print the value
+     */
+    if(compare_strings("MAX", auswahl) == 0) {
+        for (i = 0; i< count; i++) {
+            if (maxTime <= timings[i]){
+                maxTime = timings[i];
+            } else continue;
+        }
+        printf(" Maximalzeit betraegt %g us\n", 1000000*maxTime);
+    }
+
+    /*
+     * If auswahl is "MIN" iterate over all array entries and
+     * save the smallest time in minTime
+     * else continue
+     * At the end print the value
+     */
+    if(compare_strings("MIN", auswahl) == 0) {
+        for (j = 0; j< count; j++) {
+            if (minTime >= timings[j]){
+                minTime = timings[j];
+            } else continue;
+        }
+        printf(" Minimalzeit betraegt %g us\n", 1000000*minTime);
+    }
+
+    /*
+     * If auswahl is "Total" iterate over all array entries and
+     * increment the value to gesamtzeit
+     * At the end print the value
+     */
+    if(compare_strings("Total", auswahl) == 0) {
+        for (k = 0; k< count; k++) {
+                gesamtzeit += timings[k];
+        }
+        printf(" Gesamtzeit betraegt %g us\n", 1000000*gesamtzeit);
+    }
+
+}
+
+/*
+ * This Method gets two time clocks and calculates the execution time
+ * in respect to the arch specific clocks per second and return it
+ * as float
+ */
+float saveTiming(clock_t Anfang, clock_t Ende){
+    float time = (float) (Ende - Anfang) / CLOCKS_PER_SEC;
+    return time;
+}
+
+/*
+ * This method compares the two input strings with each other
+ * and return 0
+ */
+int compare_strings(char a[], char b[]) {
+
+    size_t counter;
+    counter = 0;
+
+    // This while statement compares the lengths of the two strings
+    while (a[counter] == b[counter]) {
+        if (a[counter] == '\0' || b[counter] == '\0')
+            break;
+        counter++;
+    }
+
+    // If content of two strings is the same then return value is 0 else -1
+    if (a[counter] == '\0' && b[counter] == '\0')
+        return 0;
+    else
+        return -1;
 }
