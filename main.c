@@ -14,6 +14,7 @@
 #include <sys/time.h>
 //#include "matrizeCalculator.h"
 #include "InitTest.h"
+#include "ErrorCorrection.h"
 
 
 
@@ -58,6 +59,8 @@ int main() {
     calculateCycleTime(timings, "Total");
     clock_t omega = clock();
 
-    printf("Gesamte Berechnung dauert %g", (float) (omega - alpha) / CLOCKS_PER_SEC);
+    printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);
+
+    printf("Unterschied betraegt %f", calculate_difference(getVector(1),getVector(11)));
     return 0;
 }
