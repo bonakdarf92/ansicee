@@ -20,18 +20,19 @@
 
 
 int main() {
+    clock_t alpha = clock();
 
-    if(RegelungOn==1)
+    //if(RegelungOn==1)
     initializeVector();
-    open_files();
-    start_initializing();
+    open_files(0);
+    start_initializing(0);
     start_reading();
     initTest();
     initMatrix();
     matrixPresetting();
     size_t zaehler = 0;
-    float timinings[6000];
-    while (zaehler < 6000) {
+    float timings[61001];
+    while (zaehler < 61001) {
         // Taking time for performance
         clock_t begin = clock();
 
@@ -47,16 +48,16 @@ int main() {
         clock_t end = clock();
 
         // Speichern der Zeitpunkte in das Array
-        timinings[zaehler] = saveTiming(begin, end);
+        timings[zaehler] = saveTiming(begin, end);
 
         zaehler++;
     }
-    size_t j;
-    for (j = 0;j<6000;j++){
-        printf(" Zeit : %g\n",timinings[j]);
-    }
-    calculateCycleTime(timinings, "MIN");
-    calculateCycleTime(timinings, "MAX");
-    calculateCycleTime(timinings, "Total");
+    print_Timings(timings, sizeof(timings)/ sizeof(float));
+    calculateCycleTime(timings, "MIN");
+    calculateCycleTime(timings, "MAX");
+    calculateCycleTime(timings, "Total");
+    clock_t omega = clock();
+
+    printf("Gesamte Berechnung dauert %g", (float) (omega - alpha) / CLOCKS_PER_SEC);
     return 0;
 }

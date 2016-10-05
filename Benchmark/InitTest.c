@@ -49,20 +49,35 @@ gsl_vector* yawrate;
  * This method initialize all vectors
  * The size of the vector must be the same as the file size
  */
-void start_initializing(void) {
-    n1 = gsl_vector_alloc(6001);
-    n2 = gsl_vector_alloc(6001);
-    n3 = gsl_vector_alloc(6001);
-    delta1 = gsl_vector_alloc(6001);
-    delta2 = gsl_vector_alloc(6001);
-    delta3 = gsl_vector_alloc(6001);
-    deltaDyn1 = gsl_vector_alloc(6001);
-    deltaDyn2 = gsl_vector_alloc(6001);
-    deltaDyn3 = gsl_vector_alloc(6001);
-    velocity_x = gsl_vector_alloc(6001);
-    velocity_y = gsl_vector_alloc(6001);
-    yawrate = gsl_vector_alloc(6001);
-
+void start_initializing(size_t choice) {
+    if(choice == 1) {
+        n1 = gsl_vector_alloc(6001);
+        n2 = gsl_vector_alloc(6001);
+        n3 = gsl_vector_alloc(6001);
+        delta1 = gsl_vector_alloc(6001);
+        delta2 = gsl_vector_alloc(6001);
+        delta3 = gsl_vector_alloc(6001);
+        deltaDyn1 = gsl_vector_alloc(6001);
+        deltaDyn2 = gsl_vector_alloc(6001);
+        deltaDyn3 = gsl_vector_alloc(6001);
+        velocity_x = gsl_vector_alloc(6001);
+        velocity_y = gsl_vector_alloc(6001);
+        yawrate = gsl_vector_alloc(6001);
+    }
+    if(choice == 0){
+        n1 = gsl_vector_alloc(61001);
+        n2 = gsl_vector_alloc(61001);
+        n3 = gsl_vector_alloc(61001);
+        delta1 = gsl_vector_alloc(61001);
+        delta2 = gsl_vector_alloc(61001);
+        delta3 = gsl_vector_alloc(61001);
+        deltaDyn1 = gsl_vector_alloc(61001);
+        deltaDyn2 = gsl_vector_alloc(61001);
+        deltaDyn3 = gsl_vector_alloc(61001);
+        velocity_x = gsl_vector_alloc(61001);
+        velocity_y = gsl_vector_alloc(61001);
+        yawrate = gsl_vector_alloc(61001);
+    }
 }
 
 /*
@@ -159,7 +174,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
  *
  *
  */
-void open_files(void) {
+void open_files(size_t choice) {
     /*
      * Change your current path for testing
      * Beware of Operating System and use of slash
@@ -167,18 +182,38 @@ void open_files(void) {
      * OSX/Linux --> /
      * Windows   --> \
      */
-    n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw Data/n_1.txt", "rw");
-    n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_2.txt", "rw");
-    n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_3.txt", "rw");
-    delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_1.txt", "rw");
-    delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_2.txt", "rw");
-    delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_3.txt", "rw");
-    delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_1.txt", "rw");
-    delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_2.txt", "rw");
-    delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_3.txt", "rw");
-    geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt", "rw");
-    geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt", "rw");
-    gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
+
+    if(choice == 1) {
+        n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw Data/n_1.txt", "rw");
+        n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_2.txt", "rw");
+        n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_3.txt", "rw");
+        delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_1.txt", "rw");
+        delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_2.txt", "rw");
+        delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_3.txt", "rw");
+        delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_1.txt", "rw");
+        delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_2.txt", "rw");
+        delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_3.txt", "rw");
+        geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt",
+                                  "rw");
+        geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt",
+                                  "rw");
+        gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
+    }
+    if(choice == 0){
+        n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n1.txt", "rw");
+        n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n2.txt", "rw");
+        n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n3.txt", "rw");
+        delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta1.txt", "rw");
+        delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta2.txt", "rw");
+        delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta3.txt", "rw");
+        delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn1.txt", "rw");
+        delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn2.txt", "rw");
+        delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn3.txt", "rw");
+        geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
+        geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
+        gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
+
+    }
 }
 
 /*
@@ -279,4 +314,12 @@ int compare_strings(char a[], char b[]) {
         return 0;
     else
         return -1;
+}
+
+void print_Timings(float timings[],size_t size){
+    size_t j;
+    for (j = 0;j<size;j++){
+        printf(" Zeit : %g\n",timings[j]);
+    }
+
 }

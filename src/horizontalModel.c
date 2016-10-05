@@ -75,8 +75,8 @@ void initializeVector(void){
     Fx = gsl_vector_alloc(3);       // Vector Fx
     Fy = gsl_vector_alloc(3);       // Vector Fy
     acc = gsl_vector_alloc(3);      // Vector acc
-    test_ug = gsl_matrix_alloc(9, 6001);
-    test_xg = gsl_matrix_alloc(3, 6001);
+    test_ug = gsl_matrix_alloc(9, 61001);
+    test_xg = gsl_matrix_alloc(3, 61001);
 
 }
 

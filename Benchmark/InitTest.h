@@ -11,9 +11,9 @@
 #include <gsl/gsl_matrix.h>
 
 
-void open_files(void);
+void open_files(size_t choice);
 
-void start_initializing(void);
+void start_initializing(size_t choice);
 
 void start_reading(void);
 
@@ -28,6 +28,8 @@ void calculateCycleTime (float timings[], char *auswahl);
 float saveTiming(clock_t Anfang, clock_t Ende);
 
 int compare_strings(char a[], char b[]);
+
+void print_Timings(float timings[],size_t size);
 
 
 
