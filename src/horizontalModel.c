@@ -43,6 +43,8 @@
     gsl_vector* acc;      // Vector acc
     gsl_matrix* test_ug;  // Matrix for testing and simulation ug
     gsl_matrix* test_xg;  // Matrix for testing and simulation xg
+    gsl_matrix* testCmatrix;
+    gsl_matrix* testDmatrix;
 
 
 /*
@@ -77,6 +79,8 @@ void initializeVector(void){
     acc = gsl_vector_alloc(3);      // Vector acc
     test_ug = gsl_matrix_alloc(9, 61001);
     test_xg = gsl_matrix_alloc(3, 61001);
+    testCmatrix = gsl_matrix_alloc(18, 61001);
+    testDmatrix = gsl_matrix_alloc(18, 61001);
 
 }
 
@@ -172,6 +176,7 @@ void testVector(size_t n){
 
     gsl_matrix_get_col(ug, test_ug, n);
     gsl_matrix_get_col(xg, test_xg, n);
+    //gsl_matrix_get_col()
 }
 
 void initTest(void){

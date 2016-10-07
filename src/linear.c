@@ -2,12 +2,7 @@
 // Created by Farid Bonakdar on 30.06.16.
 //
 
-#include <gsl/gsl_vector.h>
-#include <gsl/gsl_matrix.h>
 #include "linear.h"
-#include <gsl/gsl_blas.h>
-#include <gsl/gsl_complex.h>
-#include <gsl/gsl_linalg.h>
 
 
 gsl_matrix* ASystem;        // Declaration of Matrix A
@@ -22,7 +17,7 @@ gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
 gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
 gsl_matrix* EW_G1;
-gsl_matrix* EWI_output;      // Declaration of output Matrix EWI
+gsl_matrix* EWI_output;     // Declaration of output Matrix EWI
 gsl_matrix* EWG_output;
 
 gsl_vector* C_in;           // Declaration of input Matrix C

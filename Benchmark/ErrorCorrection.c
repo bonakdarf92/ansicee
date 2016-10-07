@@ -5,14 +5,18 @@
 #include "ErrorCorrection.h"
 
 
-gsl_rstat_workspace* workspace;         // Workspace for statistical operations
+gsl_rstat_workspace* workspace2;     // Workspace for statistical operations
+gsl_vector* cmatrix;
+gsl_vector* dmatrix;
+
 
 /*
  * This function initializes the workspace for
  * all further calculations
  */
 void initCorrection(){
-    workspace = gsl_rstat_alloc();
+    workspace2 = gsl_rstat_alloc();
+    //cmatrix = gsl_matrix_alloc()
 }
 
 /*
@@ -46,11 +50,11 @@ double calculate_difference(gsl_vector* one, gsl_vector* two){
 
         // Add each vector value to workspace for statistic calculation
         for (i = 0; i < a ; i++) {
-            gsl_rstat_add(gsl_vector_get(temp,i),workspace);
+            gsl_rstat_add(gsl_vector_get(temp,i),workspace2);
         }
 
         // Return root mean square of difference vector
-        rms = gsl_rstat_rms(workspace);
+        rms = gsl_rstat_rms(workspace2);
     }
 
     return rms;

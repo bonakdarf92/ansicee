@@ -30,6 +30,8 @@ FILE* delta_dyn_3;
 FILE* geschwindigkeit_x;
 FILE* geschwindigkeit_y;
 FILE* gierrate;
+FILE* Cmat;
+FILE* Dmat;
 gsl_vector* n1;
 gsl_vector* n2;
 gsl_vector* n3;
@@ -42,6 +44,8 @@ gsl_vector* deltaDyn3;
 gsl_vector* velocity_x;
 gsl_vector* velocity_y;
 gsl_vector* yawrate;
+gsl_matrix* cMatrix;
+gsl_matrix* dMatrix;
 
 
 
@@ -77,6 +81,8 @@ void start_initializing(size_t choice) {
         velocity_x = gsl_vector_alloc(61001);
         velocity_y = gsl_vector_alloc(61001);
         yawrate = gsl_vector_alloc(61001);
+        cMatrix = gsl_matrix_alloc(61001, 18);
+        dMatrix = gsl_matrix_alloc(61001, 18);
     }
 }
 
@@ -97,9 +103,15 @@ void start_reading(void) {
     gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
     gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
     gsl_vector_fscanf(gierrate, yawrate);
+    gsl_matrix_fscanf(Cmat, cMatrix);
+    gsl_matrix_fscanf(Dmat, dMatrix);
 
 }
 
+/*
+ * This method gets an input number and returns a vector
+ * which will be stored for later calculations
+ */
 gsl_vector* saving(size_t n) {
     switch (n){
         case 1:
@@ -212,6 +224,9 @@ void open_files(size_t choice) {
         geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
         geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
         gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
+        Cmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/CMatrix.txt", "rw");
+        Dmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/DMatrix.txt", "rw");
+
 
     }
 }
@@ -316,6 +331,9 @@ int compare_strings(char a[], char b[]) {
         return -1;
 }
 
+/*
+ * This method prints out how much time the calculation takes
+ */
 void print_Timings(float timings[],size_t size){
     size_t j;
     for (j = 0;j<size;j++){

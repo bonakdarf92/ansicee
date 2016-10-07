@@ -1,18 +1,12 @@
 //#include <stdio.h>
 #include <stdint.h>
-//#include "modelAntrieb.h"
-//#include "DGL_Berechnen.h"
-//#include "Subsysteme.h"
-//#include "calcMatrix_A_B.h"
 #include "horizontalModel.h"
 #include "linear.h"
-//#include "Lenkmotoren.h"
 #include <time.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
 #include <sys/times.h>
 #include <sys/time.h>
-//#include "matrizeCalculator.h"
 #include "InitTest.h"
 #include "ErrorCorrection.h"
 
@@ -32,8 +26,8 @@ int main() {
     initMatrix();
     matrixPresetting();
     size_t zaehler = 0;
-    float timings[61001];
-    while (zaehler < 61001) {
+    float timings[61000];
+    while (zaehler < 61000) {
         // Taking time for performance
         clock_t begin = clock();
 
@@ -61,6 +55,6 @@ int main() {
 
     printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);
 
-    printf("Unterschied betraegt %f", calculate_difference(getVector(1),getVector(11)));
+    //printf("Unterschied betraegt %f", calculate_difference(getVector(1),getVector(11)));
     return 0;
 }

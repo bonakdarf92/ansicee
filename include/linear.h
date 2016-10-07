@@ -8,10 +8,12 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include "horizontalModel.h"
-// #include <gsl/gsl_blas.h>
 #include <gsl/gsl_vector_complex.h>
-//#include <stdio.h>
 #include <gsl/gsl_eigen.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_linalg.h>
+
 
 #define KONSTANTE 1.0
 #define I_MAX_A 10
