@@ -143,6 +143,20 @@ gsl_vector* saving(size_t n) {
     }
 }
 
+/*
+ * This Method gets an input number and returns a matrix
+ * which will be stored for later calculations
+ */
+gsl_matrix* savingMatrix(size_t n){
+    switch (n){
+        case 1:
+            return cMatrix;
+        case 2:
+            return dMatrix;
+        default:
+            return 0;
+    }
+}
 void create_data(void) {
     // TODO Implement core
 }
@@ -174,7 +188,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%f ",gsl_vector_get(vector, i));
+            printf("%.3f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }

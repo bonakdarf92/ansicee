@@ -6,9 +6,13 @@
 
 
 gsl_rstat_workspace* workspace2;     // Workspace for statistical operations
-gsl_vector* cmatrix;
-gsl_vector* dmatrix;
-
+gsl_vector* CMatrixTest;
+gsl_vector* DMatrixTest;
+gsl_vector* CMatrixRef;
+gsl_vector* DMatrixRef;
+gsl_vector* difference;
+double rmsErrorC [61001];
+double rmsErrorD [61001];
 
 /*
  * This function initializes the workspace for
@@ -16,7 +20,11 @@ gsl_vector* dmatrix;
  */
 void initCorrection(){
     workspace2 = gsl_rstat_alloc();
-    //cmatrix = gsl_matrix_alloc()
+    CMatrixRef = gsl_vector_alloc(18);
+    DMatrixRef = gsl_vector_alloc(18);
+    CMatrixTest = gsl_vector_alloc(18);
+    DMatrixTest = gsl_vector_alloc(18);
+    difference = gsl_vector_alloc(18);
 }
 
 /*
@@ -25,7 +33,7 @@ void initCorrection(){
  * The lower the value the bigger the precision
  */
 double calculate_difference(gsl_vector* one, gsl_vector* two){
-    initCorrection();
+    //initCorrection();
 
     // Initialize output value, rang of both vectors and its sizes
     double rms;
@@ -58,4 +66,48 @@ double calculate_difference(gsl_vector* one, gsl_vector* two){
     }
 
     return rms;
+}
+
+/*
+ * This Method gets two input vectors, one calculated from the horizontal model
+ * and a reference one
+ */
+gsl_vector* simple_difference(gsl_vector* calculated, gsl_vector* reference){
+    difference = calculated;
+    gsl_vector_sub(difference, reference);
+    return difference;
+}
+
+/*
+ * This Method picks the Vectors C and D from the C-Code
+ * and the reference Vectors from the Simulink Model
+ */
+void storeCurrentInformation(size_t cyc){
+    gsl_matrix_get_row(CMatrixRef, savingMatrix(1), cyc);
+    gsl_matrix_get_row(DMatrixRef, savingMatrix(2), cyc);
+    CMatrixTest = getMatrix(1);
+    DMatrixTest = getMatrix(2);
+}
+
+
+void calculateCorrection(size_t cyc){
+    //initCorrection();
+    storeCurrentInformation(cyc);
+    //rmsErrorC[cyc] = calculate_difference(getMatrix(1), CMatrixRef);
+    //rmsErrorD[cyc] = calculate_difference(getMatrix(2), DMatrixRef);
+    difference = simple_difference(getMatrix(1), CMatrixRef);
+    size_t j;
+    for (j = 0; j < 18 ; ++j) {
+        printf("%.4f ",gsl_vector_get(difference,j));
+    }
+    printf("\n");
+}
+
+gsl_vector* returnReference(size_t n){
+    switch (n){
+        case 1:
+            return CMatrixRef;
+        case 2:
+            return DMatrixRef;
+    }
 }

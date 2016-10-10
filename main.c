@@ -13,8 +13,14 @@
 
 
 
-
 int main() {
+
+    gsl_vector* tempnachher;
+    tempnachher = gsl_vector_alloc(3);
+
+
+    gsl_vector* tempjetzt;
+    tempjetzt = gsl_vector_alloc(3);
     clock_t alpha = clock();
 
     //if(RegelungOn==1)
@@ -25,9 +31,19 @@ int main() {
     initTest();
     initMatrix();
     matrixPresetting();
+    initCorrection();
     size_t zaehler = 0;
-    float timings[61000];
-    while (zaehler < 61000) {
+    float timings[1001];
+    while (zaehler < 1001) {
+
+        //tempnachher = getVector(3);
+        //gsl_vector_sub(temp, getVector(3));
+        //printf("xg_alt.: %zu", zaehler);
+        //printer(NULL, tempnachher);
+        saving_current_state();
+        storeCurrentInformation(zaehler);
+
+
         // Taking time for performance
         clock_t begin = clock();
 
@@ -45,12 +61,31 @@ int main() {
         // Speichern der Zeitpunkte in das Array
         timings[zaehler] = saveTiming(begin, end);
 
+        //gsl_matrix_get_row(temp, savingMatrix(1), zaehler);
+        //calculateCorrection(zaehler);
+
+        //gsl_vector_sub(temp, getVector(3));
+        //printf("xg_mom.: %zu",zaehler);
+        //printer(NULL, getMatrix(1));
+
+        //tempjetzt = getVector(1);
+        //printf("xg_alt.: %zu",zaehler);
+        //printer(NULL, getVector(3));
+        //printer(NULL, tempnachher);
+
+
+
+        //tempjetzt = getVector(1);
+        printf("Cref.: %zu", zaehler);
+        printer(NULL, returnReference(1));
+        printf("Cakt.: %zu", zaehler);
+        printer(NULL,getMatrix(1));
         zaehler++;
     }
-    print_Timings(timings, sizeof(timings)/ sizeof(float));
-    calculateCycleTime(timings, "MIN");
-    calculateCycleTime(timings, "MAX");
-    calculateCycleTime(timings, "Total");
+    //print_Timings(timings, sizeof(timings)/ sizeof(float));
+    //calculateCycleTime(timings, "MIN");
+    //calculateCycleTime(timings, "MAX");
+    //calculateCycleTime(timings, "Total");
     clock_t omega = clock();
 
     printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);

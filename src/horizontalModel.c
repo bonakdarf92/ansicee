@@ -12,39 +12,41 @@
  * Stored here to get access to each scalar, vector and matrix.
  */
 
-    gsl_vector* xg;       // Vector xg
-    gsl_vector* ug;       // Vector ug
-    gsl_vector* xg_alt;   // Vector xg_alt
-    gsl_vector* ug_alt;   // Vector ug_Alt
-    gsl_vector* acc_alt;  // Vector acc_alt
-    gsl_vector* delta_x;  // Vector delta_x
-    gsl_vector* delta_u;  // Vector delta_u
-    gsl_vector* alpha_r;  // Vector alpha_r
-    gsl_vector* alpha_x;   // Vector alpha_x
-    gsl_vector* alpha_y;   // Vector alpha_y
-    gsl_vector* C;        // Vector C
-    gsl_vector* D;        // Vector D
-    double v_1;           // Velocity No.1
-    double v_2;           // Velocity No.2
-    double v_3;           // Velocity No.3
-    double beta_1;        // Angle beta_1
-    double beta_2;        // Angle beta_2
-    double beta_3;        // Angle beta_3
-    gsl_vector* beta;     // Vector beta
-    gsl_vector* v;        // Vector v
-    gsl_vector* vr;       // Vector vr
-    gsl_vector* sr;       // Vector sr
-    gsl_vector* mu;       // Vector mu
-    gsl_vector* mux;      // Vector mu
-    gsl_vector* muy;      // Vector mu
-    gsl_vector* Fz;       // Force Fz
-    gsl_vector* Fx;       // Force Fx
-    gsl_vector* Fy;       // Force Fy
-    gsl_vector* acc;      // Vector acc
-    gsl_matrix* test_ug;  // Matrix for testing and simulation ug
-    gsl_matrix* test_xg;  // Matrix for testing and simulation xg
-    gsl_matrix* testCmatrix;
-    gsl_matrix* testDmatrix;
+    gsl_vector* xg;             // Vector xg
+    gsl_vector* ug;             // Vector ug
+    gsl_vector* xg_alt;         // Vector xg_alt
+    gsl_vector* ug_alt;         // Vector ug_Alt
+    gsl_vector* acc_alt;        // Vector acc_alt
+    gsl_vector* delta_x;        // Vector delta_x
+    gsl_vector* delta_u;        // Vector delta_u
+    gsl_vector* alpha_r;        // Vector alpha_r
+    gsl_vector* alpha_x;        // Vector alpha_x
+    gsl_vector* alpha_y;        // Vector alpha_y
+    gsl_vector* C;              // Vector C
+    gsl_vector* D;              // Vector D
+    double v_1;                 // Velocity No.1
+    double v_2;                 // Velocity No.2
+    double v_3;                 // Velocity No.3
+    double beta_1;              // Angle beta_1
+    double beta_2;              // Angle beta_2
+    double beta_3;              // Angle beta_3
+    gsl_vector* beta;           // Vector beta
+    gsl_vector* v;              // Vector v
+    gsl_vector* vr;             // Vector vr
+    gsl_vector* sr;             // Vector sr
+    gsl_vector* mu;             // Vector mu
+    gsl_vector* mux;            // Vector mu
+    gsl_vector* muy;            // Vector mu
+    gsl_vector* Fz;             // Force Fz
+    gsl_vector* Fx;             // Force Fx
+    gsl_vector* Fy;             // Force Fy
+    gsl_vector* acc;            // Vector acc
+    gsl_matrix* test_ug;        // Matrix for testing and simulation ug
+    gsl_matrix* test_xg;        // Matrix for testing and simulation xg
+    gsl_matrix* testCmatrix;    // Matrix C for checking the output of this class (Simulink Model)
+    gsl_matrix* testDmatrix;    // Matrix D for checking the output of this class (Simulink Model)
+    double ax;
+    double ay;
 
 
 /*
@@ -176,7 +178,6 @@ void testVector(size_t n){
 
     gsl_matrix_get_col(ug, test_ug, n);
     gsl_matrix_get_col(xg, test_xg, n);
-    //gsl_matrix_get_col()
 }
 
 void initTest(void){
@@ -404,6 +405,7 @@ double Bewegungsgleichung_ay(void) {
 void AufstandsKraefte(void) {
 
     // current saving of ax and ay for caluclations
+    //TODO Umschreiben Das ist redundant
     double a_x = Bewegungsgleichung_ax();
     double a_y = Bewegungsgleichung_ay();
     /* Declaration of output vector and
@@ -645,14 +647,14 @@ void calculate_C_and_D(size_t cyc){
     adma_velocity();
     slip();
     friction();
-    double ax = Bewegungsgleichung_ax();
-    double ay = Bewegungsgleichung_ay();
+    ax = Bewegungsgleichung_ax();
+    ay = Bewegungsgleichung_ay();
     AufstandsKraefte();
     RadKraefte();
     GierbewegungBerechnen();
     deltasBerechnen();
     SystemmatrixBerechnen();
-    saving_current_state();
+    //saving_current_state();
 }
 
 /*
