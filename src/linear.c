@@ -266,18 +266,6 @@ void calculate_KS(void){
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, temp1, 0.0, temp2);
     gsl_matrix_sub(KS, temp2);
 
-/*
-    printf("KS_________->\n");
-    for (int i = 0; i < 3 ; i++) {
-        for (int j = 0; j < 12 ; j++) {
-            printf("%g ", gsl_matrix_get(KS,i,j));
-        }
-        printf("\n ");
-    }
-
-    printf("<-_________KS\n");
-    */
-
 }
 // TODO might be a BOTTLENECK !!!
 

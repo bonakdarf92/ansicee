@@ -27,11 +27,33 @@ FILE* delta_3;
 FILE* delta_dyn_1;
 FILE* delta_dyn_2;
 FILE* delta_dyn_3;
-FILE* geschwindigkeit_x;
-FILE* geschwindigkeit_y;
-FILE* gierrate;
+//FILE* geschwindigkeit_x;
+//FILE* geschwindigkeit_y;
+//FILE* gierrate;
 FILE* Cmat;
 FILE* Dmat;
+FILE* alphar;
+FILE* alphax;
+FILE* alphay;
+FILE* axFile;
+FILE* ayFile;
+FILE* betaFile;
+FILE* FzFile;
+FILE* FxFile;
+FILE* FyFile;
+FILE* muFile;
+FILE* muxFile;
+FILE* muyFile;
+FILE* psiPPFile;
+FILE* vFile;
+FILE* vrFile;
+FILE* stepUFile;
+FILE* stepXFile;
+FILE* DrehzahlenFile;
+FILE* statLenkFile;
+FILE* dynLenkFile;
+FILE* xgFile;
+
 gsl_vector* n1;
 gsl_vector* n2;
 gsl_vector* n3;
@@ -46,7 +68,27 @@ gsl_vector* velocity_y;
 gsl_vector* yawrate;
 gsl_matrix* cMatrix;
 gsl_matrix* dMatrix;
-
+gsl_vector* a_x;
+gsl_vector* a_y;
+gsl_matrix* alphaRMatrix;
+gsl_matrix* alphaXMatrix;
+gsl_matrix* alphaYMatrix;
+gsl_matrix* betaMatrix;
+gsl_matrix* FxMatrix;
+gsl_matrix* FyMatrix;
+gsl_matrix* FzMatrix;
+gsl_matrix* muMatrix;
+gsl_matrix* muXMatrix;
+gsl_matrix* muYMatrix;
+gsl_vector* psiPPVec;
+gsl_matrix* stepXMatrix;
+gsl_matrix* stepUMatrix;
+gsl_matrix* vMatrix;
+gsl_matrix* vrMatrix;
+gsl_matrix* DrehzahlenMat;
+gsl_matrix* statLenkMatrix;
+gsl_matrix* dynLenkMatrix;
+gsl_matrix* xgMatrix;
 
 
 /*
@@ -83,6 +125,27 @@ void start_initializing(size_t choice) {
         yawrate = gsl_vector_alloc(61001);
         cMatrix = gsl_matrix_alloc(61001, 18);
         dMatrix = gsl_matrix_alloc(61001, 18);
+        a_x = gsl_vector_alloc(61001);
+        a_y = gsl_vector_alloc(61001);
+        alphaRMatrix = gsl_matrix_alloc(61001, 3);
+        alphaXMatrix = gsl_matrix_alloc(61001, 3);
+        alphaYMatrix = gsl_matrix_alloc(61001, 3);
+        betaMatrix = gsl_matrix_alloc(61001, 3);
+        FxMatrix = gsl_matrix_alloc(61001, 3);
+        FyMatrix = gsl_matrix_alloc(61001, 3);
+        FzMatrix = gsl_matrix_alloc(61001, 3);
+        muMatrix = gsl_matrix_alloc(61001, 3);
+        muXMatrix = gsl_matrix_alloc(61001, 3);
+        muYMatrix = gsl_matrix_alloc(61001, 3);
+        psiPPVec = gsl_vector_alloc(61001);
+        stepXMatrix = gsl_matrix_alloc(61001, 3);
+        stepUMatrix = gsl_matrix_alloc(61001, 9);
+        vMatrix = gsl_matrix_alloc(61001, 3);
+        vrMatrix = gsl_matrix_alloc(61001, 3);
+        DrehzahlenMat = gsl_matrix_alloc(61001, 3);
+        statLenkMatrix = gsl_matrix_alloc(61001, 3);
+        dynLenkMatrix = gsl_matrix_alloc(61001, 3);
+        xgMatrix = gsl_matrix_alloc(61001, 3);
     }
 }
 
@@ -100,12 +163,32 @@ void start_reading(void) {
     gsl_vector_fscanf(delta_dyn_1, deltaDyn1);
     gsl_vector_fscanf(delta_dyn_2, deltaDyn2);
     gsl_vector_fscanf(delta_dyn_3, deltaDyn3);
-    gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
-    gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
-    gsl_vector_fscanf(gierrate, yawrate);
+    //gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
+    //gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
+    //gsl_vector_fscanf(gierrate, yawrate);
     gsl_matrix_fscanf(Cmat, cMatrix);
     gsl_matrix_fscanf(Dmat, dMatrix);
-
+    gsl_matrix_fscanf(alphar, alphaRMatrix);
+    gsl_matrix_fscanf(alphax, alphaXMatrix);
+    gsl_matrix_fscanf(alphay, alphaYMatrix);
+    gsl_vector_fscanf(axFile, a_x);
+    gsl_vector_fscanf(ayFile, a_y);
+    gsl_matrix_fscanf(betaFile, betaMatrix);
+    gsl_matrix_fscanf(FxFile, FxMatrix);
+    gsl_matrix_fscanf(FyFile, FyMatrix);
+    gsl_matrix_fscanf(FzFile, FzMatrix);
+    gsl_matrix_fscanf(muFile, muMatrix);
+    gsl_matrix_fscanf(muyFile, muYMatrix);
+    gsl_matrix_fscanf(muxFile, muXMatrix);
+    gsl_vector_fscanf(psiPPFile, psiPPVec);
+    gsl_matrix_fscanf(vFile, vMatrix);
+    gsl_matrix_fscanf(vrFile, vrMatrix);
+    gsl_matrix_fscanf(stepXFile, stepXMatrix);
+    gsl_matrix_fscanf(stepUFile, stepUMatrix);
+    gsl_matrix_fscanf(DrehzahlenFile, DrehzahlenMat);
+    gsl_matrix_fscanf(statLenkFile, statLenkMatrix);
+    gsl_matrix_fscanf(dynLenkFile, dynLenkMatrix);
+    gsl_matrix_fscanf(xgFile, xgMatrix);
 }
 
 /*
@@ -138,6 +221,12 @@ gsl_vector* saving(size_t n) {
             return velocity_y;
         case 12:
             return yawrate;
+        case 13:
+            return a_x;
+        case 14:
+            return a_y;
+        case 15:
+            return psiPPVec;
         default:
             return 0;
     }
@@ -153,6 +242,38 @@ gsl_matrix* savingMatrix(size_t n){
             return cMatrix;
         case 2:
             return dMatrix;
+        case 3:
+            return alphaRMatrix;
+        case 4:
+            return alphaXMatrix;
+        case 5:
+            return alphaYMatrix;
+        case 6:
+            return betaMatrix;
+        case 7:
+            return FxMatrix;
+        case 8:
+            return FyMatrix;
+        case 9:
+            return FzMatrix;
+        case 10:
+            return muMatrix;
+        case 11:
+            return muXMatrix;
+        case 12:
+            return muYMatrix;
+        case 13:
+            return stepXMatrix;
+        case 14:
+            return stepUMatrix;
+        case 15:
+            return vMatrix;
+        case 16:
+            return vrMatrix;
+        case 17:
+            return DrehzahlenMat;
+        case 18:
+            return xgMatrix;
         default:
             return 0;
     }
@@ -188,7 +309,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.3f ",gsl_vector_get(vector, i));
+            printf("%.6f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -219,11 +340,11 @@ void open_files(size_t choice) {
         delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_1.txt", "rw");
         delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_2.txt", "rw");
         delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_3.txt", "rw");
-        geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt",
-                                  "rw");
-        geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt",
-                                  "rw");
-        gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
+        //geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt",
+        //                          "rw");
+        //geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt",
+        //                          "rw");
+        //gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
     }
     if(choice == 0){
         n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n1.txt", "rw");
@@ -235,13 +356,32 @@ void open_files(size_t choice) {
         delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn1.txt", "rw");
         delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn2.txt", "rw");
         delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn3.txt", "rw");
-        geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
-        geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
-        gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
+        //geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
+        //geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
+        //gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
         Cmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/CMatrix.txt", "rw");
         Dmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/DMatrix.txt", "rw");
-
-
+        alphar = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/alpha_r.txt", "rw");
+        alphax = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/alpha_x.txt", "rw");
+        alphay = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/alpha_y.txt", "rw");
+        axFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ax.txt", "rw");
+        ayFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ay.txt", "rw");
+        betaFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/beta.txt", "rw");
+        FzFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Fz.txt", "rw");
+        FxFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Fx.txt", "rw");
+        FyFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Fy.txt", "rw");
+        muFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/mu.txt", "rw");
+        muxFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/mux.txt", "rw");
+        muyFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/muy.txt", "rw");
+        psiPPFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/psi_pp.txt", "rw");
+        vFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Geschwindigkeit.txt", "rw");
+        vrFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/vr.txt", "rw");
+        stepUFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/step_u.txt", "rw");
+        stepXFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/step_x.txt", "rw");
+        DrehzahlenFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Drehzahl.txt", "rw");
+        statLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/statischer_Lenkwinkel.txt", "rw");
+        dynLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/dynLenk.txt", "rw");
+        xgFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/vGeschwPsi.txt", "rw");
     }
 }
 
@@ -354,4 +494,22 @@ void print_Timings(float timings[],size_t size){
         printf(" Zeit : %g\n",timings[j]);
     }
 
+}
+
+/*
+ *
+ */
+void drehzahlTester(void){
+    gsl_matrix_get_col(n1, DrehzahlenMat, 0);
+    gsl_matrix_get_col(n2, DrehzahlenMat, 1);
+    gsl_matrix_get_col(n3, DrehzahlenMat, 2);
+    gsl_matrix_get_col(delta1, statLenkMatrix, 0);
+    gsl_matrix_get_col(delta2, statLenkMatrix, 1);
+    gsl_matrix_get_col(delta3, statLenkMatrix, 2);
+    gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
+    gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
+    gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
+    gsl_matrix_get_col(velocity_x, vMatrix, 1);
+    gsl_matrix_get_col(velocity_y, vMatrix, 2);
+    gsl_matrix_get_col(yawrate, vMatrix, 0);
 }

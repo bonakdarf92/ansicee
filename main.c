@@ -14,33 +14,29 @@
 
 
 int main() {
-
-    gsl_vector* tempnachher;
-    tempnachher = gsl_vector_alloc(3);
-
-
-    gsl_vector* tempjetzt;
-    tempjetzt = gsl_vector_alloc(3);
     clock_t alpha = clock();
 
-    //if(RegelungOn==1)
+    gsl_vector* correction;
+    gsl_vector* tempSize3;
+    gsl_vector* tempSize18;
+
+    double korrekterAcc;
+    tempSize3 = gsl_vector_alloc(3);
+    tempSize18 = gsl_vector_alloc(18);
+    correction = gsl_vector_alloc(3);
     initializeVector();
     open_files(0);
     start_initializing(0);
     start_reading();
+    drehzahlTester();
     initTest();
     initMatrix();
     matrixPresetting();
     initCorrection();
     size_t zaehler = 0;
-    float timings[1001];
-    while (zaehler < 1001) {
+    float timings[61001];
+    while (zaehler < 61001) {
 
-        //tempnachher = getVector(3);
-        //gsl_vector_sub(temp, getVector(3));
-        //printf("xg_alt.: %zu", zaehler);
-        //printer(NULL, tempnachher);
-        saving_current_state();
         storeCurrentInformation(zaehler);
 
 
@@ -61,25 +57,30 @@ int main() {
         // Speichern der Zeitpunkte in das Array
         timings[zaehler] = saveTiming(begin, end);
 
-        //gsl_matrix_get_row(temp, savingMatrix(1), zaehler);
-        //calculateCorrection(zaehler);
 
-        //gsl_vector_sub(temp, getVector(3));
-        //printf("xg_mom.: %zu",zaehler);
-        //printer(NULL, getMatrix(1));
+        gsl_matrix_get_row(tempSize18, savingMatrix(2), zaehler);
+        printf("Korrekter Wert: ");
+        printer(NULL, tempSize18);
+        correction = simple_difference(getMatrix(2), tempSize18);
+        printf("Korrektur     : ");
+        printer(NULL, correction);
 
-        //tempjetzt = getVector(1);
-        //printf("xg_alt.: %zu",zaehler);
-        //printer(NULL, getVector(3));
-        //printer(NULL, tempnachher);
+        printf("Berechn. Wert : ");
+        printer(NULL, getMatrix(2));
 
+/*
+        // Vergleich der Beschleunigungen
+        korrekterAcc = gsl_vector_get(saving(15), zaehler);
+        printf("Korrekter Wert: %f\n", korrekterAcc);
+        printf("Berechner Wert: %f\n", gsl_vector_get(getVector(18), 2));
+        printf("Differenz Wert: %f\n", gsl_vector_get(getVector(18), 2)-korrekterAcc);
+*/
 
+        //printf("                  n1       n2       n3       deldyn1   deldyn2   deldyn3   delta1   delta2    delta3\n");
+        //printf(" Vektor ug    : ");
+        //printer(NULL, getVector(2));
 
-        //tempjetzt = getVector(1);
-        printf("Cref.: %zu", zaehler);
-        printer(NULL, returnReference(1));
-        printf("Cakt.: %zu", zaehler);
-        printer(NULL,getMatrix(1));
+        printf("_________________________________\n");
         zaehler++;
     }
     //print_Timings(timings, sizeof(timings)/ sizeof(float));
@@ -87,8 +88,8 @@ int main() {
     //calculateCycleTime(timings, "MAX");
     //calculateCycleTime(timings, "Total");
     clock_t omega = clock();
-
     printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);
+
 
     //printf("Unterschied betraegt %f", calculate_difference(getVector(1),getVector(11)));
     return 0;

@@ -79,4 +79,6 @@ void calculate_C_and_D(size_t cyc);
 
 void difference_debug(void);
 
+double returnAcceleration(size_t n);
+
 #endif //ANSICEE_HORIZONTALMODEL_H

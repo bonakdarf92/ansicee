@@ -10,7 +10,8 @@ gsl_vector* CMatrixTest;
 gsl_vector* DMatrixTest;
 gsl_vector* CMatrixRef;
 gsl_vector* DMatrixRef;
-gsl_vector* difference;
+gsl_vector* difference3;
+gsl_vector* difference18;
 double rmsErrorC [61001];
 double rmsErrorD [61001];
 
@@ -24,7 +25,8 @@ void initCorrection(){
     DMatrixRef = gsl_vector_alloc(18);
     CMatrixTest = gsl_vector_alloc(18);
     DMatrixTest = gsl_vector_alloc(18);
-    difference = gsl_vector_alloc(18);
+    difference3 = gsl_vector_alloc(3);
+    difference18 = gsl_vector_alloc(18);
 }
 
 /*
@@ -73,9 +75,9 @@ double calculate_difference(gsl_vector* one, gsl_vector* two){
  * and a reference one
  */
 gsl_vector* simple_difference(gsl_vector* calculated, gsl_vector* reference){
-    difference = calculated;
-    gsl_vector_sub(difference, reference);
-    return difference;
+    gsl_vector_memcpy(difference18, calculated);
+    gsl_vector_sub(difference18, reference);
+    return difference18;
 }
 
 /*
@@ -95,10 +97,10 @@ void calculateCorrection(size_t cyc){
     storeCurrentInformation(cyc);
     //rmsErrorC[cyc] = calculate_difference(getMatrix(1), CMatrixRef);
     //rmsErrorD[cyc] = calculate_difference(getMatrix(2), DMatrixRef);
-    difference = simple_difference(getMatrix(1), CMatrixRef);
+    difference3 = simple_difference(getMatrix(1), CMatrixRef);
     size_t j;
     for (j = 0; j < 18 ; ++j) {
-        printf("%.4f ",gsl_vector_get(difference,j));
+        printf("%.4f ",gsl_vector_get(difference3, j));
     }
     printf("\n");
 }

@@ -33,6 +33,8 @@ int compare_strings(char a[], char b[]);
 
 void print_Timings(float timings[],size_t size);
 
+void drehzahlTester(void);
+
 
 
 

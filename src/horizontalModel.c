@@ -48,7 +48,6 @@
     double ax;
     double ay;
 
-
 /*
  * Initialization of System matrix C and D.
  * Allocation of inner System vector xg, ug, xg_alt, ug_alt and acc_alt
@@ -148,6 +147,12 @@ gsl_vector* getVector(size_t n) {
             return muy;
         case 18:
             return acc;
+        case 19:
+            return Fz;
+        case 20:
+            return Fx;
+        case 21:
+            return Fy;
         default:
             return 0;
     }
@@ -182,7 +187,7 @@ void testVector(size_t n){
 
 void initTest(void){
 
-    // Creating matrix test_ug for 60 sec simulation
+    // Creating matrix test_ug for 600 sec simulation
     gsl_matrix_set_row(test_ug, 0, saving(1));      // col with 6001 values of n_1
     gsl_matrix_set_row(test_ug, 1, saving(2));      // col with 6001 values of n_2
     gsl_matrix_set_row(test_ug, 2, saving(3));      // col with 6001 values of n_3
@@ -202,6 +207,10 @@ void initTest(void){
  * This method calculates the vectors alpha_r, alpha_x and alpha_y and
  * saves it.
  * The formula is taken from Jan's Horizontal model line 25 to 27
+ *
+ * !!!!!!!!!!!!!!!!!!!!!!!
+ * !! Tested and proven !!
+ * !!!!!!!!!!!!!!!!!!!!!!!
  */
 void slipage(void) {
 
@@ -226,6 +235,10 @@ void slipage(void) {
  * This method calculates the velocity of the driving simulator given by ADMA sensor Data
  * Formula taken from Jan's Horizontal model in line 30 -40
  * Function get access on xg and do the calculations
+ *
+ * !!!!!!!!!!!!!!!!!!!!!
+ * !! Nachkommastelle !!
+ * !!!!!!!!!!!!!!!!!!!!!
  */
 void adma_velocity(void) {
 
@@ -254,7 +267,7 @@ void adma_velocity(void) {
     gsl_vector_set(beta, 2, beta_3);
     gsl_vector_set(v, 0, v_1* fabs(cos(beta_1)));
     gsl_vector_set(v, 1, v_2* fabs(cos(beta_2)));
-    gsl_vector_set(v, 1, v_3* fabs(cos(beta_3)));
+    gsl_vector_set(v, 2, v_3* fabs(cos(beta_3)));
 }
 
 /*
@@ -322,31 +335,51 @@ void friction(void) {
  * better understanding
  * For more Information look up in Jan's MasterThesis or line 63 in Horizontal model
  */
-// TODO alle Einträge nochmal uberpruefen
 double Bewegungsgleichung_ax(void) {
 
     // Declaration of output acceleration ax
     double ax;
+    double mux_all;
+    double muy_all;
+    double alphax_all;
+    double alphay_all;
+    double mux1 = gsl_vector_get(mux, 0);
+    double mux2 = gsl_vector_get(mux, 1);
+    double mux3 = gsl_vector_get(mux, 2);
+    double muy1 = gsl_vector_get(muy, 0);
+    double muy2 = gsl_vector_get(muy, 1);
+    double muy3 = gsl_vector_get(muy, 2);
+    double alphax1 = gsl_vector_get(alpha_x, 0);
+    double alphax2 = gsl_vector_get(alpha_x, 1);
+    double alphax3 = gsl_vector_get(alpha_x, 2);
+    double alphay1 = gsl_vector_get(alpha_x, 0);
+    double alphay2 = gsl_vector_get(alpha_x, 1);
+    double alphay3 = gsl_vector_get(alpha_x, 2);
+
+    mux_all = mux1 + mux2 + mux3;
+    muy_all = muy1 + muy2 + muy3;
+    alphax_all = alphax1 + alphax2 + alphax3;
+    alphay_all = alphay1 + alphay2 + alphay3;
 
     /*
      * For an overview and summary of the long equitation some auxiliary scalars are calculated
      * and stored into the following doubles
      * mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
      */
-    double mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
-    double muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    double alphax_all = gsl_vector_get(alpha_x,0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
-    double alphay_all = gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
+    //mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
+    //muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
+    //alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
+    //alphay_all = gsl_vector_get(alpha_y, 0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
     /* The firstPart is a summary of the first to additions in the big equitation of motion
      * g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
      */
-    double firstPart = GRAVY/3 * mux_all + C_a / MASSE * alphax_all;
+    double firstPart = (GRAVY/3 * mux_all) + (C_a / MASSE * alphax_all);
 
     /* The Factor p1 is a summary of the first big factor in the big equitation
      * [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
      */
-    double p1 = (HCG/LAENGE * (gsl_vector_get(mux, 1) - gsl_vector_get(mux, 2)) ) / ( LAENGE / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2));
+    double p1 = (HCG/LAENGE * (mux2 - mux3)) / ( LAENGE / HCG - muy2 + muy3);
 
     /* The factor p2 is a summary of the second big factor in the fraction
      * mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
@@ -357,13 +390,13 @@ double Bewegungsgleichung_ax(void) {
     double fraction_1 = firstPart + p1 * p2;
 
     // The first quotient part for the big denominator
-    double q1 = 1 - HCG / LAENGE / SQRT3 * (gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2) - 2*gsl_vector_get(mux, 0)) - HCG/LAENGE * (gsl_vector_get(mux,1) - gsl_vector_get(mux,2));
+    double q1 = 1 - HCG / LAENGE / SQRT3 * (mux2 + mux3 - 2 * mux1) - HCG/LAENGE * (mux2 - mux3) / (LAENGE / HCG - muy2 + muy3) * (HCG / LAENGE * (muy2 + muy3 - 2 * muy1) );
 
     // The second quotient part for the big denominator
-    double q2 = (LAENGE / HCG - gsl_vector_get(muy, 2) + gsl_vector_get(muy, 2)) * (HCG / LAENGE * (gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2) - 2 * gsl_vector_get(muy, 0)) );
+    //double q2 = (LAENGE / HCG - muy2 + muy3) * (HCG / LAENGE * (muy2 + muy3 - 2 * muy1) );
 
     // The denominator of the big fraction
-    double fraction_2 = q1 / q2 ;
+    double fraction_2 = q1; // / q2 ;
 
     ax = fraction_1 / fraction_2;
 
@@ -406,8 +439,8 @@ void AufstandsKraefte(void) {
 
     // current saving of ax and ay for caluclations
     //TODO Umschreiben Das ist redundant
-    double a_x = Bewegungsgleichung_ax();
-    double a_y = Bewegungsgleichung_ay();
+    double a_x = returnAcceleration(0);
+    double a_y = returnAcceleration(1);
     /* Declaration of output vector and
      * Calculation of the three Forces FZ_1, FZ_2 and FZ_3
      */
@@ -452,8 +485,8 @@ void GierbewegungBerechnen(void) {
             / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx,2) / 2);
 
     // Filling the Vector acc with acceleration ax, ay and psi_pp
-    gsl_vector_set(acc, 0, Bewegungsgleichung_ax());
-    gsl_vector_set(acc, 1, Bewegungsgleichung_ay());
+    gsl_vector_set(acc, 0, returnAcceleration(0));
+    gsl_vector_set(acc, 1, returnAcceleration(1));
     gsl_vector_set(acc, 2, psi_pp);
     /*
     printf("  acc--> ");
@@ -505,7 +538,7 @@ void SystemmatrixBerechnen(void) {
      * For further information look in manual gsl_matrix_set or
      * Jan's Horizontal model
      */
-    for (size_t i = 0; i <3 ; i++) {
+    for (size_t i = 0; i < 3 ; i++) {
 
         // Proof if difference between xg and xg_alt is zero or not and increase xg_alt by 0.0001
         if ((gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i)) != 0)
@@ -540,7 +573,7 @@ void SystemmatrixBerechnen(void) {
      * Therefore the switch-case block is bigger then before and
      * the auxiliary vectors ug are more then xg
      */
-    for (size_t j = 0; j <9 ; j++) {
+    for (size_t j = 0; j < 9 ; j++) {
 
         // Proof if difference between ug and ug_alt is 0
         if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0)
@@ -605,7 +638,7 @@ void SystemmatrixBerechnen(void) {
     printf(" %f \n", gsl_vector_get(acc_alt,2));
     */
     // Set acc as the new acc_alt
-    gsl_vector_memcpy(acc_alt, acc);
+    //gsl_vector_memcpy(acc_alt, acc);
 
     /*
     printf("acc_1      |     acc_2   |   acc_3\n");
@@ -637,8 +670,8 @@ void deltasBerechnen(void){
  */
 void saving_current_state(void){
     gsl_vector_memcpy(xg_alt, xg);
-    gsl_vector_memcpy(ug_alt,ug);
-    gsl_vector_memcpy(acc_alt,acc);
+    gsl_vector_memcpy(ug_alt, ug);
+    gsl_vector_memcpy(acc_alt, acc);
 }
 
 void calculate_C_and_D(size_t cyc){
@@ -654,7 +687,7 @@ void calculate_C_and_D(size_t cyc){
     GierbewegungBerechnen();
     deltasBerechnen();
     SystemmatrixBerechnen();
-    //saving_current_state();
+    saving_current_state();
 }
 
 /*
@@ -665,4 +698,15 @@ void calculate_C_and_D(size_t cyc){
 
 void difference_debug(void){
 
+}
+
+
+
+double returnAcceleration(size_t n){
+    if (n == 0)
+        return ax;
+    if (n == 1)
+        return ay;
+    else
+        return 0;
 }
