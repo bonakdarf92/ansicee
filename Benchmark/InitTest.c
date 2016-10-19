@@ -18,15 +18,15 @@
  */
 
 
-FILE* n_1;
-FILE* n_2;
-FILE* n_3;
-FILE* delta_1;
-FILE* delta_2;
-FILE* delta_3;
-FILE* delta_dyn_1;
-FILE* delta_dyn_2;
-FILE* delta_dyn_3;
+//FILE* n_1;
+//FILE* n_2;
+//FILE* n_3;
+//FILE* delta_1;
+//FILE* delta_2;
+//FILE* delta_3;
+//FILE* delta_dyn_1;
+//FILE* delta_dyn_2;
+//FILE* delta_dyn_3;
 //FILE* geschwindigkeit_x;
 //FILE* geschwindigkeit_y;
 //FILE* gierrate;
@@ -53,6 +53,9 @@ FILE* DrehzahlenFile;
 FILE* statLenkFile;
 FILE* dynLenkFile;
 FILE* xgFile;
+FILE* ugFile;
+FILE* accFile;
+FILE* accAltFile;
 
 gsl_vector* n1;
 gsl_vector* n2;
@@ -89,6 +92,9 @@ gsl_matrix* DrehzahlenMat;
 gsl_matrix* statLenkMatrix;
 gsl_matrix* dynLenkMatrix;
 gsl_matrix* xgMatrix;
+gsl_matrix* ugMatrix;
+gsl_matrix* accMatrix;
+gsl_matrix* accAltMatrix;
 
 
 /*
@@ -96,20 +102,6 @@ gsl_matrix* xgMatrix;
  * The size of the vector must be the same as the file size
  */
 void start_initializing(size_t choice) {
-    if(choice == 1) {
-        n1 = gsl_vector_alloc(6001);
-        n2 = gsl_vector_alloc(6001);
-        n3 = gsl_vector_alloc(6001);
-        delta1 = gsl_vector_alloc(6001);
-        delta2 = gsl_vector_alloc(6001);
-        delta3 = gsl_vector_alloc(6001);
-        deltaDyn1 = gsl_vector_alloc(6001);
-        deltaDyn2 = gsl_vector_alloc(6001);
-        deltaDyn3 = gsl_vector_alloc(6001);
-        velocity_x = gsl_vector_alloc(6001);
-        velocity_y = gsl_vector_alloc(6001);
-        yawrate = gsl_vector_alloc(6001);
-    }
     if(choice == 0){
         n1 = gsl_vector_alloc(61001);
         n2 = gsl_vector_alloc(61001);
@@ -146,6 +138,9 @@ void start_initializing(size_t choice) {
         statLenkMatrix = gsl_matrix_alloc(61001, 3);
         dynLenkMatrix = gsl_matrix_alloc(61001, 3);
         xgMatrix = gsl_matrix_alloc(61001, 3);
+        ugMatrix = gsl_matrix_alloc(61001, 9);
+        accMatrix = gsl_matrix_alloc(61001, 3);
+        accAltMatrix = gsl_matrix_alloc(61001, 3);
     }
 }
 
@@ -154,15 +149,24 @@ void start_initializing(size_t choice) {
  * and saves it
  */
 void start_reading(void) {
-    gsl_vector_fscanf(n_1, n1);
-    gsl_vector_fscanf(n_2, n2);
-    gsl_vector_fscanf(n_3, n3);
-    gsl_vector_fscanf(delta_1, delta1);
-    gsl_vector_fscanf(delta_2, delta2);
-    gsl_vector_fscanf(delta_3, delta3);
-    gsl_vector_fscanf(delta_dyn_1, deltaDyn1);
-    gsl_vector_fscanf(delta_dyn_2, deltaDyn2);
-    gsl_vector_fscanf(delta_dyn_3, deltaDyn3);
+    //gsl_matrix_fscanf(n_1, n1);
+    //gsl_matrix_fscanf(n_2, n2);
+    //gsl_matrix_fscanf(n_3, n3);
+    //gsl_matrix_fscanf(delta_1, delta1);
+    //gsl_matrix_fscanf(delta_2, delta2);
+    //gsl_matrix_fscanf(delta_3, delta3);
+    //gsl_matrix_fscanf(delta_dyn_1, deltaDyn1);
+    //gsl_matrix_fscanf(delta_dyn_2, deltaDyn2);
+    //gsl_matrix_fscanf(delta_dyn_3, deltaDyn3);
+    gsl_matrix_get_col(n1, DrehzahlenMat, 0);
+    gsl_matrix_get_col(n2, DrehzahlenMat, 1);
+    gsl_matrix_get_col(n3, DrehzahlenMat, 2);
+    gsl_matrix_get_col(delta1, statLenkMatrix, 0);
+    gsl_matrix_get_col(delta2, statLenkMatrix, 1);
+    gsl_matrix_get_col(delta3, statLenkMatrix, 2);
+    gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
+    gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
+    gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
     //gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
     //gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
     //gsl_vector_fscanf(gierrate, yawrate);
@@ -189,6 +193,9 @@ void start_reading(void) {
     gsl_matrix_fscanf(statLenkFile, statLenkMatrix);
     gsl_matrix_fscanf(dynLenkFile, dynLenkMatrix);
     gsl_matrix_fscanf(xgFile, xgMatrix);
+    gsl_matrix_fscanf(ugFile, ugMatrix);
+    gsl_matrix_fscanf(accFile, accMatrix);
+    gsl_matrix_fscanf(accAltFile, accAltMatrix);
 }
 
 /*
@@ -274,15 +281,21 @@ gsl_matrix* savingMatrix(size_t n){
             return DrehzahlenMat;
         case 18:
             return xgMatrix;
+        case 19:
+            return ugMatrix;
+        case 20:
+            return accMatrix;
+        case 21:
+            return accAltMatrix;
         default:
             return 0;
     }
 }
+
+
 void create_data(void) {
     // TODO Implement core
 }
-
-
 
 /*
  * This Method is written for debugging process.
@@ -329,33 +342,16 @@ void open_files(size_t choice) {
      * OSX/Linux --> /
      * Windows   --> \
      */
-
-    if(choice == 1) {
-        n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw Data/n_1.txt", "rw");
-        n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_2.txt", "rw");
-        n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/n_3.txt", "rw");
-        delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_1.txt", "rw");
-        delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_2.txt", "rw");
-        delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_3.txt", "rw");
-        delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_1.txt", "rw");
-        delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_2.txt", "rw");
-        delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/delta_dyn_3.txt", "rw");
-        //geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_x.txt",
-        //                          "rw");
-        //geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/geschwindigkeit_y.txt",
-        //                          "rw");
-        //gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Raw data/gierrate.txt", "rw");
-    }
     if(choice == 0){
-        n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n1.txt", "rw");
-        n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n2.txt", "rw");
-        n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n3.txt", "rw");
-        delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta1.txt", "rw");
-        delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta2.txt", "rw");
-        delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta3.txt", "rw");
-        delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn1.txt", "rw");
-        delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn2.txt", "rw");
-        delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn3.txt", "rw");
+        //n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n1.txt", "rw");
+        //n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n2.txt", "rw");
+        //n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n3.txt", "rw");
+        //delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta1.txt", "rw");
+        //delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta2.txt", "rw");
+        //delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta3.txt", "rw");
+        //delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn1.txt", "rw");
+        //delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn2.txt", "rw");
+        //delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn3.txt", "rw");
         //geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
         //geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
         //gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
@@ -381,7 +377,10 @@ void open_files(size_t choice) {
         DrehzahlenFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Drehzahl.txt", "rw");
         statLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/statischer_Lenkwinkel.txt", "rw");
         dynLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/dynLenk.txt", "rw");
-        xgFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/vGeschwPsi.txt", "rw");
+        xgFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/xg.txt", "rw");
+        ugFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug.txt", "rw");
+        accFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc.txt", "rw");
+        accAltFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_alt.txt", "rw");
     }
 }
 

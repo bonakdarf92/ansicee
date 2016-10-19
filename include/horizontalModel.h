@@ -9,13 +9,7 @@
 
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H
-//#ifndef MATLAB_MEX_FILE
-/*
-#include <tmwtypes.h>
-#else
-#include "rtwtypes.h"
-#endif
-*/
+
 #define KMU 5                         // linearized mu-slip about 5
 #define C_a 9095                    // slippage
 #define RADIUS 0.15                 // radius of tire
@@ -24,7 +18,7 @@
 #define LAENGE 2.28                      // equilateral triangle setup m initially 2.54
 #define GRAVY 9.81                      // gravity constant
 #define THETA 944.8465962           // Angle Theta
-#define SQRT3 1.73205               // square root of 3
+#define SQRT3 1.7320508075               // square root of 3
 
 //TODO Anpassen des Infotextes
 /*
@@ -58,9 +52,9 @@ void slip(void);
 
 void friction(void);
 
-double Bewegungsgleichung_ax(void);
+void Bewegungsgleichung_ax(void);
 
-double Bewegungsgleichung_ay(void);
+void Bewegungsgleichung_ay(void);
 
 void AufstandsKraefte(void);
 

@@ -75,9 +75,9 @@ double calculate_difference(gsl_vector* one, gsl_vector* two){
  * and a reference one
  */
 gsl_vector* simple_difference(gsl_vector* calculated, gsl_vector* reference){
-    gsl_vector_memcpy(difference18, calculated);
-    gsl_vector_sub(difference18, reference);
-    return difference18;
+    gsl_vector_memcpy(difference3, calculated);
+    gsl_vector_sub(difference3, reference);
+    return difference3;
 }
 
 /*
