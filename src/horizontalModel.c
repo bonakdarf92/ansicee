@@ -230,6 +230,9 @@ void testVector(size_t n){
     gsl_vector_set(xg, 2, gsl_matrix_get(test_xg, n, 2));
 }
 
+/*
+ *
+ */
 void initTest(void){
 
     // Creating matrix test_ug for 600 sec simulation
@@ -386,11 +389,6 @@ void friction(void) {
 void Bewegungsgleichung_ax(void) {
 
     // Declaration of output acceleration ax
-    //double ax;
-    //double mux_all;
-    //double muy_all;
-    //double alphax_all;
-    //double alphay_all;
     double mux1 = gsl_vector_get(mux, 0);
     double mux2 = gsl_vector_get(mux, 1);
     double mux3 = gsl_vector_get(mux, 2);
@@ -453,6 +451,7 @@ void Bewegungsgleichung_ax(void) {
 
     ax = (GRAVY/3* (mux1+mux2+mux3) + C_a/MASSE * (alphax1+alphax2+alphax3) + ((HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3)*(muy1+muy2+muy3+C_a/MASSE*(alphay1+alphay2+alphay3)))) / (1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1) - HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3)*(HCG/LAENGE*(muy2+muy3-2*muy1)));
 
+    // TODO teilterme miteinander vergleichen
     //return ax;
 }
 
@@ -565,25 +564,25 @@ void SystemmatrixBerechnen(void) {
 
 
     // Calculating auxiliary parameters acc for further calculations
-    acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
-    acc_two = gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1);
-    acc_three = gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2);
+    //acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
+    //acc_two = gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1);
+    //acc_three = gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2);
 
     // Calculating auxiliary parameters xg for further calculations
-    xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
-    xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
-    xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
+    //xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
+    //xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
+    //xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
 
     // Calculating auxiliary parameters ug for further calculations
-    ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
-    ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
-    ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
-    ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
-    ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
-    ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
-    ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
-    ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
-    ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
+    //ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
+    //ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
+    //ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
+    //ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
+    //ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
+    //ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
+    //ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
+    //ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
+    //ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
 
 
 /*
@@ -619,18 +618,21 @@ void SystemmatrixBerechnen(void) {
     for (size_t i = 0; i < 3 ; i++) {
 
         // Proof if difference between xg and xg_alt is zero or not and increase xg_alt by 0.0001
-        //if ((gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i)) == 0) {
-        //    gsl_vector_set(xg_alt, i, gsl_vector_get(xg_alt, i) + 0.0001);
-        //}
+        if (gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i) != 0)
+        {  gsl_vector_set(xg_alt, i, (gsl_vector_get(xg_alt, i) + 0.0001));
+            //xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
+            //xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
+            //xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
+        }
 
-
+/*
         // Switch case puts fraction of acc and xg into the matrix
         switch (i) {
             // for i equals 0 fill 4th, 10th and 16th index of D
             case 0:
                 gsl_vector_set(D, 3, acc_one / xg_one);
                 gsl_vector_set(D, 9, acc_two / xg_one);
-                gsl_vector_set(D, 15, acc_three / xg_one);
+                gsl_vector_set(D, 15, acc_three / xg_one)
                 break;
             // for i equals 1 fill 5th, 11th and 17th index of D
             case 1:
@@ -643,6 +645,30 @@ void SystemmatrixBerechnen(void) {
                 gsl_vector_set(D, 5, acc_one / xg_three);
                 gsl_vector_set(D, 11, acc_two / xg_three);
                 gsl_vector_set(D, 17, acc_three / xg_three);
+                break;
+            default:
+                break;
+        }
+        */
+        // Switch case puts fraction of acc and xg into the matrix
+        switch (i) {
+            // for i equals 0 fill 4th, 10th and 16th index of D
+            case 0:
+                gsl_vector_set(D, 3, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0)));
+                gsl_vector_set(D, 9, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0)));
+                gsl_vector_set(D, 15, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0)));
+                break;
+                // for i equals 1 fill 5th, 11th and 17th index of D
+            case 1:
+                gsl_vector_set(D, 4, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1)));
+                gsl_vector_set(D, 10, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1)));
+                gsl_vector_set(D, 16, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1)));
+                break;
+                // for i equals 1 fill 6th, 12th and 18th index of D
+            case 2:
+                gsl_vector_set(D, 5, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2)));
+                gsl_vector_set(D, 11, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2)));
+                gsl_vector_set(D, 17, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2)));
                 break;
             default:
                 break;
@@ -661,66 +687,75 @@ void SystemmatrixBerechnen(void) {
         // Proof if difference between ug and ug_alt is 0
         // TODO !!!! Control this if statement !!!!!
         // TODO Seems to change the current ug state vector
-        //if ((gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j)) != 0) {
-            // if true increase value of index j of ug_alt by 0.0001
-        //    gsl_vector_set(ug_alt, j, (gsl_vector_get(ug_alt, j) + 0.0001));
-        //}
+        if (gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j) != 0)
+        {    // if true increase value of index j of ug_alt by 0.0001
+            gsl_vector_set(ug_alt, j, (gsl_vector_get(ug_alt, j) + 0.0001));
+            //ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
+            //ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
+            //ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
+            //ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
+            //ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
+            //ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
+            //ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
+            //ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
+            //ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
+        }
 
         // switch separate the calculation depending on counter j
         switch (j){
 
             // if j is 0 set those values in matrix C
             case 0:
-                gsl_vector_set(C, 3, acc_one / ug_one);
-                gsl_vector_set(C, 9, acc_two / ug_one);
-                gsl_vector_set(C, 15, acc_three / ug_one);
+                gsl_vector_set(C, 3, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0)));
+                gsl_vector_set(C, 9, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0)));
+                gsl_vector_set(C, 15, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0)));
                 break;
             // if j is 1 set those values in matrix C
             case 1:
-                gsl_vector_set(C, 4, acc_one / ug_two);
-                gsl_vector_set(C, 10, acc_two / ug_two);
-                gsl_vector_set(C, 16, acc_three / ug_two);
+                gsl_vector_set(C, 4, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1)));
+                gsl_vector_set(C, 10, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1)));
+                gsl_vector_set(C, 16, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1)));
                 break;
             // if j is 2 set those values in matrix C
             case 2:
-                gsl_vector_set(C, 5, acc_one / ug_three);
-                gsl_vector_set(C, 11, acc_two / ug_three);
-                gsl_vector_set(C, 17, acc_three / ug_three);
+                gsl_vector_set(C, 5, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2)));
+                gsl_vector_set(C, 11, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2)));
+                gsl_vector_set(C, 17, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2)));
                 break;
             // if j is 3 set those values in matrix C
             case 3:
-                gsl_vector_set(C, 0, acc_one / ug_four);
-                gsl_vector_set(C, 6, acc_two / ug_four);
-                gsl_vector_set(C, 12, acc_three / ug_four);
+                gsl_vector_set(C, 0, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3)));
+                gsl_vector_set(C, 6, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3)));
+                gsl_vector_set(C, 12, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3)));
                 break;
             // if j is 4 set those values in matrix C
             case 4:
-                gsl_vector_set(C, 1, acc_one / ug_five);
-                gsl_vector_set(C, 7, acc_two / ug_five);
-                gsl_vector_set(C, 13, acc_three / ug_five);
+                gsl_vector_set(C, 1, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4)));
+                gsl_vector_set(C, 7, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4)));
+                gsl_vector_set(C, 13, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4)));
                 break;
             // if j is 5 set those values in matrix C
             case 5:
-                gsl_vector_set(C, 2, acc_one / ug_six);
-                gsl_vector_set(C, 8, acc_two / ug_six);
-                gsl_vector_set(C, 14, acc_three / ug_six);
+                gsl_vector_set(C, 2, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5)));
+                gsl_vector_set(C, 8, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5)));
+                gsl_vector_set(C, 14, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5)));
                 break;
             // if j is 6 set those values in matrix D
             case 6:
-                gsl_vector_set(D, 0, acc_one / ug_seven);
-                gsl_vector_set(D, 6, acc_two / ug_seven);
-                gsl_vector_set(D, 12, acc_three / ug_seven);
+                gsl_vector_set(D, 0, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6)));
+                gsl_vector_set(D, 6, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6)));
+                gsl_vector_set(D, 12, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6)));
                 break;
             // if j is 7 set those values in matrix D
             case 7:
-                gsl_vector_set(D, 1, acc_one / ug_eight);
-                gsl_vector_set(D, 7, acc_two / ug_eight);
-                gsl_vector_set(D, 13, acc_three / ug_eight);
+                gsl_vector_set(D, 1, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7)));
+                gsl_vector_set(D, 7, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7)));
+                gsl_vector_set(D, 13, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7)));
                 break;
             case 8:
-                gsl_vector_set(D, 2, acc_one / ug_nine);
-                gsl_vector_set(D, 8, acc_two / ug_nine);
-                gsl_vector_set(D, 14, acc_three / ug_nine);
+                gsl_vector_set(D, 2, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8)));
+                gsl_vector_set(D, 8, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8)));
+                gsl_vector_set(D, 14, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8)));
                 break;
             default:
                 break;
@@ -734,7 +769,7 @@ void SystemmatrixBerechnen(void) {
     printf(" %f \n", gsl_vector_get(acc_alt,2));
     */
     // Set acc as the new acc_alt
-    gsl_vector_memcpy(acc_alt, acc);
+    //gsl_vector_memcpy(acc_alt, acc);
 
     /*
     printf("acc_1      |     acc_2   |   acc_3\n");
@@ -768,8 +803,13 @@ void saving_current_state(void){
     gsl_vector_memcpy(acc_alt, acc);
 }
 
+/*
+ *
+ */
 void calculate_C_and_D(size_t cyc){
+    //saving_current_state();
     testVector(cyc);
+    //saving_current_state();
     slipage();
     adma_velocity();
     slip();
@@ -782,7 +822,7 @@ void calculate_C_and_D(size_t cyc){
     deltasBerechnen();
     // TODO here begins the critical area
     SystemmatrixBerechnen();
-    //saving_current_state();
+    saving_current_state();
 }
 
 /*
@@ -793,7 +833,6 @@ void calculate_C_and_D(size_t cyc){
 void difference_debug(void){
 
 }
-
 
 /*
  * This method gets an input integer and returns

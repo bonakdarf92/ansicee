@@ -39,15 +39,15 @@ int main() {
     double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[100];
-    while (zaehler < 100) {
+    float timings[61000];
+    while (zaehler < 61000) {
 
         storeCurrentInformation(zaehler);
 
         //saving_current_state();
         // Taking time for performance
         clock_t begin = clock();
-        testVector(zaehler);
+        //testVector(zaehler);
         //printf("vor der Berech: ");
         //printer(NULL, getVector(19));
 
@@ -64,17 +64,17 @@ int main() {
         timings[zaehler] = saveTiming(begin, end);
 
 
-        gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
+        gsl_matrix_get_row(tempSize3, savingMatrix(9), zaehler);
         printf("Korrekter Wert: ");
-        printer(NULL, tempSize18);
+        printer(NULL, tempSize3);
         //korrekterAcc = gsl_vector_get(saving(14), zaehler);
         //printf("%.10f\n", korrekterAcc);
         //correction = simple_difference(getVector(20), tempSize3);
-        printf("Korrektur     : ");
+        printf("Berechnet     : ");
         //printer(NULL, correction);
 
         //printf("Berechn. Wert : %.10f\n", returnAcceleration(1));
-        printer(NULL, getMatrix(1));
+        printer(NULL, getVector(19));
         //printf("%f\n", gsl_vector_get(getVector(2), 0));
         //printer(NULL, getVector(19));
 /*
@@ -92,8 +92,8 @@ int main() {
         //}
 
         //printf("                  n1       n2       n3       deldyn1   deldyn2   deldyn3   delta1   delta2    delta3\n");
-        //printf(" Vektor ug    : ");
-        //printer(NULL, getVector(2));
+        //printf(" Vektor diff  : ");
+        //printer(NULL, simple_difference(tempSize18, getMatrix(1)));
         //printer(NULL, getVector(1));
 
 

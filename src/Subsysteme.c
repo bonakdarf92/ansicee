@@ -13,7 +13,6 @@
 #define Gain 2
 
 
-//TODO Methode aus Blatt 4 und Blatt 5 implementieren
 /*
  * Umsetzung des Systems anhand Blockschaltbild aus Blatt 5
  * entnehmbar. Es sollte darauf geachtet werden, dass man

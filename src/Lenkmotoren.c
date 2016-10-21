@@ -8,8 +8,6 @@
 
 #define T_DELTA_CONST 42
 #define D_DELTA_CONST 43
-
-//TODO Methode zur DGL Berechnung in Lenkmotoren implementieren
 /*
  * Gegebenenfalls berechnungsvorschrift in DGL_Berechnung.c implementieren
  * und hier benutzen

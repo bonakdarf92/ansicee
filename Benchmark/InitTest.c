@@ -56,6 +56,8 @@ FILE* xgFile;
 FILE* ugFile;
 FILE* accFile;
 FILE* accAltFile;
+FILE* axtermeFile;
+FILE* aytermeFile;
 
 gsl_vector* n1;
 gsl_vector* n2;
@@ -95,6 +97,8 @@ gsl_matrix* xgMatrix;
 gsl_matrix* ugMatrix;
 gsl_matrix* accMatrix;
 gsl_matrix* accAltMatrix;
+gsl_matrix* axtermeMatrix;
+gsl_matrix* aytermeMatrix;
 
 
 /*
@@ -141,6 +145,8 @@ void start_initializing(size_t choice) {
         ugMatrix = gsl_matrix_alloc(61001, 9);
         accMatrix = gsl_matrix_alloc(61001, 3);
         accAltMatrix = gsl_matrix_alloc(61001, 3);
+        axtermeMatrix = gsl_matrix_alloc(61001, 7);
+        aytermeMatrix = gsl_matrix_alloc(61001, 4);
     }
 }
 
@@ -196,6 +202,8 @@ void start_reading(void) {
     gsl_matrix_fscanf(ugFile, ugMatrix);
     gsl_matrix_fscanf(accFile, accMatrix);
     gsl_matrix_fscanf(accAltFile, accAltMatrix);
+    gsl_matrix_fscanf(axtermeFile, axtermeMatrix);
+    gsl_matrix_fscanf(aytermeFile, aytermeMatrix);
 }
 
 /*
@@ -287,6 +295,10 @@ gsl_matrix* savingMatrix(size_t n){
             return accMatrix;
         case 21:
             return accAltMatrix;
+        case 22:
+            return axtermeMatrix;
+        case 23:
+            return aytermeMatrix;
         default:
             return 0;
     }
@@ -322,7 +334,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.6f ",gsl_vector_get(vector, i));
+            printf("%.10f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -381,6 +393,8 @@ void open_files(size_t choice) {
         ugFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug.txt", "rw");
         accFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc.txt", "rw");
         accAltFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_alt.txt", "rw");
+        axtermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ax_terme.txt", "rw");
+        aytermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ay_terme.txt", "rw");
     }
 }
 
