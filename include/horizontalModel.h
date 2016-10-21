@@ -11,9 +11,9 @@
 #define ANSICEE_HORIZONTALMODEL_H
 
 #define KMU 5                         // linearized mu-slip about 5
-#define C_a 9095                    // slippage
+#define C_a 9095.00000                    // slippage
 #define RADIUS 0.15                 // radius of tire
-#define MASSE 1200                      // total mass kg originally 308.52
+#define MASSE 1200.0000                      // total mass kg originally 308.52
 #define HCG 0.48303                 // height of the center of gravity m  -- CarMaker self calculated // 0.55m platform
 #define LAENGE 2.28                      // equilateral triangle setup m initially 2.54
 #define GRAVY 9.81                      // gravity constant
@@ -74,5 +74,7 @@ void calculate_C_and_D(size_t cyc);
 void difference_debug(void);
 
 double returnAcceleration(size_t n);
+
+gsl_vector* buildVector(size_t choice);
 
 #endif //ANSICEE_HORIZONTALMODEL_H

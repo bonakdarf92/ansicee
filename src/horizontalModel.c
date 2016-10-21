@@ -63,6 +63,17 @@
     double acc_one;
     double acc_two;
     double acc_three;
+    double ax1;
+    double ax2;
+    double ax3;
+    double ax4;
+    double ax5;
+    double ax6;
+    double ax7;
+    double ay1;
+    double ay2;
+    double ay3;
+    double ay4;
 
 
 /*
@@ -414,7 +425,7 @@ void Bewegungsgleichung_ax(void) {
      */
     //mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
     //muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    //alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
+    double alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
     //alphay_all = gsl_vector_get(alpha_y, 0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
     /* The firstPart is a summary of the first to additions in the big equitation of motion
@@ -450,6 +461,14 @@ void Bewegungsgleichung_ax(void) {
     //ax = fraction_1 / fraction_2;
 
     ax = (GRAVY/3* (mux1+mux2+mux3) + C_a/MASSE * (alphax1+alphax2+alphax3) + ((HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3)*(muy1+muy2+muy3+C_a/MASSE*(alphay1+alphay2+alphay3)))) / (1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1) - HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3)*(HCG/LAENGE*(muy2+muy3-2*muy1)));
+
+    ax1 = GRAVY/3* (mux1+mux2+mux3);
+    ax2 = C_a/MASSE * (alphax1+alphax2+alphax3);
+    ax3 = (HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3);
+    ax4 = (muy1+muy2+muy3+C_a/MASSE*(alphay1+alphay2+alphay3));
+    ax5 = 1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1);
+    ax6 = HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3);
+    ax7 = HCG/LAENGE*(muy2+muy3-2*muy1);
 
     // TODO teilterme miteinander vergleichen
     //return ax;
@@ -487,6 +506,10 @@ void Bewegungsgleichung_ay(void) {
             * returnAcceleration(0) + C_a / MASSE * alphay_all) / (1 - HCG / LAENGE *  (muy2 - muy3));
     //ay = (GRAVY/3* (muy1+muy2+muy3) + HCG/LAENGE/SQRT3 * (muy2+muy3-2*muy1) * returnAcceleration(0) + C_a/MASSE * (alphay1+alphay2+alphay3)) / (1 - HCG/LAENGE * (muy2-muy3));
     //return ay;
+    ay1 = GRAVY/3 * muy_all;
+    ay2 = HCG / LAENGE / SQRT3 * (muy2 + muy3 - 2 * muy1) * returnAcceleration(0);
+    ay3 = C_a / MASSE * alphay_all;
+    ay4 = 1 - HCG / LAENGE *  (muy2 - muy3);
 }
 
 /*
@@ -601,8 +624,6 @@ void SystemmatrixBerechnen(void) {
     double ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
     double ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
     double ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);*/
-
-    //printf("%f, %f , %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f \n", acc_one, acc_two, acc_three, xg_one, xg_two, xg_three, ug_one, ug_two, ug_three, ug_four, ug_five, ug_six, ug_seven, ug_eight, ug_nine);
 
     // TODO Unbedingt kommentieren
     /*
@@ -843,6 +864,53 @@ double returnAcceleration(size_t n){
         return ax;
     if (n == 1)
         return ay;
+    if(n == 2)
+        return ax1;
+    if(n == 3)
+        return ax2;
+    if(n == 4)
+        return ax3;
+    if(n == 5)
+        return ax4;
+    if(n == 6)
+        return ax5;
+    if(n == 7)
+        return ax6;
+    if(n == 8)
+        return ax7;
+    if(n == 9)
+        return ay1;
+    if(n == 10)
+        return ay2;
+    if(n == 11)
+        return ay3;
+    if(n == 12)
+        return ay4;
     else
         return 0;
+}
+
+/*
+ *
+ */
+gsl_vector* buildVector(size_t choice) {
+    gsl_vector *output;
+    if (choice == 0) {
+        output = gsl_vector_alloc(7);
+        gsl_vector_set(output, 0, ax1);
+        gsl_vector_set(output, 1, ax2);
+        gsl_vector_set(output, 2, ax3);
+        gsl_vector_set(output, 3, ax4);
+        gsl_vector_set(output, 4, ax5);
+        gsl_vector_set(output, 5, ax6);
+        gsl_vector_set(output, 6, ax7);
+    }
+    if (choice == 1) {
+        output = gsl_vector_alloc(4);
+        gsl_vector_set(output, 0, ay1);
+        gsl_vector_set(output, 1, ay2);
+        gsl_vector_set(output, 2, ay3);
+        gsl_vector_set(output, 3, ay4);
+    }
+    return output;
 }

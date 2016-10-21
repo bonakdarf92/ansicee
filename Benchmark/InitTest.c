@@ -17,19 +17,6 @@
  * to obtain all necessary vectors and matrices.
  */
 
-
-//FILE* n_1;
-//FILE* n_2;
-//FILE* n_3;
-//FILE* delta_1;
-//FILE* delta_2;
-//FILE* delta_3;
-//FILE* delta_dyn_1;
-//FILE* delta_dyn_2;
-//FILE* delta_dyn_3;
-//FILE* geschwindigkeit_x;
-//FILE* geschwindigkeit_y;
-//FILE* gierrate;
 FILE* Cmat;
 FILE* Dmat;
 FILE* alphar;
@@ -58,6 +45,12 @@ FILE* accFile;
 FILE* accAltFile;
 FILE* axtermeFile;
 FILE* aytermeFile;
+FILE* acc2File;
+FILE* xg_diff_loopFile;
+FILE* xg_alt_diffFile;
+FILE* ug_diff_loopFile;
+FILE* ug_alt_diffFile;
+FILE* acc_diff_loopFile;
 
 gsl_vector* n1;
 gsl_vector* n2;
@@ -99,6 +92,12 @@ gsl_matrix* accMatrix;
 gsl_matrix* accAltMatrix;
 gsl_matrix* axtermeMatrix;
 gsl_matrix* aytermeMatrix;
+gsl_matrix* acc2Matrix;
+gsl_matrix* xg_diff_loopMatrix;
+gsl_matrix* xg_alt_diffMatrix;
+gsl_matrix* ug_diff_loopMatrix;
+gsl_matrix* ug_alt_diffMatrix;
+gsl_matrix* acc_diff_loopMatrix;
 
 
 /*
@@ -147,6 +146,12 @@ void start_initializing(size_t choice) {
         accAltMatrix = gsl_matrix_alloc(61001, 3);
         axtermeMatrix = gsl_matrix_alloc(61001, 7);
         aytermeMatrix = gsl_matrix_alloc(61001, 4);
+        acc2Matrix = gsl_matrix_alloc(61001, 3);
+        acc_diff_loopMatrix = gsl_matrix_alloc(61001, 3);
+        xg_diff_loopMatrix = gsl_matrix_alloc(61001, 3);
+        xg_alt_diffMatrix = gsl_matrix_alloc(61001, 3);
+        ug_diff_loopMatrix = gsl_matrix_alloc(61001, 9);
+        ug_alt_diffMatrix = gsl_matrix_alloc(61001, 9);
     }
 }
 
@@ -155,15 +160,6 @@ void start_initializing(size_t choice) {
  * and saves it
  */
 void start_reading(void) {
-    //gsl_matrix_fscanf(n_1, n1);
-    //gsl_matrix_fscanf(n_2, n2);
-    //gsl_matrix_fscanf(n_3, n3);
-    //gsl_matrix_fscanf(delta_1, delta1);
-    //gsl_matrix_fscanf(delta_2, delta2);
-    //gsl_matrix_fscanf(delta_3, delta3);
-    //gsl_matrix_fscanf(delta_dyn_1, deltaDyn1);
-    //gsl_matrix_fscanf(delta_dyn_2, deltaDyn2);
-    //gsl_matrix_fscanf(delta_dyn_3, deltaDyn3);
     gsl_matrix_get_col(n1, DrehzahlenMat, 0);
     gsl_matrix_get_col(n2, DrehzahlenMat, 1);
     gsl_matrix_get_col(n3, DrehzahlenMat, 2);
@@ -173,9 +169,6 @@ void start_reading(void) {
     gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
     gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
     gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
-    //gsl_vector_fscanf(geschwindigkeit_x, velocity_x);
-    //gsl_vector_fscanf(geschwindigkeit_y, velocity_y);
-    //gsl_vector_fscanf(gierrate, yawrate);
     gsl_matrix_fscanf(Cmat, cMatrix);
     gsl_matrix_fscanf(Dmat, dMatrix);
     gsl_matrix_fscanf(alphar, alphaRMatrix);
@@ -204,6 +197,12 @@ void start_reading(void) {
     gsl_matrix_fscanf(accAltFile, accAltMatrix);
     gsl_matrix_fscanf(axtermeFile, axtermeMatrix);
     gsl_matrix_fscanf(aytermeFile, aytermeMatrix);
+    gsl_matrix_fscanf(acc2File, acc2Matrix);
+    gsl_matrix_fscanf(acc_diff_loopFile, acc_diff_loopMatrix);
+    gsl_matrix_fscanf(xg_diff_loopFile, xg_diff_loopMatrix);
+    gsl_matrix_fscanf(xg_alt_diffFile, xg_alt_diffMatrix);
+    gsl_matrix_fscanf(ug_diff_loopFile, ug_diff_loopMatrix);
+    gsl_matrix_fscanf(ug_alt_diffFile, ug_alt_diffMatrix);
 }
 
 /*
@@ -299,6 +298,18 @@ gsl_matrix* savingMatrix(size_t n){
             return axtermeMatrix;
         case 23:
             return aytermeMatrix;
+        case 24:
+            return acc2Matrix;
+        case 25:
+            return acc_diff_loopMatrix;
+        case 26:
+            return xg_diff_loopMatrix;
+        case 27:
+            return xg_alt_diffMatrix;
+        case 28:
+            return ug_diff_loopMatrix;
+        case 29:
+            return ug_alt_diffMatrix;
         default:
             return 0;
     }
@@ -355,18 +366,6 @@ void open_files(size_t choice) {
      * Windows   --> \
      */
     if(choice == 0){
-        //n_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n1.txt", "rw");
-        //n_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n2.txt", "rw");
-        //n_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n3.txt", "rw");
-        //delta_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta1.txt", "rw");
-        //delta_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta2.txt", "rw");
-        //delta_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/delta3.txt", "rw");
-        //delta_dyn_1 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn1.txt", "rw");
-        //delta_dyn_2 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn2.txt", "rw");
-        //delta_dyn_3 = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/deltadyn3.txt", "rw");
-        //geschwindigkeit_x = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_x.txt", "rw");
-        //geschwindigkeit_y = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/v_y.txt", "rw");
-        //gierrate = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/gierrate.txt", "rw");
         Cmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/CMatrix.txt", "rw");
         Dmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/DMatrix.txt", "rw");
         alphar = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/alpha_r.txt", "rw");
@@ -395,6 +394,12 @@ void open_files(size_t choice) {
         accAltFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_alt.txt", "rw");
         axtermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ax_terme.txt", "rw");
         aytermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ay_terme.txt", "rw");
+        acc2File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc2.txt", "rw");
+        xg_diff_loopFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/xg_diff_loop.txt", "rw");
+        xg_alt_diffFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/xg_alt_diff.txt", "rw");
+        ug_diff_loopFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug_diff_loop.txt", "rw");
+        ug_alt_diffFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug_alt_diff.txt", "rw");
+        acc_diff_loopFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_diff_loop.txt", "rw");
     }
 }
 

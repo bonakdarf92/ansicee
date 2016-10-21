@@ -19,10 +19,16 @@ int main() {
     gsl_vector* correction;
     gsl_vector* tempSize3;
     gsl_vector* tempSize18;
+    gsl_vector* tempSize7;
+    gsl_vector* tempSize9;
+    gsl_vector* tempSize4;
 
     double korrekterAcc;
     tempSize3 = gsl_vector_alloc(3);
     tempSize18 = gsl_vector_alloc(18);
+    tempSize7 = gsl_vector_alloc(7);
+    tempSize9 = gsl_vector_alloc(9);
+    tempSize4 = gsl_vector_alloc(4);
     correction = gsl_vector_alloc(9);
     initializeVector();
     open_files(0);
@@ -39,8 +45,8 @@ int main() {
     double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[61000];
-    while (zaehler < 61000) {
+    float timings[100];
+    while (zaehler < 100) {
 
         storeCurrentInformation(zaehler);
 
@@ -64,19 +70,19 @@ int main() {
         timings[zaehler] = saveTiming(begin, end);
 
 
-        gsl_matrix_get_row(tempSize3, savingMatrix(9), zaehler);
+        gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
         printf("Korrekter Wert: ");
-        printer(NULL, tempSize3);
+        printer(NULL, tempSize18);
         //korrekterAcc = gsl_vector_get(saving(14), zaehler);
         //printf("%.10f\n", korrekterAcc);
         //correction = simple_difference(getVector(20), tempSize3);
         printf("Berechnet     : ");
         //printer(NULL, correction);
 
-        //printf("Berechn. Wert : %.10f\n", returnAcceleration(1));
-        printer(NULL, getVector(19));
+        //printf("Berechn. Wert : %.11f\n", returnAcceleration(2));
+        //printer(NULL, buildVector(1));
         //printf("%f\n", gsl_vector_get(getVector(2), 0));
-        //printer(NULL, getVector(19));
+        printer(NULL, getMatrix(1));
 /*
         // Vergleich der Beschleunigungen
         korrekterAcc = gsl_vector_get(saving(15), zaehler);
