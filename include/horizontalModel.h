@@ -6,6 +6,7 @@
 #include <gsl/gsl_matrix.h>
 //#include <stdio.h>
 #include <stdlib.h>
+//#include "ErrorCorrection.h"
 
 #ifndef ANSICEE_HORIZONTALMODEL_H
 #define ANSICEE_HORIZONTALMODEL_H

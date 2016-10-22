@@ -345,7 +345,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.10f ",gsl_vector_get(vector, i));
+            printf("%.8f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -527,7 +527,7 @@ void drehzahlTester(void){
     gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
     gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
     gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
-    gsl_matrix_get_col(velocity_x, vMatrix, 1);
-    gsl_matrix_get_col(velocity_y, vMatrix, 2);
-    gsl_matrix_get_col(yawrate, vMatrix, 0);
+    //gsl_matrix_get_col(velocity_x, vMatrix, 1);
+    //gsl_matrix_get_col(velocity_y, vMatrix, 2);
+    //gsl_matrix_get_col(yawrate, vMatrix, 0);
 }

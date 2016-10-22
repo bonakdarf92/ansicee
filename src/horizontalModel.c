@@ -4,6 +4,7 @@
 
 #include "horizontalModel.h"
 #include <math.h>
+//#include <ErrorCorrection.h>
 #include "InitTest.h"
 
 
@@ -60,9 +61,6 @@
     double ug_seven;
     double ug_eight;
     double ug_nine;
-    double acc_one;
-    double acc_two;
-    double acc_three;
     double ax1;
     double ax2;
     double ax3;
@@ -74,6 +72,11 @@
     double ay2;
     double ay3;
     double ay4;
+    gsl_vector* difference_xg_alt;
+    gsl_vector* difference_ug_alt;
+    gsl_vector* xg_alt_loop;
+    gsl_vector* ug_alt_loop;
+
 
 
 /*
@@ -91,10 +94,10 @@ void initializeVector(void){
     delta_x = gsl_vector_alloc(3);  // Vector delta_x
     delta_u = gsl_vector_alloc(9);  // Vector delta_u
     alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
-    alpha_x = gsl_vector_alloc(3);   // Vector alpha_x
-    alpha_y = gsl_vector_alloc(3);   // Vector alpha_y
-    C = gsl_vector_alloc(18);    // Matrix/Vector C
-    D = gsl_vector_alloc(18);    // Matrix/Vector D
+    alpha_x = gsl_vector_alloc(3);  // Vector alpha_x
+    alpha_y = gsl_vector_alloc(3);  // Vector alpha_y
+    C = gsl_vector_alloc(18);       // Matrix/Vector C
+    D = gsl_vector_alloc(18);       // Matrix/Vector D
     beta = gsl_vector_alloc(3);     // Vector beta
     v = gsl_vector_alloc(3);        // Vector v
     vr = gsl_vector_alloc(3);       // Vector vr
@@ -110,6 +113,12 @@ void initializeVector(void){
     test_xg = gsl_matrix_alloc(61001, 3);
     testCmatrix = gsl_matrix_alloc(18, 61001);
     testDmatrix = gsl_matrix_alloc(18, 61001);
+    difference_xg_alt = gsl_vector_alloc(3);
+    difference_ug_alt = gsl_vector_alloc(9);
+    xg_alt_loop = gsl_vector_alloc(3);
+    ug_alt_loop = gsl_vector_alloc(9);
+
+
 
 }
 
@@ -184,6 +193,14 @@ gsl_vector* getVector(size_t n) {
             return Fx;
         case 21:
             return Fy;
+        case 22:
+            return difference_xg_alt;
+        case 23:
+            return difference_ug_alt;
+        case 24:
+            return xg_alt_loop;
+        case 25:
+            return ug_alt_loop;
         default:
             return 0;
     }
@@ -257,9 +274,10 @@ void initTest(void){
     gsl_matrix_set_col(test_ug, 7, saving(5));      // col with 6001 values of delta_2
     gsl_matrix_set_col(test_ug, 8, saving(6));      // col with 6001 values of delta_3
 
-    gsl_matrix_set_col(test_xg, 0, saving(10));     // col with 6001 values of v_x
-    gsl_matrix_set_col(test_xg, 1, saving(11));     // col with 6001 values of v_y
-    gsl_matrix_set_col(test_xg, 2, saving(12));     // col with 6001 values of psi_p
+    //gsl_matrix_set_col(test_xg, 0, saving(10));     // col with 6001 values of v_x
+    //gsl_matrix_set_col(test_xg, 1, saving(11));     // col with 6001 values of v_y
+    //gsl_matrix_set_col(test_xg, 2, saving(12));     // col with 6001 values of psi_p
+    gsl_matrix_memcpy(test_xg, savingMatrix(18));
 }
 
 /*
@@ -569,13 +587,6 @@ void GierbewegungBerechnen(void) {
     gsl_vector_set(acc, 0, returnAcceleration(0));
     gsl_vector_set(acc, 1, returnAcceleration(1));
     gsl_vector_set(acc, 2, psi_pp);
-    /*
-    printf("  acc--> ");
-    printf("%f ", gsl_vector_get(acc,0));
-    printf("%f ", gsl_vector_get(acc,1));
-    printf("%f ", gsl_vector_get(acc,2));
-    printf("  <--- acc \n");
-    */
 }
 
 /*
@@ -585,11 +596,6 @@ void GierbewegungBerechnen(void) {
  */
 void SystemmatrixBerechnen(void) {
 
-
-    // Calculating auxiliary parameters acc for further calculations
-    //acc_one = gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0);
-    //acc_two = gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1);
-    //acc_three = gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2);
 
     // Calculating auxiliary parameters xg for further calculations
     //xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
@@ -607,6 +613,10 @@ void SystemmatrixBerechnen(void) {
     //ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
     //ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
 
+
+    //printf("xg berechnung : ");
+    //printer(NULL, simple_difference(getVector(1), getVector(3)));
+    //printer(NULL, getVector(1));
 
 /*
     // Calculating auxiliary parameters xg for further calculations
@@ -637,13 +647,13 @@ void SystemmatrixBerechnen(void) {
      * Jan's Horizontal model
      */
     for (size_t i = 0; i < 3 ; i++) {
-
+        double temp_xg = gsl_vector_get(xg, i);
+        double temp_xg_alt = gsl_vector_get(xg_alt, i);
         // Proof if difference between xg and xg_alt is zero or not and increase xg_alt by 0.0001
-        if (gsl_vector_get(xg, i) - gsl_vector_get(xg_alt, i) != 0)
-        {  gsl_vector_set(xg_alt, i, (gsl_vector_get(xg_alt, i) + 0.0001));
-            //xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
-            //xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
-            //xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
+        if ((temp_xg - temp_xg_alt) != 0) {
+            double temp;
+            temp = gsl_vector_get(xg_alt, i);
+            gsl_vector_set(xg_alt, i, (temp + 0.0001));
         }
 
 /*
@@ -711,15 +721,7 @@ void SystemmatrixBerechnen(void) {
         if (gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j) != 0)
         {    // if true increase value of index j of ug_alt by 0.0001
             gsl_vector_set(ug_alt, j, (gsl_vector_get(ug_alt, j) + 0.0001));
-            //ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
-            //ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
-            //ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
-            //ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
-            //ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
-            //ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
-            //ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
-            //ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
-            //ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
+            gsl_vector_set(difference_ug_alt, j, gsl_vector_get(ug_alt, j));
         }
 
         // switch separate the calculation depending on counter j
@@ -782,22 +784,13 @@ void SystemmatrixBerechnen(void) {
                 break;
         }
     }
+    //printf("xg berechnung : ");
+    //printer(NULL, simple_difference(getVector(1), getVector(3)));
+    //printer(NULL, getVector(1));
 
-    /*
-    printf("acc_alt_1  |  acc_alt_2  |  acc_alt_3\n");
-    printf(" %f |", gsl_vector_get(acc_alt,0));
-    printf(" %f   |", gsl_vector_get(acc_alt,1));
-    printf(" %f \n", gsl_vector_get(acc_alt,2));
-    */
     // Set acc as the new acc_alt
-    //gsl_vector_memcpy(acc_alt, acc);
+    gsl_vector_memcpy(acc_alt, acc);
 
-    /*
-    printf("acc_1      |     acc_2   |   acc_3\n");
-    printf(" %f |", gsl_vector_get(acc,0));
-    printf(" %f   |", gsl_vector_get(acc,1));
-    printf(" %f \n", gsl_vector_get(acc,2));
-     */
 }
 
 /*
@@ -808,8 +801,6 @@ void SystemmatrixBerechnen(void) {
  * it in the delta vectors
  */
 void deltasBerechnen(void){
-    delta_x = xg;       // Copy of vector xg
-    delta_u = ug;       // Copy of vector ug
     gsl_vector_sub(delta_x, xg_alt);
     gsl_vector_sub(delta_u, ug_alt);
 }
@@ -821,15 +812,13 @@ void deltasBerechnen(void){
 void saving_current_state(void){
     gsl_vector_memcpy(xg_alt, xg);
     gsl_vector_memcpy(ug_alt, ug);
-    gsl_vector_memcpy(acc_alt, acc);
 }
 
 /*
  *
  */
 void calculate_C_and_D(size_t cyc){
-    //saving_current_state();
-    testVector(cyc);
+    //testVector(cyc);
     //saving_current_state();
     slipage();
     adma_velocity();

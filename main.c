@@ -48,17 +48,72 @@ int main() {
     float timings[100];
     while (zaehler < 100) {
 
-        storeCurrentInformation(zaehler);
+        //storeCurrentInformation(zaehler);
 
         //saving_current_state();
         // Taking time for performance
         clock_t begin = clock();
-        //testVector(zaehler);
+        testVector(zaehler);
         //printf("vor der Berech: ");
         //printer(NULL, getVector(19));
 
+
+        gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
+        printf("c Matrix Korr : ");
+        printer(NULL, tempSize18);
+
+         /*
+
+        // Korrekte Zustandsvektor aus Simulink
+        gsl_matrix_get_row(tempSize3, savingMatrix(18), zaehler);
+        printf("Korr.  xg          : ");
+        printer(NULL, tempSize3);
+
+        // Kopierte Werte aus C-Code
+        printf("Anf.    xg         : ");
+        printer(NULL, getVector(1));
+
+        // Zustandsvektor aus vorherigen Iteration
+        printf("Anf. xg_alt        : ");
+        printer(NULL, getVector(3));
+
+        // Differnz aus xg und xg_alt
+        printf("Anf. xg - xg_alt   : ");
+        printer(NULL, simple_difference(getVector(1), getVector(3)));
+
+        // Korrekte Differenz aus Simulink
+        printf("Korr. diff xg      : ");
+        gsl_matrix_get_row(tempSize3, savingMatrix(26), zaehler);
+        printer(NULL, tempSize3);
+        //printer(NULL,getVector(1));
+
+         */
+
+        //printf(" \n +++++++ Vor Berechnung +++++++ \n \n");
         // This method combines all functions written in the File horizontalModel.c
         calculate_C_and_D(zaehler);
+        //printer(NULL, getMatrix(1));
+
+        printf("c Matrix  Ber.: ");
+        printer(NULL, getMatrix(1));
+ /*
+
+        printf("End    xg         : ");
+        printer(NULL, getVector(1));
+
+        printf("End    xg_alt     : ");
+        printer(NULL, getVector(3));
+
+
+        printf("End xg - xg_alt   : ");
+        printer(NULL, simple_difference(getVector(1), getVector(3)));
+
+
+        */
+
+
+        //printf("xg-xg_alt End : ");
+        //printer(NULL, simple_difference(getVector(1), getVector(3)));
 
         // This method combines all function written in linear.c
         //calculating_PI_Controller();
@@ -70,19 +125,23 @@ int main() {
         timings[zaehler] = saveTiming(begin, end);
 
 
-        gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
-        printf("Korrekter Wert: ");
-        printer(NULL, tempSize18);
+
         //korrekterAcc = gsl_vector_get(saving(14), zaehler);
         //printf("%.10f\n", korrekterAcc);
-        //correction = simple_difference(getVector(20), tempSize3);
-        printf("Berechnet     : ");
+        //printf("Berechnet     : ");
         //printer(NULL, correction);
-
+        //printer(NULL, getVector(18));
+        //correction = simple_difference(getVector(18), getVector(5));
         //printf("Berechn. Wert : %.11f\n", returnAcceleration(2));
         //printer(NULL, buildVector(1));
-        //printf("%f\n", gsl_vector_get(getVector(2), 0));
-        printer(NULL, getMatrix(1));
+        //printf("acc_alt       : ");
+        //printer(NULL, getVector(5));
+        //printf("Endzustand xg : ");
+        //printer(NULL, getVector(1));
+
+        //printf("Endzu. xg_alt : ");
+        //printer(NULL, getVector(3));
+
 /*
         // Vergleich der Beschleunigungen
         korrekterAcc = gsl_vector_get(saving(15), zaehler);
@@ -103,7 +162,7 @@ int main() {
         //printer(NULL, getVector(1));
 
 
-        printf("_________________________________\n");
+        printf("\n ___________________________________________________\n \n");
         zaehler++;
     }
     //print_Timings(timings, sizeof(timings)/ sizeof(float));

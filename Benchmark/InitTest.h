@@ -9,6 +9,7 @@
 #include <wchar.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
+#include "ErrorCorrection.h"
 
 
 void open_files(size_t choice);
