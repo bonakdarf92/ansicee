@@ -16,6 +16,7 @@
 int main() {
     clock_t alpha = clock();
 
+#if DEBUGGER == 1
     gsl_vector* correction;
     gsl_vector* tempSize3;
     gsl_vector* tempSize18;
@@ -30,6 +31,8 @@ int main() {
     tempSize9 = gsl_vector_alloc(9);
     tempSize4 = gsl_vector_alloc(4);
     correction = gsl_vector_alloc(9);
+#endif
+
     initializeVector();
     open_files(0);
     start_initializing(0);
@@ -39,10 +42,10 @@ int main() {
     initMatrix();
     matrixPresetting();
     initCorrection();
-    double brain = 0;
-    size_t count;
-    double brain2 = 0;
-    double brain3 = 0;
+    //double brain = 0;
+    //size_t count;
+    //double brain2 = 0;
+    //double brain3 = 0;
 
     size_t zaehler = 0;
     float timings[100];
@@ -50,19 +53,18 @@ int main() {
 
         //storeCurrentInformation(zaehler);
 
-        //saving_current_state();
         // Taking time for performance
         clock_t begin = clock();
         testVector(zaehler);
         //printf("vor der Berech: ");
         //printer(NULL, getVector(19));
 
-
+#if DEBUGGER == 1
         gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
         printf("c Matrix Korr : ");
         printer(NULL, tempSize18);
 
-         /*
+
 
         // Korrekte Zustandsvektor aus Simulink
         gsl_matrix_get_row(tempSize3, savingMatrix(18), zaehler);
@@ -86,16 +88,13 @@ int main() {
         gsl_matrix_get_row(tempSize3, savingMatrix(26), zaehler);
         printer(NULL, tempSize3);
         //printer(NULL,getVector(1));
-
-         */
+#endif
 
         //printf(" \n +++++++ Vor Berechnung +++++++ \n \n");
         // This method combines all functions written in the File horizontalModel.c
         calculate_C_and_D(zaehler);
         //printer(NULL, getMatrix(1));
 
-        printf("c Matrix  Ber.: ");
-        printer(NULL, getMatrix(1));
  /*
 
         printf("End    xg         : ");
@@ -116,8 +115,10 @@ int main() {
         //printer(NULL, simple_difference(getVector(1), getVector(3)));
 
         // This method combines all function written in linear.c
-        //calculating_PI_Controller();
+        calculating_PI_Controller();
 
+        //printf("c Matrix  Ber.: ");
+        //printer(get_Matrix(7), NULL);
         // Ende Zeitstop und Ausgabe der Zeit
         clock_t end = clock();
 
@@ -156,13 +157,12 @@ int main() {
         //    brain3 = returnAcceleration(1);
         //}
 
-        //printf("                  n1       n2       n3       deldyn1   deldyn2   deldyn3   delta1   delta2    delta3\n");
         //printf(" Vektor diff  : ");
         //printer(NULL, simple_difference(tempSize18, getMatrix(1)));
-        //printer(NULL, getVector(1));
+        printer(get_Matrix(7), NULL);
 
 
-        printf("\n ___________________________________________________\n \n");
+        //printf("\n ___________________________________________________\n \n");
         zaehler++;
     }
     //print_Timings(timings, sizeof(timings)/ sizeof(float));
@@ -171,8 +171,7 @@ int main() {
     //calculateCycleTime(timings, "Total");
     clock_t omega = clock();
     printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);
-    //printf("Groesste Abweichung %f\nStelle %d\nKorrekter Wert %f \nBerechneter Wert %f\n", brain, count, brain2, brain3);
 
-    //printf("Unterschied betraegt %f", calculate_difference(getVector(1),getVector(11)));
+
     return 0;
 }

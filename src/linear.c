@@ -2,6 +2,7 @@
 // Created by Farid Bonakdar on 30.06.16.
 //
 
+#include <InitTest.h>
 #include "linear.h"
 
 
@@ -81,8 +82,6 @@ void initMatrix(void){
     eigenvalue4 = gsl_vector_complex_alloc(15);
 
     // TODO initialize all matrices
-
-
     gsl_matrix_set_zero(ASystem);
     gsl_matrix_set_zero(BSystem);
     gsl_matrix_set_zero(A_Inv);
@@ -91,12 +90,13 @@ void initMatrix(void){
 
 }
 
-
 /*
- *
+ * This Method do the presetting of the matrices
+ * The numbers and the shape is taken from Jan's linearized Model
+ * For further details look in the comments or the source code
+ * in Matlab Simulink
  */
 void matrixPresetting(void){
-
     /*
      * This function puts all manually calculated indexes into the zero matrices A, B and A inverse
      * to get a better Overview look at the shape of the all matrices
@@ -173,7 +173,6 @@ void matrixPresetting(void){
 
 }
 
-
 /*
  * This function is written as a getter
  * It returns the called Matrix
@@ -229,7 +228,6 @@ gsl_matrix * get_Matrix(size_t n){
 
 }
 
-
 /*
  * This Method calls the function getMatrix from horizontal model and
  * store its returns in Matrix C_in and D_in.
@@ -240,7 +238,6 @@ void getInputParameter(void){
     gsl_vector_memcpy(C_in, save);
     gsl_vector_memcpy(D_in, save2);
 }
-
 
 /*
  * This method calculates the matrix KS
@@ -265,10 +262,8 @@ void calculate_KS(void){
     gsl_matrix_mul_elements(temp1, BSystem);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, temp1, 0.0, temp2);
     gsl_matrix_sub(KS, temp2);
-
 }
 // TODO might be a BOTTLENECK !!!
-
 
 /*
  * This method calculates the matrix -B * Ki (T) and copy all its elements
@@ -361,7 +356,6 @@ void calculate_Ai(void){
 }
 //TODO Test this method properly
 
-
 /*
  * This method calculates the eigenvalues of Matrix Ai
  * and stores the data in complex vector eigenvalue
@@ -374,11 +368,10 @@ void calculate_EWI(void){
 }
 // TODO Test the method and compare with matlab data
 
-
 /*
  * This method gets an matrix KS and an integer a0
  * and calculates the matrix KI with the formula taken
- * from Jan's linearized modell line 94
+ * from Jan's linearized model line 94
  *
  *      --->  Ki = a0 * (KS' / (KS * KS') )
  *  and stored in the matrix KI
@@ -421,7 +414,6 @@ void calculate_KI(gsl_matrix* KS, double a0){
 }
 // TODO might be a BOTTLENECK !!!
 
-
 /*
  * This method changes the matrix indexes for direction change in engine speed
  * For example the direction of movement converts from forward to reverse
@@ -451,7 +443,6 @@ void changing_engineSpeed(int n_updn){
     }
 }
 // TODO check what information is given in n_up down and how the differential observation takes place
-
 
 /*
  * For better understanding look up in Jan's linearized model line 72 to 74
@@ -494,22 +485,13 @@ void calculate_Cop(void){
     gsl_matrix_set(C_op, 2, 9, gsl_vector_get(C_in,16));
     gsl_matrix_set(C_op, 2,11, gsl_vector_get(C_in,17));
 
-    /*
-    printf("Cop_________->\n");
-    for (int i = 0; i < 3 ; i++) {
-        for (int j = 0; j < 12 ; j++) {
-            printf("%g ", gsl_matrix_get(C_op,i,j));
-        }
-        printf("\n ");
-    }
+#if DEBUGGER == 1
+    printf("\n\n c Matrix Ueb. :");
+    printer(NULL, returnCinDin(0));
 
-    printf("<-_________Cop\n");
-*/
-
-
+    printer(C_op, NULL);
+#endif
 }
-// TODO clarify what index of C_in must be stored in C_op
-
 
 /*
  * For better understanding look up in Jan's linearized model line 76 to 78
@@ -552,22 +534,14 @@ void calculate_Dop(void){
     gsl_matrix_set(D_op, 2,10, gsl_vector_get(D_in,16));
     gsl_matrix_set(D_op, 2,11, gsl_vector_get(D_in,17));
 
-    /*
-    printf("Dop_________->\n");
-    for (int i = 0; i < 3 ; i++) {
-        for (int j = 0; j < 12 ; j++) {
-            printf("%g ", gsl_matrix_get(D_op,i,j));
-        }
-        printf("\n ");
-    }
 
-    printf("<-_________Dop\n");
+#if DEBUGGER == 1
+    printf("\n\n d Matrix Ueb. :");
+    printer(NULL, returnCinDin(1));
 
-*/
-
+    printer(get_Matrix(9), NULL);
+#endif
 }
-// TODO clarify what index of D_in must be stored in D_op
-
 
 /*
  * This method calculates the system matrix Ewi
@@ -609,7 +583,6 @@ void matrix_Calculator_EWI(void){
     }
 }
 //TODO Test if pointer or address is needed
-
 
 /*
  * This method do shit
@@ -655,7 +628,6 @@ void tune_matrix_EWI(void){
     }
 }
 // TODO Very Important!!! Test this method
-
 
 /*
  * Same method as calculate_KI, instead of using b0 as tuningfactor
@@ -793,7 +765,6 @@ void calculate_AG(void){
 }
 // TODO Standard check
 
-
 /*
  * Comment
  */
@@ -802,7 +773,6 @@ void calculate_EWG(void){
     gsl_eigen_nonsymm(EW_G, eigenvalue3, workspace);
 }
 // TODO check this methd, pretty same like calculate_EWI
-
 
 /*
  * Comment
@@ -840,7 +810,6 @@ void matrix_Calculator_EWG(void){
     }
 }
 // TODO check it
-
 
 /*
  * Comment
@@ -891,7 +860,6 @@ void tune_matrix_EWG(void){
 }
 // TODO check it
 
-
 /*
  * Comment
  */
@@ -906,7 +874,6 @@ void tune_KP(void){
 /*
  * This method returns the saved values A0 and B0
  */
-
 double scalar(size_t n){
     switch (n){
         case 1:
@@ -922,7 +889,6 @@ double scalar(size_t n){
  * This Function executes all methods written above to calculate the
  * PI state space controller
  */
-
 void calculating_PI_Controller(void){
     getInputParameter();
     changing_engineSpeed(1);
@@ -942,4 +908,17 @@ void calculating_PI_Controller(void){
     tune_KP();
 }
 
+/*
+ * This method returns the vectors C_in and D_in
+ * For Debugging purposes
+ */
+gsl_vector* returnCinDin(size_t n){
+    if (n == 0) {
+        return C_in;
+    }
+    if (n == 1) {
+        return D_in;
+    } else
+        return 0;
+}
 // TODO check if it works correctly and how performance change

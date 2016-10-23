@@ -4,7 +4,6 @@
 
 #include "horizontalModel.h"
 #include <math.h>
-//#include <ErrorCorrection.h>
 #include "InitTest.h"
 
 
@@ -12,7 +11,6 @@
  * Declaration of System matrices and inner System vector for further use in methods.
  * Stored here to get access to each scalar, vector and matrix.
  */
-
     gsl_vector* xg;             // Vector xg
     gsl_vector* ug;             // Vector ug
     gsl_vector* xg_alt;         // Vector xg_alt
@@ -44,39 +42,13 @@
     gsl_vector* acc;            // Vector acc
     gsl_matrix* test_ug;        // Matrix for testing and simulation ug
     gsl_matrix* test_xg;        // Matrix for testing and simulation xg
-    gsl_matrix* testCmatrix;    // Matrix C for checking the output of this class (Simulink Model)
-    gsl_matrix* testDmatrix;    // Matrix D for checking the output of this class (Simulink Model)
     double ax;
     double ay;
     double psi_pp;
-    double xg_one;
-    double xg_two;
-    double xg_three;
-    double ug_one;
-    double ug_two;
-    double ug_three;
-    double ug_four;
-    double ug_five;
-    double ug_six;
-    double ug_seven;
-    double ug_eight;
-    double ug_nine;
-    double ax1;
-    double ax2;
-    double ax3;
-    double ax4;
-    double ax5;
-    double ax6;
-    double ax7;
-    double ay1;
-    double ay2;
-    double ay3;
-    double ay4;
     gsl_vector* difference_xg_alt;
     gsl_vector* difference_ug_alt;
     gsl_vector* xg_alt_loop;
     gsl_vector* ug_alt_loop;
-
 
 
 /*
@@ -86,39 +58,35 @@
  */
 void initializeVector(void){
 
-    xg = gsl_vector_alloc(3);       // Vector xg
-    ug = gsl_vector_alloc(9);       // Vector ug
-    xg_alt = gsl_vector_alloc(3);   // Vector xg_alt
-    ug_alt = gsl_vector_alloc(9);   // Vector ug_Alt
-    acc_alt = gsl_vector_alloc(3);  // Vector acc_alt
-    delta_x = gsl_vector_alloc(3);  // Vector delta_x
-    delta_u = gsl_vector_alloc(9);  // Vector delta_u
-    alpha_r = gsl_vector_alloc(3);  // Vector alpha_r
-    alpha_x = gsl_vector_alloc(3);  // Vector alpha_x
-    alpha_y = gsl_vector_alloc(3);  // Vector alpha_y
-    C = gsl_vector_alloc(18);       // Matrix/Vector C
-    D = gsl_vector_alloc(18);       // Matrix/Vector D
-    beta = gsl_vector_alloc(3);     // Vector beta
-    v = gsl_vector_alloc(3);        // Vector v
-    vr = gsl_vector_alloc(3);       // Vector vr
-    sr = gsl_vector_alloc(3);       // Vector sr
-    mu = gsl_vector_alloc(3);       // Vector mu
-    mux = gsl_vector_alloc(3);      // Vector mux
-    muy = gsl_vector_alloc(3);      // Vector muy
-    Fz = gsl_vector_alloc(3);       // Vector Fz
-    Fx = gsl_vector_alloc(3);       // Vector Fx
-    Fy = gsl_vector_alloc(3);       // Vector Fy
-    acc = gsl_vector_alloc(3);      // Vector acc
-    test_ug = gsl_matrix_alloc(61001, 9);
-    test_xg = gsl_matrix_alloc(61001, 3);
-    testCmatrix = gsl_matrix_alloc(18, 61001);
-    testDmatrix = gsl_matrix_alloc(18, 61001);
-    difference_xg_alt = gsl_vector_alloc(3);
-    difference_ug_alt = gsl_vector_alloc(9);
-    xg_alt_loop = gsl_vector_alloc(3);
-    ug_alt_loop = gsl_vector_alloc(9);
-
-
+    xg = gsl_vector_alloc(3);                   // Vector xg
+    ug = gsl_vector_alloc(9);                   // Vector ug
+    xg_alt = gsl_vector_alloc(3);               // Vector xg_alt
+    ug_alt = gsl_vector_alloc(9);               // Vector ug_Alt
+    acc_alt = gsl_vector_alloc(3);              // Vector acc_alt
+    delta_x = gsl_vector_alloc(3);              // Vector delta_x
+    delta_u = gsl_vector_alloc(9);              // Vector delta_u
+    alpha_r = gsl_vector_alloc(3);              // Vector alpha_r
+    alpha_x = gsl_vector_alloc(3);              // Vector alpha_x
+    alpha_y = gsl_vector_alloc(3);              // Vector alpha_y
+    C = gsl_vector_alloc(18);                   // Matrix/Vector C
+    D = gsl_vector_alloc(18);                   // Matrix/Vector D
+    beta = gsl_vector_alloc(3);                 // Vector beta
+    v = gsl_vector_alloc(3);                    // Vector v
+    vr = gsl_vector_alloc(3);                   // Vector vr
+    sr = gsl_vector_alloc(3);                   // Vector sr
+    mu = gsl_vector_alloc(3);                   // Vector mu
+    mux = gsl_vector_alloc(3);                  // Vector mux
+    muy = gsl_vector_alloc(3);                  // Vector muy
+    Fz = gsl_vector_alloc(3);                   // Vector Fz
+    Fx = gsl_vector_alloc(3);                   // Vector Fx
+    Fy = gsl_vector_alloc(3);                   // Vector Fy
+    acc = gsl_vector_alloc(3);                  // Vector acc
+    test_ug = gsl_matrix_alloc(61001, 9);       // Vector test_ug
+    test_xg = gsl_matrix_alloc(61001, 3);       // Vector test_xg
+    difference_xg_alt = gsl_vector_alloc(3);    // Vector difference_xg_alt
+    difference_ug_alt = gsl_vector_alloc(9);    // Vector difference_ug_alt
+    xg_alt_loop = gsl_vector_alloc(3);          // Vector xg_alt_loop
+    ug_alt_loop = gsl_vector_alloc(9);          // Vector ug_alt_loop
 
 }
 
@@ -228,31 +196,15 @@ gsl_vector* getMatrix(size_t n){
  * All Vectors and matrices should be saved here
  */
 void testVector(size_t n){
-
-    //gsl_matrix_get_row(ug, test_ug, n);
-    //gsl_matrix_get_row(xg, test_xg, n);
-    double ug1 = gsl_matrix_get(test_ug, n, 0);
-    double ug2 = gsl_matrix_get(test_ug, n, 1);
-    double ug3 = gsl_matrix_get(test_ug, n, 2);
-    double ug4 = gsl_matrix_get(test_ug, n, 3);
-    double ug5 = gsl_matrix_get(test_ug, n, 4);
-    double ug6 = gsl_matrix_get(test_ug, n, 5);
-    double ug7 = gsl_matrix_get(test_ug, n, 6);
-    double ug8 = gsl_matrix_get(test_ug, n, 7);
-    double ug9 = gsl_matrix_get(test_ug, n, 8);
-
-
-
-
-    gsl_vector_set(ug, 0, ug1);
-    gsl_vector_set(ug, 1, ug2);
-    gsl_vector_set(ug, 2, ug3);
-    gsl_vector_set(ug, 3, ug4);
-    gsl_vector_set(ug, 4, ug5);
-    gsl_vector_set(ug, 5, ug6);
-    gsl_vector_set(ug, 6, ug7);
-    gsl_vector_set(ug, 7, ug8);
-    gsl_vector_set(ug, 8, ug9);
+    gsl_vector_set(ug, 0, gsl_matrix_get(test_ug, n, 0));
+    gsl_vector_set(ug, 1, gsl_matrix_get(test_ug, n, 1));
+    gsl_vector_set(ug, 2, gsl_matrix_get(test_ug, n, 2));
+    gsl_vector_set(ug, 3, gsl_matrix_get(test_ug, n, 3));
+    gsl_vector_set(ug, 4, gsl_matrix_get(test_ug, n, 4));
+    gsl_vector_set(ug, 5, gsl_matrix_get(test_ug, n, 5));
+    gsl_vector_set(ug, 6, gsl_matrix_get(test_ug, n, 6));
+    gsl_vector_set(ug, 7, gsl_matrix_get(test_ug, n, 7));
+    gsl_vector_set(ug, 8, gsl_matrix_get(test_ug, n, 8));
     gsl_vector_set(xg, 0, gsl_matrix_get(test_xg, n, 0));
     gsl_vector_set(xg, 1, gsl_matrix_get(test_xg, n, 1));
     gsl_vector_set(xg, 2, gsl_matrix_get(test_xg, n, 2));
@@ -263,20 +215,16 @@ void testVector(size_t n){
  */
 void initTest(void){
 
-    // Creating matrix test_ug for 600 sec simulation
-    gsl_matrix_set_col(test_ug, 0, saving(1));      // col with 6001 values of n_1
-    gsl_matrix_set_col(test_ug, 1, saving(2));      // col with 6001 values of n_2
-    gsl_matrix_set_col(test_ug, 2, saving(3));      // col with 6001 values of n_3
-    gsl_matrix_set_col(test_ug, 3, saving(7));      // col with 6001 values of delta_dyn_1
-    gsl_matrix_set_col(test_ug, 4, saving(8));      // col with 6001 values of delta_dyn_2
-    gsl_matrix_set_col(test_ug, 5, saving(9));      // col with 6001 values of delta_dyn_3
-    gsl_matrix_set_col(test_ug, 6, saving(4));      // col with 6001 values of delta_1
-    gsl_matrix_set_col(test_ug, 7, saving(5));      // col with 6001 values of delta_2
-    gsl_matrix_set_col(test_ug, 8, saving(6));      // col with 6001 values of delta_3
-
-    //gsl_matrix_set_col(test_xg, 0, saving(10));     // col with 6001 values of v_x
-    //gsl_matrix_set_col(test_xg, 1, saving(11));     // col with 6001 values of v_y
-    //gsl_matrix_set_col(test_xg, 2, saving(12));     // col with 6001 values of psi_p
+    // Creating matrix test_ug for 610 sec simulation
+    gsl_matrix_set_col(test_ug, 0, saving(1));      // col with 61001 values of n_1
+    gsl_matrix_set_col(test_ug, 1, saving(2));      // col with 61001 values of n_2
+    gsl_matrix_set_col(test_ug, 2, saving(3));      // col with 61001 values of n_3
+    gsl_matrix_set_col(test_ug, 3, saving(7));      // col with 61001 values of delta_dyn_1
+    gsl_matrix_set_col(test_ug, 4, saving(8));      // col with 61001 values of delta_dyn_2
+    gsl_matrix_set_col(test_ug, 5, saving(9));      // col with 61001 values of delta_dyn_3
+    gsl_matrix_set_col(test_ug, 6, saving(4));      // col with 61001 values of delta_1
+    gsl_matrix_set_col(test_ug, 7, saving(5));      // col with 61001 values of delta_2
+    gsl_matrix_set_col(test_ug, 8, saving(6));      // col with 61001 values of delta_3
     gsl_matrix_memcpy(test_xg, savingMatrix(18));
 }
 
@@ -291,9 +239,11 @@ void initTest(void){
  */
 void slipage(void) {
 
+    // This double values are temporary stored for a better overview
     double alphar1 = gsl_vector_get(ug, 3) - gsl_vector_get(ug, 6);
     double alphar2 = gsl_vector_get(ug, 4) - gsl_vector_get(ug, 7);
     double alphar3 = gsl_vector_get(ug, 5) - gsl_vector_get(ug, 8);
+
     // Calculation of Vector indices alpha_r
     gsl_vector_set(alpha_r, 0, alphar1);      // Index 1
     gsl_vector_set(alpha_r, 1, alphar2);      // Index 2
@@ -317,7 +267,7 @@ void slipage(void) {
  * Function get access on xg and do the calculations
  *
  * !!!!!!!!!!!!!!!!!!!!!
- * !! Nachkommastelle !!
+ * !! Tested & proven !!
  * !!!!!!!!!!!!!!!!!!!!!
  */
 void adma_velocity(void) {
@@ -339,7 +289,6 @@ void adma_velocity(void) {
     v_3 = sqrt(pow((v_x + (psi_p * LAENGE / SQRT3) * cos(11 * M_PI / 6) ),2) + pow((v_y + (psi_p * LAENGE / SQRT3) * sin(11 * M_PI / 6) ),2));
     beta_3 = atan2((v_y + (psi_p * LAENGE / SQRT3) * sin(11 * M_PI / 6) ), (v_x + (psi_p * LAENGE / SQRT3) * cos(11 * M_PI / 6) ));
 
-    // TODO Unbedingt ueberpruefen ob die Werte in Vector form vorliegen muessen
     // Calculation of beta vector and velocity vector
     // Setting the values in vector beta and v
     gsl_vector_set(beta, 0, beta_1);
@@ -367,8 +316,8 @@ void slip(void) {
     gsl_vector_set(vr, 1, (M_PI * RADIUS * gsl_vector_get(ug, 1)/ 30));
     gsl_vector_set(vr, 2, (M_PI * RADIUS * gsl_vector_get(ug, 2)/ 30));
 
-    // TODO herausfinden was der Vector sr fuer eine Bedeutung hat
-    for (size_t i = 0; i <3 ; i++) {
+    size_t i;
+    for (i = 0; i < 3 ; i++) {
         if (gsl_vector_get(vr,i) >= gsl_vector_get(v,i))
             // Propulsion
             gsl_vector_set(sr, i, (1 - gsl_vector_get(v, i)/ gsl_vector_get(vr, i)) );
@@ -415,7 +364,7 @@ void friction(void) {
  * better understanding
  * For more Information look up in Jan's MasterThesis or line 63 in Horizontal model
  */
-void Bewegungsgleichung_ax(void) {
+void acceleration_ax(void) {
 
     // Declaration of output acceleration ax
     double mux1 = gsl_vector_get(mux, 0);
@@ -430,35 +379,30 @@ void Bewegungsgleichung_ax(void) {
     double alphay1 = gsl_vector_get(alpha_y, 0);
     double alphay2 = gsl_vector_get(alpha_y, 1);
     double alphay3 = gsl_vector_get(alpha_y, 2);
-/*
-    mux_all = mux1 + mux2 + mux3;
-    muy_all = muy1 + muy2 + muy3;
-    alphax_all = alphax1 + alphax2 + alphax3;
-    alphay_all = alphay1 + alphay2 + alphay3;
-*/
     /*
-     * For an overview and summary of the long equitation some auxiliary scalars are calculated
-     * and stored into the following doubles
-     * mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
-     */
+
+    // For an overview and summary of the long equitation some auxiliary scalars are calculated
+    // and stored into the following doubles
+    // mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
+
     //mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
     //muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    double alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
+    //double alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
     //alphay_all = gsl_vector_get(alpha_y, 0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
 
-    /* The firstPart is a summary of the first to additions in the big equitation of motion
-     * g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
-     */
+    // The firstPart is a summary of the first to additions in the big equitation of motion
+    // g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
+
     //double firstPart = ((GRAVY/3) * mux_all) + ((C_a / MASSE) * alphax_all);
 
-    /* The Factor p1 is a summary of the first big factor in the big equitation
-     * [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
-     */
+    // The Factor p1 is a summary of the first big factor in the big equitation
+    // [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
+
     //double p1 = ((HCG/LAENGE) * (mux2 - mux3)) / ((LAENGE / HCG)- muy2 + muy3);
 
-    /* The factor p2 is a summary of the second big factor in the fraction
-     * mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
-     */
+    // The factor p2 is a summary of the second big factor in the fraction
+    // mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
+
     //double p2 = muy_all + (C_a / MASSE) * alphay_all;
 
     // The numerator of the big fraction
@@ -477,8 +421,12 @@ void Bewegungsgleichung_ax(void) {
     //double fraction_2 = qx - qy * qz; // / q2 ;
 
     //ax = fraction_1 / fraction_2;
+    */
 
+    // The big equitation taken from Jan's horizontal Model
     ax = (GRAVY/3* (mux1+mux2+mux3) + C_a/MASSE * (alphax1+alphax2+alphax3) + ((HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3)*(muy1+muy2+muy3+C_a/MASSE*(alphay1+alphay2+alphay3)))) / (1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1) - HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3)*(HCG/LAENGE*(muy2+muy3-2*muy1)));
+
+#if DEBUGGER == 1
 
     ax1 = GRAVY/3* (mux1+mux2+mux3);
     ax2 = C_a/MASSE * (alphax1+alphax2+alphax3);
@@ -488,8 +436,7 @@ void Bewegungsgleichung_ax(void) {
     ax6 = HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3);
     ax7 = HCG/LAENGE*(muy2+muy3-2*muy1);
 
-    // TODO teilterme miteinander vergleichen
-    //return ax;
+#endif
 }
 
 /*
@@ -498,12 +445,11 @@ void Bewegungsgleichung_ax(void) {
  * of vehicle motion. With ay you could reconstruct how the vehicle moves
  * and which action forces affect it.
  * It Solves the equitation with Jan's Formula from Horizontal model.
- * For getting the result, Bewegungsgleichung_ax() must be called
+ * For getting the result, acceleration_ax() must be called
  */
-void Bewegungsgleichung_ay(void) {
+void acceleration_ay(void) {
 
-    // Declaration of double ay
-    //double ay;
+    // Declaration of double values for a better overview
     double muy1 = gsl_vector_get(muy, 0);
     double muy2 = gsl_vector_get(muy, 1);
     double muy3 = gsl_vector_get(muy, 2);
@@ -512,8 +458,8 @@ void Bewegungsgleichung_ay(void) {
     double alphay3 = gsl_vector_get(alpha_y, 2);
 
     // Calculation of auxiliary doubles for further use in line below
-    double muy_all = muy1 + muy2 + muy3;//gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    double alphay_all = alphay1 + alphay2 + alphay3; //gsl_vector_get(alpha_y,0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
+    double muy_all = muy1 + muy2 + muy3;
+    double alphay_all = alphay1 + alphay2 + alphay3;
 
     /*
      * ay is calculated by a big fraction
@@ -523,18 +469,20 @@ void Bewegungsgleichung_ay(void) {
     ay = (GRAVY/3 * muy_all + HCG / LAENGE / SQRT3 * (muy2 + muy3 - 2 * muy1)
             * returnAcceleration(0) + C_a / MASSE * alphay_all) / (1 - HCG / LAENGE *  (muy2 - muy3));
     //ay = (GRAVY/3* (muy1+muy2+muy3) + HCG/LAENGE/SQRT3 * (muy2+muy3-2*muy1) * returnAcceleration(0) + C_a/MASSE * (alphay1+alphay2+alphay3)) / (1 - HCG/LAENGE * (muy2-muy3));
-    //return ay;
+
+#if DEBUGGER == 1
     ay1 = GRAVY/3 * muy_all;
     ay2 = HCG / LAENGE / SQRT3 * (muy2 + muy3 - 2 * muy1) * returnAcceleration(0);
     ay3 = C_a / MASSE * alphay_all;
     ay4 = 1 - HCG / LAENGE *  (muy2 - muy3);
+#endif
 }
 
 /*
  * This Method calculates the contact Forces of each point in the triangle
  * and returns a vector containing all three forces
  */
-void AufstandsKraefte(void) {
+void contactForce(void) {
 
     // current saving of ax and ay for caluclations
     //TODO Umschreiben Das ist redundant
@@ -561,7 +509,7 @@ void AufstandsKraefte(void) {
  * The formula is taken from Jan's Horizontal model
  * Fx(x) = Fz(x) * mux(x) + C_a * alpha_x(x)
  */
-void RadKraefte(void) {
+void wheelForce(void) {
     // Putting the calculated scalar into the vector Fx
     gsl_vector_set(Fx,0, gsl_vector_get(Fz,0) * gsl_vector_get(mux,0) + C_a * gsl_vector_get(alpha_x,0));
     gsl_vector_set(Fx,1, gsl_vector_get(Fz,1) * gsl_vector_get(mux,1) + C_a * gsl_vector_get(alpha_x,1));
@@ -577,11 +525,11 @@ void RadKraefte(void) {
  * This Method calculate the yaw acceleration and returns the general acceleration
  * in Form of the vector acc
  */
-void GierbewegungBerechnen(void) {
+void yawrateCalculator(void) {
 
     // Calculation of psi_pp with formula taken from Jan's Modell
-    psi_pp = LAENGE/THETA * (gsl_vector_get(Fy, 0) / SQRT3 - gsl_vector_get(Fy,1) / 2 / SQRT3 - gsl_vector_get(Fy,2)
-            / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx,2) / 2);
+    psi_pp = LAENGE/THETA * (gsl_vector_get(Fy, 0) / SQRT3 - gsl_vector_get(Fy, 1) / 2 / SQRT3 - gsl_vector_get(Fy, 2)
+            / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx, 2) / 2);
 
     // Filling the Vector acc with acceleration ax, ay and psi_pp
     gsl_vector_set(acc, 0, returnAcceleration(0));
@@ -594,48 +542,7 @@ void GierbewegungBerechnen(void) {
  * For the equitation some auxiliary parameters are calculated.
  *
  */
-void SystemmatrixBerechnen(void) {
-
-
-    // Calculating auxiliary parameters xg for further calculations
-    //xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
-    //xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
-    //xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);
-
-    // Calculating auxiliary parameters ug for further calculations
-    //ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
-    //ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
-    //ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
-    //ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
-    //ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
-    //ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
-    //ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
-    //ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
-    //ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);
-
-
-    //printf("xg berechnung : ");
-    //printer(NULL, simple_difference(getVector(1), getVector(3)));
-    //printer(NULL, getVector(1));
-
-/*
-    // Calculating auxiliary parameters xg for further calculations
-    double xg_one = gsl_vector_get(xg, 0) - gsl_vector_get(xg_alt, 0);
-    double xg_two = gsl_vector_get(xg, 1) - gsl_vector_get(xg_alt, 1);
-    double xg_three = gsl_vector_get(xg, 2) - gsl_vector_get(xg_alt, 2);*/
-/*
-    // Calculating auxiliary parameters ug for further calculations
-    double ug_one = gsl_vector_get(ug, 0) - gsl_vector_get(ug_alt, 0);
-    double ug_two = gsl_vector_get(ug, 1) - gsl_vector_get(ug_alt, 1);
-    double ug_three = gsl_vector_get(ug, 2) - gsl_vector_get(ug_alt, 2);
-    double ug_four = gsl_vector_get(ug, 3) - gsl_vector_get(ug_alt, 3);
-    double ug_five = gsl_vector_get(ug, 4) - gsl_vector_get(ug_alt, 4);
-    double ug_six = gsl_vector_get(ug, 5) - gsl_vector_get(ug_alt, 5);
-    double ug_seven = gsl_vector_get(ug, 6) - gsl_vector_get(ug_alt, 6);
-    double ug_eight = gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7);
-    double ug_nine = gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8);*/
-
-    // TODO Unbedingt kommentieren
+void systemMatrixCalculator(void) {
     /*
      * This for loop calculates the three rows in the Matrix D
      * In the first if-Statement the difference between xg and xg_alt
@@ -656,31 +563,6 @@ void SystemmatrixBerechnen(void) {
             gsl_vector_set(xg_alt, i, (temp + 0.0001));
         }
 
-/*
-        // Switch case puts fraction of acc and xg into the matrix
-        switch (i) {
-            // for i equals 0 fill 4th, 10th and 16th index of D
-            case 0:
-                gsl_vector_set(D, 3, acc_one / xg_one);
-                gsl_vector_set(D, 9, acc_two / xg_one);
-                gsl_vector_set(D, 15, acc_three / xg_one)
-                break;
-            // for i equals 1 fill 5th, 11th and 17th index of D
-            case 1:
-                gsl_vector_set(D, 4, acc_one / xg_two);
-                gsl_vector_set(D, 10, acc_two / xg_two);
-                gsl_vector_set(D, 16, acc_three / xg_two);
-                break;
-            // for i equals 1 fill 6th, 12th and 18th index of D
-            case 2:
-                gsl_vector_set(D, 5, acc_one / xg_three);
-                gsl_vector_set(D, 11, acc_two / xg_three);
-                gsl_vector_set(D, 17, acc_three / xg_three);
-                break;
-            default:
-                break;
-        }
-        */
         // Switch case puts fraction of acc and xg into the matrix
         switch (i) {
             // for i equals 0 fill 4th, 10th and 16th index of D
@@ -709,19 +591,19 @@ void SystemmatrixBerechnen(void) {
     /*
      * This for loop does the same as the loop above with some differences.
      * The size of the counter is 3 times bigger then before and here
-     * it also calculates indices of botn Matrices, C and D
-     * Therefore the switch-case block is bigger then before and
-     * the auxiliary vectors ug are more then xg
+     * it also calculates indices of both Matrices, C and D
+     * Therefore the switch-case block is bigger  and
+     * the auxiliary vectors ug are more involved then xg
      */
     for (size_t j = 0; j < 9 ; j++) {
-
-        // Proof if difference between ug and ug_alt is 0
-        // TODO !!!! Control this if statement !!!!!
-        // TODO Seems to change the current ug state vector
-        if (gsl_vector_get(ug,j) - gsl_vector_get(ug_alt,j) != 0)
-        {    // if true increase value of index j of ug_alt by 0.0001
-            gsl_vector_set(ug_alt, j, (gsl_vector_get(ug_alt, j) + 0.0001));
-            gsl_vector_set(difference_ug_alt, j, gsl_vector_get(ug_alt, j));
+        double temp_ug = gsl_vector_get(ug, j);
+        double temp_ug_alt = gsl_vector_get(ug_alt, j);
+        // Proof if difference between ug and ug_alt is not 0
+        if ((temp_ug - temp_ug_alt) != 0) {
+            double temp;
+            temp = gsl_vector_get(ug_alt, j);
+            // if true increase value of index j of ug_alt by 0.0001
+            gsl_vector_set(ug_alt, j, (temp + 0.0001));
         }
 
         // switch separate the calculation depending on counter j
@@ -775,6 +657,7 @@ void SystemmatrixBerechnen(void) {
                 gsl_vector_set(D, 7, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7)));
                 gsl_vector_set(D, 13, (gsl_vector_get(acc, 2) - gsl_vector_get(acc_alt, 2)) / (gsl_vector_get(ug, 7) - gsl_vector_get(ug_alt, 7)));
                 break;
+            // if j is 8 set those values in matrix D
             case 8:
                 gsl_vector_set(D, 2, (gsl_vector_get(acc, 0) - gsl_vector_get(acc_alt, 0)) / (gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8)));
                 gsl_vector_set(D, 8, (gsl_vector_get(acc, 1) - gsl_vector_get(acc_alt, 1)) / (gsl_vector_get(ug, 8) - gsl_vector_get(ug_alt, 8)));
@@ -784,13 +667,9 @@ void SystemmatrixBerechnen(void) {
                 break;
         }
     }
-    //printf("xg berechnung : ");
-    //printer(NULL, simple_difference(getVector(1), getVector(3)));
-    //printer(NULL, getVector(1));
 
     // Set acc as the new acc_alt
     gsl_vector_memcpy(acc_alt, acc);
-
 }
 
 /*
@@ -815,33 +694,22 @@ void saving_current_state(void){
 }
 
 /*
- *
+ * This function summarize all methods above and
+ * calculates iteratively the system matrix C and D
  */
 void calculate_C_and_D(size_t cyc){
-    //testVector(cyc);
-    //saving_current_state();
     slipage();
     adma_velocity();
     slip();
     friction();
-    Bewegungsgleichung_ax();
-    Bewegungsgleichung_ay();
-    AufstandsKraefte();
-    RadKraefte();
-    GierbewegungBerechnen();
+    acceleration_ax();
+    acceleration_ay();
+    contactForce();
+    wheelForce();
+    yawrateCalculator();
     deltasBerechnen();
-    // TODO here begins the critical area
-    SystemmatrixBerechnen();
+    systemMatrixCalculator();
     saving_current_state();
-}
-
-/*
- * This method is written for debugging purposes.
- * It calculates the difference between state-space
- * vector ug/xg and delta_ug/delta_xg
- */
-void difference_debug(void){
-
 }
 
 /*
@@ -853,6 +721,8 @@ double returnAcceleration(size_t n){
         return ax;
     if (n == 1)
         return ay;
+
+#if DEBUGGER == 1
     if(n == 2)
         return ax1;
     if(n == 3)
@@ -875,6 +745,7 @@ double returnAcceleration(size_t n){
         return ay3;
     if(n == 12)
         return ay4;
+#endif
     else
         return 0;
 }
@@ -882,6 +753,7 @@ double returnAcceleration(size_t n){
 /*
  *
  */
+#if DEBUGGER == 1
 gsl_vector* buildVector(size_t choice) {
     gsl_vector *output;
     if (choice == 0) {
@@ -903,3 +775,4 @@ gsl_vector* buildVector(size_t choice) {
     }
     return output;
 }
+#endif

@@ -98,6 +98,8 @@ gsl_matrix* xg_alt_diffMatrix;
 gsl_matrix* ug_diff_loopMatrix;
 gsl_matrix* ug_alt_diffMatrix;
 gsl_matrix* acc_diff_loopMatrix;
+float gesamtzeit = 0.0;
+
 
 
 /*
@@ -345,7 +347,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.8f ",gsl_vector_get(vector, i));
+            printf("%.2f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -420,7 +422,7 @@ void calculateCycleTime (float timings[], char *auswahl){
     float minTime = 200.0;
 
     // Starting with 0
-    float gesamtzeit = 0.0;
+    //float gesamtzeit = 0.0;
 
     // Declaration of counters used in for-loop
     size_t i, j, k;

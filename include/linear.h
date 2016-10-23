@@ -75,5 +75,7 @@ double scalar(size_t n);
 
 void calculating_PI_Controller();
 
+gsl_vector* returnCinDin(size_t n);
+
 
 #endif //ANSICEE_LINEAR_H

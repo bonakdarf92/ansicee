@@ -2,14 +2,19 @@
   <dictionary name="faridbonakdar">
     <words>
       <w>adma</w>
+      <w>berechnen</w>
       <w>bonakdar</w>
       <w>farid</w>
       <w>geschwindigkeit</w>
       <w>gierrate</w>
+      <w>laenge</w>
+      <w>masse</w>
       <w>masterthesis</w>
       <w>matlab</w>
+      <w>simulink</w>
       <w>slipage</w>
       <w>steier</w>
+      <w>yawrate</w>
     </words>
   </dictionary>
 </component>
