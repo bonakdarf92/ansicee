@@ -3,11 +3,11 @@
 //
 
 #include <gsl/gsl_matrix.h>
-#include <gsl/gsl_vector.h>
 #include <memory.h>
 #include "InitTest.h"
 #include "horizontalModel.h"
 #include <string.h>
+#include <complex.h>
 
 
 /*
@@ -16,7 +16,7 @@
  * The methods should run once in the beginning of the simulation
  * to obtain all necessary vectors and matrices.
  */
-
+#if DEBUGGER == 1
 FILE* Cmat;
 FILE* Dmat;
 FILE* alphar;
@@ -36,6 +36,7 @@ FILE* vFile;
 FILE* vrFile;
 FILE* stepUFile;
 FILE* stepXFile;
+#endif
 FILE* DrehzahlenFile;
 FILE* statLenkFile;
 FILE* dynLenkFile;
@@ -43,6 +44,7 @@ FILE* xgFile;
 FILE* ugFile;
 FILE* accFile;
 FILE* accAltFile;
+#if DEBUGGER == 1
 FILE* axtermeFile;
 FILE* aytermeFile;
 FILE* acc2File;
@@ -51,6 +53,27 @@ FILE* xg_alt_diffFile;
 FILE* ug_diff_loopFile;
 FILE* ug_alt_diffFile;
 FILE* acc_diff_loopFile;
+#endif
+//FILE* EWgFile;
+//FILE* EWiFile;
+//FILE* EWgAnfangFile;
+//FILE* EWgwhile1File;
+//FILE* EWiAnfangFile;
+//FILE* EWiwhile1File;
+FILE* KiFile;
+FILE* KiAnfangFile;
+FILE* KiEndeFile;
+FILE* KpFile;
+FILE* KpAnfangFile;
+FILE* KpEndeFile;
+FILE* KptransFile;
+FILE* KsOut1File;
+FILE* AgAnfangFile;
+FILE* AiOutFile;
+FILE* n_updnFile;
+FILE* T_nFile;
+//FILE* prod1File;
+//FILE* prod2File;
 
 gsl_vector* n1;
 gsl_vector* n2;
@@ -99,6 +122,27 @@ gsl_matrix* ug_diff_loopMatrix;
 gsl_matrix* ug_alt_diffMatrix;
 gsl_matrix* acc_diff_loopMatrix;
 float gesamtzeit = 0.0;
+//gsl_matrix_complex* EWgMatrix;
+//gsl_matrix_complex* EWiMatrix;
+//gsl_matrix_complex* EWgAnfangMatrix;
+//gsl_matrix_complex* EWgwhile1Matrix;
+//gsl_matrix_complex* EWiAnfangMatrix;
+//gsl_matrix_complex* EWiwhile1Matrix;
+gsl_matrix* KiMatrix;
+gsl_matrix* KiAnfangMatrix;
+gsl_matrix* KiEndeMatrix;
+gsl_matrix* KpMatrix;
+gsl_matrix* KpAnfangMatrix;
+gsl_matrix* KpEndeMatrix;
+gsl_matrix* KptransMatrix;
+//gsl_matrix* KsOut1Matrix;
+gsl_matrix* AgAnfangMatrix;
+gsl_matrix* AiOutMatrix;
+gsl_vector* tempCol;
+gsl_matrix* n_updnMatrix;
+gsl_matrix* T_nMatrix;
+//gsl_matrix* prod1Matrix;
+//gsl_matrix* prod2Matrix;
 
 
 
@@ -146,6 +190,7 @@ void start_initializing(size_t choice) {
         ugMatrix = gsl_matrix_alloc(61001, 9);
         accMatrix = gsl_matrix_alloc(61001, 3);
         accAltMatrix = gsl_matrix_alloc(61001, 3);
+#if DEBUGGER == 1
         axtermeMatrix = gsl_matrix_alloc(61001, 7);
         aytermeMatrix = gsl_matrix_alloc(61001, 4);
         acc2Matrix = gsl_matrix_alloc(61001, 3);
@@ -154,6 +199,30 @@ void start_initializing(size_t choice) {
         xg_alt_diffMatrix = gsl_matrix_alloc(61001, 3);
         ug_diff_loopMatrix = gsl_matrix_alloc(61001, 9);
         ug_alt_diffMatrix = gsl_matrix_alloc(61001, 9);
+#endif
+
+        // Data for linear.c
+        //EWgMatrix = gsl_matrix_complex_alloc(61001, 15);
+        //EWiMatrix = gsl_matrix_complex_alloc(61001, 15);
+        //EWgAnfangMatrix = gsl_matrix_complex_alloc(61001, 15);
+        //EWgwhile1Matrix = gsl_matrix_complex_alloc(61001, 15);
+        //EWiAnfangMatrix = gsl_matrix_complex_alloc(61001, 15);
+        //EWiwhile1Matrix = gsl_matrix_complex_alloc(61001, 15);
+        //KiMatrix = gsl_matrix_alloc(36, 61001);
+        //KiAnfangMatrix = gsl_matrix_alloc(36, 61001);
+        //KiEndeMatrix = gsl_matrix_alloc(36, 61001);
+        //KpMatrix = gsl_matrix_alloc(36, 61001);
+        //KpAnfangMatrix = gsl_matrix_alloc(36, 61001);
+        //KpEndeMatrix = gsl_matrix_alloc(36, 61001);
+        //KptransMatrix = gsl_matrix_alloc(36, 61001);
+        //KsOut1Matrix = gsl_matrix_alloc(36, 61001);
+        //AgAnfangMatrix = gsl_matrix_alloc(225, 61001);
+        //AiOutMatrix = gsl_matrix_alloc(225, 61001);
+        tempCol = gsl_vector_alloc(36);
+        n_updnMatrix = gsl_matrix_alloc(61001, 3);
+        T_nMatrix = gsl_matrix_alloc(61001, 3);
+        //prod1Matrix = gsl_matrix_alloc(36, 61001);
+        //prod2Matrix = gsl_matrix_alloc(36, 61001);
     }
 }
 
@@ -171,6 +240,8 @@ void start_reading(void) {
     gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
     gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
     gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
+
+#if DEBUGGER == 1
     gsl_matrix_fscanf(Cmat, cMatrix);
     gsl_matrix_fscanf(Dmat, dMatrix);
     gsl_matrix_fscanf(alphar, alphaRMatrix);
@@ -190,6 +261,7 @@ void start_reading(void) {
     gsl_matrix_fscanf(vrFile, vrMatrix);
     gsl_matrix_fscanf(stepXFile, stepXMatrix);
     gsl_matrix_fscanf(stepUFile, stepUMatrix);
+#endif
     gsl_matrix_fscanf(DrehzahlenFile, DrehzahlenMat);
     gsl_matrix_fscanf(statLenkFile, statLenkMatrix);
     gsl_matrix_fscanf(dynLenkFile, dynLenkMatrix);
@@ -197,6 +269,7 @@ void start_reading(void) {
     gsl_matrix_fscanf(ugFile, ugMatrix);
     gsl_matrix_fscanf(accFile, accMatrix);
     gsl_matrix_fscanf(accAltFile, accAltMatrix);
+#if DEBUGGER == 1
     gsl_matrix_fscanf(axtermeFile, axtermeMatrix);
     gsl_matrix_fscanf(aytermeFile, aytermeMatrix);
     gsl_matrix_fscanf(acc2File, acc2Matrix);
@@ -205,6 +278,30 @@ void start_reading(void) {
     gsl_matrix_fscanf(xg_alt_diffFile, xg_alt_diffMatrix);
     gsl_matrix_fscanf(ug_diff_loopFile, ug_diff_loopMatrix);
     gsl_matrix_fscanf(ug_alt_diffFile, ug_alt_diffMatrix);
+#endif
+
+    // Matrices for linear.c
+    //gsl_matrix_complex_fscanf(EWgFile, EWgMatrix);
+    //gsl_matrix_complex_fscanf(EWgAnfangFile, EWgAnfangMatrix);
+    //gsl_matrix_complex_fscanf(EWgwhile1File, EWgwhile1Matrix);
+    //gsl_matrix_complex_fscanf(EWiFile, EWiMatrix);
+    //gsl_matrix_complex_fscanf(EWiAnfangFile, EWiAnfangMatrix);
+    //gsl_matrix_complex_fscanf(EWiwhile1File, EWiwhile1Matrix);
+    //gsl_matrix_fscanf(EWiwhile1File, EWiwhile1Matrix);
+    //gsl_matrix_fscanf(KiFile, KiMatrix);
+    //gsl_matrix_fscanf(KiAnfangFile, KiAnfangMatrix);
+    //gsl_matrix_fscanf(KiEndeFile, KiEndeMatrix);
+    //gsl_matrix_fscanf(KpFile, KpMatrix);
+    //gsl_matrix_fscanf(KpAnfangFile, KpAnfangMatrix);
+    //gsl_matrix_fscanf(KpEndeFile, KpEndeMatrix);
+    //gsl_matrix_fscanf(KptransFile, KptransMatrix);
+    //gsl_matrix_fscanf(KsOut1File, KsOut1Matrix);
+    //gsl_matrix_fscanf(AgAnfangFile, AgAnfangMatrix);
+    //gsl_matrix_fscanf(AiOutFile, AiOutMatrix);
+    gsl_matrix_fscanf(n_updnFile, n_updnMatrix);
+    gsl_matrix_fscanf(T_nFile, T_nMatrix);
+    //gsl_matrix_fscanf(prod1File, prod1Matrix);
+    //gsl_matrix_fscanf(prod2File, prod2Matrix);
 }
 
 /*
@@ -312,14 +409,96 @@ gsl_matrix* savingMatrix(size_t n){
             return ug_diff_loopMatrix;
         case 29:
             return ug_alt_diffMatrix;
+        case 30:
+            return n_updnMatrix;
+        case 31:
+            return T_nMatrix;
         default:
             return 0;
     }
 }
 
+/*
+ *
+ */
+/*
+gsl_matrix* bigMatrices(size_t n){
+    switch (n){
+        case 1:
+            return KsOut1Matrix;
+        case 2:
+            return prod1Matrix;
+        case 3:
+            return prod2Matrix;
+        default:
+            return 0;
+    }
 
-void create_data(void) {
-    // TODO Implement core
+}
+*/
+/*
+ * This Method gets an input counter, a matrix pointer to read from and a pointer to
+ * save the information.
+ * The output is the transformation of a colon vector from matrixReader to a shaped
+ * matrixSaver
+ *      __________________________________
+ *     | x11  x12  x13  x14  x15 ...  x1m |
+ *     | x21  x22  x23  x24  x25 ...  x2m |
+ *     | x31  x32  ...                    |
+ * --> | x41  ...                      .  |
+ *     | x51                           .  |     <---
+ *     |  .        ...                    |     <---    Big Matrix with all test Data
+ *     |  .                  ...          |     <---
+ *     |  .                               |
+ *     | xn1  ...                     xnm |
+ *     |  |    |    |                  |  |
+ *     |__|____|____|__________________|__|
+ *
+ *        1    2    3   ...            m        <---    Colon Vectors to read
+ *
+ *
+ *        1:
+ *      ___________________________________
+ *     | x11  x41  x71  ...          xn-21 |
+ *     | x21  x51  x81  ...          xn-11 |    <---    Matrix build with the colon vector
+ *     | x31  x61  x91  ...           xn1  |    <---    with the shape of 3 x 12 for example
+ *     |___________________________________|
+ *
+ */
+void create_data(size_t zaehler, gsl_matrix* matrixReader, gsl_matrix* matrixSaver) {
+    // Get the current colon from the big matrixReader and save it to temporary vector
+    gsl_matrix_get_col(tempCol, matrixReader, zaehler);
+
+    // Save the desired shape matrixSaver for further fill
+    size_t rows = matrixSaver->size1;
+    size_t cols = matrixSaver->size2;
+    size_t total = matrixReader->size1;
+
+    // Declare counter integers
+    size_t i;
+    size_t j;
+    size_t k = 0;
+
+    // For i is smaller then current cols of matrixSaver
+    for (i = 0; i < cols ; i++) {
+        // For j is smaller the current rows of matrixSaver
+        for (j = 0; j < rows; j++) {
+            // If k have not reached last element of colon vector of matrixReader do
+            if (k!=total) {
+                // Get value of temporary vector
+                double zahl;
+                zahl = gsl_vector_get(tempCol, k);
+                // Save value of temporary vector to matrixSaver at position i x j
+                gsl_matrix_set(matrixSaver, j, i, zahl);
+
+                // Increment k for position
+                k++;
+            } else
+                break;
+        }
+    }
+
+
 }
 
 /*
@@ -337,7 +516,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         for (i = 0; i < rows; i++) {
             printf(" \n");
             for (j = 0; j < col; j++) {
-                printf("%f ", gsl_matrix_get(matrix, i, j));
+                printf("%.16f ", gsl_matrix_get(matrix, i, j));
             }
         }
         printf("\n_________________");
@@ -347,7 +526,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.2f ",gsl_vector_get(vector, i));
+            printf("%.6f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -368,6 +547,7 @@ void open_files(size_t choice) {
      * Windows   --> \
      */
     if(choice == 0){
+#if DEBUGGER == 1
         Cmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/CMatrix.txt", "rw");
         Dmat = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/DMatrix.txt", "rw");
         alphar = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/alpha_r.txt", "rw");
@@ -387,6 +567,7 @@ void open_files(size_t choice) {
         vrFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/vr.txt", "rw");
         stepUFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/step_u.txt", "rw");
         stepXFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/step_x.txt", "rw");
+#endif
         DrehzahlenFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Drehzahl.txt", "rw");
         statLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/statischer_Lenkwinkel.txt", "rw");
         dynLenkFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/dynLenk.txt", "rw");
@@ -394,6 +575,8 @@ void open_files(size_t choice) {
         ugFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug.txt", "rw");
         accFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc.txt", "rw");
         accAltFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_alt.txt", "rw");
+
+#if DEBUGGER == 1
         axtermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ax_terme.txt", "rw");
         aytermeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ay_terme.txt", "rw");
         acc2File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc2.txt", "rw");
@@ -402,6 +585,28 @@ void open_files(size_t choice) {
         ug_diff_loopFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug_diff_loop.txt", "rw");
         ug_alt_diffFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/ug_alt_diff.txt", "rw");
         acc_diff_loopFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/acc_diff_loop.txt", "rw");
+#endif
+
+        //EWgFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWgNeu.txt", "rw");
+        //EWiFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWiNeu.txt", "rw");
+        //EWgAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWganfang.txt", "rw");
+        //EWgwhile1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWgwhile1.txt", "rw");
+        //EWiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWianfang.txt", "rw");
+        //EWiwhile1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWiwhile1.txt", "rw");
+        //KiFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiNeu.txt", "rw");
+        //KiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KianfangNeu.txt", "rw");
+        //KiEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiendeNeu.txt", "rw");
+        //KpFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpNeu.txt", "rw");
+        //KpAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpanfangNeu.txt", "rw");
+        //KpEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpendeNeu.txt", "rw");
+        //KptransFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KptransNeu.txt", "rw");
+        //KsOut1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Ksout1Neu.txt", "rw");
+        //AgAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/AganfangNeu.txt", "rw");
+        //AiOutFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Aiout1Neu.txt", "rw");
+        n_updnFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n_updn_neu.txt", "rw");
+        T_nFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/T_n.txt", "rw");
+        //prod1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod1neu.txt", "rw");
+        //prod2File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod2neu.txt", "rw");
     }
 }
 
@@ -517,7 +722,7 @@ void print_Timings(float timings[],size_t size){
 }
 
 /*
- *
+ * TODO comment this function
  */
 void drehzahlTester(void){
     gsl_matrix_get_col(n1, DrehzahlenMat, 0);
@@ -529,7 +734,4 @@ void drehzahlTester(void){
     gsl_matrix_get_col(deltaDyn1, dynLenkMatrix, 0);
     gsl_matrix_get_col(deltaDyn2, dynLenkMatrix, 1);
     gsl_matrix_get_col(deltaDyn3, dynLenkMatrix, 2);
-    //gsl_matrix_get_col(velocity_x, vMatrix, 1);
-    //gsl_matrix_get_col(velocity_y, vMatrix, 2);
-    //gsl_matrix_get_col(yawrate, vMatrix, 0);
 }

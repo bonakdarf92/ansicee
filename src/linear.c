@@ -31,6 +31,7 @@ gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp5;
+gsl_matrix* temp6;
 gsl_matrix* temporary;
 gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
@@ -43,7 +44,7 @@ gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenva
 gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenvalues
 gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenvalues
 gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
-
+gsl_matrix* dmd;
 
 gsl_vector_view a;
 double delta_a [] = {1.8, 1.3, 1.05};
@@ -68,10 +69,12 @@ void initMatrix(void){
     C_in = gsl_vector_alloc(18);
     D_in = gsl_vector_alloc(18);
     temp1 = gsl_matrix_alloc(12,12);
-    temp2 = gsl_matrix_alloc(12,3);
+    //temp2 = gsl_matrix_alloc(12,3);
+    temp2 = gsl_matrix_alloc(3,12);
     temp3 = gsl_matrix_alloc(3,3);
     temp4 = gsl_matrix_alloc(3,12);
     temp5 = gsl_matrix_alloc(12,3);
+    temp6 = gsl_matrix_alloc(12, 12);
     temporary = gsl_matrix_alloc(12,3);
     eye = gsl_matrix_alloc(12,12);
     gsl_matrix_set_identity(eye);
@@ -80,6 +83,8 @@ void initMatrix(void){
     eigenvalue2 = gsl_vector_complex_alloc(15);
     eigenvalue3 = gsl_vector_complex_alloc(15);
     eigenvalue4 = gsl_vector_complex_alloc(15);
+    dmd = gsl_matrix_alloc(3,3);
+
 
     // TODO initialize all matrices
     gsl_matrix_set_zero(ASystem);
@@ -143,16 +148,16 @@ void matrixPresetting(void){
 
     //TODO T_n1, T_n2 und T_n3
     // Setting all the indexes for Matrix B
-    gsl_matrix_set(BSystem, 0, 0, KONSTANTE / (T_DELTA*T_DELTA) );
-    gsl_matrix_set(BSystem, 2, 1, KONSTANTE / (T_DELTA*T_DELTA) );
-    gsl_matrix_set(BSystem, 4, 2, KONSTANTE / (T_DELTA*T_DELTA));
-    gsl_matrix_set(BSystem, 6, 3, KONSTANTE / (T_N_CONSTUP*T_N_CONSTDN));     // TODO T_n_1
-    gsl_matrix_set(BSystem, 8, 4, KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
-    gsl_matrix_set(BSystem, 10, 5, KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));    // TODO T_n_3
+    gsl_matrix_set(BSystem, 0, 0, (KONSTANTE / (T_DELTA*T_DELTA)) );
+    gsl_matrix_set(BSystem, 2, 1, (KONSTANTE / (T_DELTA*T_DELTA)) );
+    gsl_matrix_set(BSystem, 4, 2, (KONSTANTE / (T_DELTA*T_DELTA)));
+    //gsl_matrix_set(BSystem, 6, 3, (KONSTANTE / (T_N_CONSTUP*T_N_CONSTDN)));     // TODO T_n_1
+    //gsl_matrix_set(BSystem, 8, 4, (KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
+    //gsl_matrix_set(BSystem, 10, 5, (KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN)));    // TODO T_n_3
 
 
     // Setting all the indexes for Matrix A inverse
-    gsl_matrix_set(A_Inv, 0, 1, 1);             // Setting value in Matrix A_inv 1_1
+    gsl_matrix_set(A_Inv, 0, 1, 1);             // Setting value in Matrix A_inv 1_2
     gsl_matrix_set(A_Inv, 1, 0, -0.0257);       // Setting value in Matrix A_inv 2_1
     gsl_matrix_set(A_Inv, 1, 1, 0.1859);        // Setting value in Matrix A_inv 2_2
     gsl_matrix_set(A_Inv, 2, 3, 1);             // Setting value in Matrix A_inv 3_4
@@ -222,6 +227,8 @@ gsl_matrix * get_Matrix(size_t n){
             return EWI_output;
         case 14:
             return KP;
+        case 15:
+            return temp4;
         default:
             return 0;
     }
@@ -256,14 +263,38 @@ void getInputParameter(void){
  * product 1, product 2 and at least difference 3
  */
 void calculate_KS(void){
-    KS = D_op;
-    temp1 = A_Inv;
-    temp2 = C_op;
-    gsl_matrix_mul_elements(temp1, BSystem);
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, temp1, 0.0, temp2);
-    gsl_matrix_sub(KS, temp2);
+    //KS = D_op;
+    //gsl_matrix_memcpy(KS, D_op);
+    //temp1 = A_Inv;
+    //gsl_matrix_memcpy(temp1, A_Inv);
+    //temp2 = C_op;
+    //gsl_matrix_memcpy(temp2, C_op);
+    //gsl_matrix_mul_elements(temp2, A_Inv);
+    //gsl_matrix_mul_elements(temp2, BSystem);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, C_op, A_Inv, 0.0, temp2);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, temp2, BSystem, 0.0, temp4);
+
+    //gsl_matrix_sub(temp2, D_op);
+    gsl_matrix_memcpy(KS, D_op);
+    //gsl_matrix_scale(KS, 1.0);
+    gsl_matrix_sub(KS, temp4);
+    //printf("Cop ");
+    //printer(C_op, NULL);
+    //printf("Ainv ");
+    //printer(A_Inv, NULL);
+    //printf("Berech. prod1 ");
+    //printer(temp4, NULL);
+    //printf("Korrekter prod1 ");
+    //printer(savingMatrix(32), NULL);
+    //printf("Berech. prod2 ");
+    //printer(temp4, NULL);
+    //printf("Korrekter prod2 ");
+    //printer(savingMatrix(33), NULL);
+    //printf("Berehnet: ");
+    //printer(KS, NULL);
+
 }
-// TODO might be a BOTTLENECK !!!
+// TODO Abweichungen an manchen Stellen bis 2 Nachkommastellen !!!
 
 /*
  * This method calculates the matrix -B * Ki (T) and copy all its elements
@@ -374,43 +405,57 @@ void calculate_EWI(void){
  * from Jan's linearized model line 94
  *
  *      --->  Ki = a0 * (KS' / (KS * KS') )
+ *                      |___|   |________|
+ *                      temp5     temp 3
+ *
+ *
  *  and stored in the matrix KI
  */
 void calculate_KI(gsl_matrix* KS, double a0){
 
     // temporary storage of matrix KS for later usage
-    temp2 = KS;
 
-    // Transpose the matrix KS and save into temp4
-    gsl_matrix_transpose_memcpy(temp5,KS);
 
+    //gsl_permutation* p = gsl_permutation_alloc(3);
+    //int s;
+    // Transpose the matrix KS and save into temp5
+    gsl_matrix_transpose_memcpy(temp5, KS);
+    //gsl_matrix* eye2 = gsl_matrix_alloc(3,3);
+    //gsl_matrix_set_identity(eye2);
+    //gsl_matrix* output = gsl_matrix_alloc(3,3);
+    int choleyks;
     // Calculating the product of KS and KS_transpose
     //temp3 = KS;
-    //gsl_matrix_mul_elements(temp3, temp4);
+    //gsl_matrix_memcpy(dmd, temp3);
 
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp2,temp5,0.0,temp3);
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, KS, temp5, 0.0, temp3);
+
+    //gsl_linalg_LU_decomp(temp3, p, &s);
+    //gsl_linalg_LU_invert(temp3, p, output);
+    //long double deter;
+    //deter = (long double) gsl_linalg_LU_det (temp3, s);
+
+
     //gsl_linalg_cholesky_decomp(temp3);
     //gsl_linalg_cholesky_invert(temp3);
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    //KI = KS;
-    // gsl_matrix_mul_elements(KI, temp3);
     // TODO Berechnung überprüfen Werte Stimmen nicht überein
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KI);
-    gsl_blas_dtrsm(CblasRight,CblasLower,CblasNoTrans,CblasNonUnit,1.0,temp3,KI);
+    //gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KI);
+    //gsl_blas_dtrsm(CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit, 1.0, temp3, eye2);
 
     // Scaling KI with a0
-    gsl_matrix_scale(KI, a0);
-/*
-    printf("KI_________->\n");
-    for (int i = 0; i < 12 ; i++) {
-        for (int j = 0; j < 3 ; j++) {
-            printf("%g ", gsl_matrix_get(KI,i,j));
-        }
-        printf("\n ");
-    }
+    //gsl_matrix_scale(KI, a0);
 
-    printf("<-_________KI\n");
-    */
+    printf("KS * KS' ");
+    printer(temp3, NULL);
+
+    //printf("KS' ");
+    //printer(temp5, NULL);
+
+    //printf("Inverse ");
+    //printer(output, NULL);
+
+    //printf("Determinante %.80Lf\n", deter);
 }
 // TODO might be a BOTTLENECK !!!
 
@@ -419,28 +464,30 @@ void calculate_KI(gsl_matrix* KS, double a0){
  * For example the direction of movement converts from forward to reverse
  * Then the changes have to be made in System matrix A and A_inverse
  */
-void changing_engineSpeed(int n_updn){
+void changing_engineSpeed(gsl_matrix* n_updn, size_t zaehler){
 
-    switch (n_updn) {
-        case 1:
-            gsl_matrix_set(ASystem, 6, 6, -1.9964);
-            gsl_matrix_set(ASystem, 6, 7, -2.5921);
-            gsl_matrix_set(A_Inv, 7, 6, -0.3858);
-            gsl_matrix_set(A_Inv, 7, 7, -0.7702);
-
-        case 2:
-            gsl_matrix_set(ASystem, 8, 8, -1.9964);
-            gsl_matrix_set(ASystem, 8, 9, -2.5921);
-            gsl_matrix_set(A_Inv, 9, 8, -0.3858);
-            gsl_matrix_set(A_Inv, 9, 9, -0.7702);
-        case 3:
-            gsl_matrix_set(ASystem, 10, 10, -0.9964);
-            gsl_matrix_set(ASystem, 10, 11, -2.5921);
-            gsl_matrix_set(A_Inv, 11, 10, -0.3858);
-            gsl_matrix_set(A_Inv, 11, 11, -0.7702);
-        default:
-            break;
+    double updn1 = gsl_matrix_get(n_updn, zaehler, 0);
+    double updn2 = gsl_matrix_get(n_updn, zaehler, 1);
+    double updn3 = gsl_matrix_get(n_updn, zaehler, 2);
+    if (updn1 == 0) {
+        gsl_matrix_set(ASystem, 6, 6, -1.9964);
+        gsl_matrix_set(ASystem, 6, 7, -2.5921);
+        gsl_matrix_set(A_Inv, 7, 6, -0.3858);
+        gsl_matrix_set(A_Inv, 7, 7, -0.7702);
     }
+    if (updn2 == 0) {
+        gsl_matrix_set(ASystem, 8, 8, -1.9964);
+        gsl_matrix_set(ASystem, 8, 9, -2.5921);
+        gsl_matrix_set(A_Inv, 9, 8, -0.3858);
+        gsl_matrix_set(A_Inv, 9, 9, -0.7702);
+    }
+    if (updn3 == 0) {
+        gsl_matrix_set(ASystem, 10, 10, -1.9964);
+        gsl_matrix_set(ASystem, 10, 11, -2.5921);
+        gsl_matrix_set(A_Inv, 11, 10, -0.3858);
+        gsl_matrix_set(A_Inv, 11, 11, -0.7702);
+    }
+
 }
 // TODO check what information is given in n_up down and how the differential observation takes place
 
@@ -889,23 +936,25 @@ double scalar(size_t n){
  * This Function executes all methods written above to calculate the
  * PI state space controller
  */
-void calculating_PI_Controller(void){
+void calculating_PI_Controller(size_t zaehler){
     getInputParameter();
-    changing_engineSpeed(1);
+    update_BSystem(zaehler);
+    changing_engineSpeed(savingMatrix(30), zaehler);
     calculate_Cop();
     calculate_Dop();
     calculate_KS();
-    calculate_KI(get_Matrix(4),scalar(1));
-    calculate_Ai();
-    calculate_EWI();
-    matrix_Calculator_EWI();
-    tune_matrix_EWI();
-    calculate_KP(get_Matrix(4), scalar(2));
-    calculate_AG();
-    calculate_EWG();
-    matrix_Calculator_EWG();
+    calculate_KI(KS, scalar(1));
+    //calculate_Ai();
+    //calculate_EWI();
+    //matrix_Calculator_EWI();
+    //tune_matrix_EWI();
+    //calculate_KP(get_Matrix(4), scalar(2));
+    //calculate_AG();
+    //calculate_EWG();
+    //matrix_Calculator_EWG();
     //tune_matrix_EWG();
-    tune_KP();
+    //tune_KP();
+    rechanging_engineSpeed();
 }
 
 /*
@@ -922,3 +971,34 @@ gsl_vector* returnCinDin(size_t n){
         return 0;
 }
 // TODO check if it works correctly and how performance change
+
+void update_BSystem(size_t zaehler){
+
+    double T_n1 = gsl_matrix_get(savingMatrix(31), zaehler, 0);
+    double T_n2 = gsl_matrix_get(savingMatrix(31), zaehler, 1);
+    double T_n3 = gsl_matrix_get(savingMatrix(31), zaehler, 2);
+    gsl_matrix_set(BSystem, 6, 3, (KONSTANTE / (T_n1*T_n1)));
+    gsl_matrix_set(BSystem, 8, 4, (KONSTANTE / (T_n2*T_n2)));
+    gsl_matrix_set(BSystem, 10, 5, (KONSTANTE / (T_n3*T_n3)));
+
+}
+
+/*
+ * Undo the values of system matrix A and Ainv
+ * to prior values after calculations
+ */
+void rechanging_engineSpeed(void){
+
+    gsl_matrix_set(ASystem, 6, 6, -7.0356);           // Setting value in Matrix A_7_7
+    gsl_matrix_set(ASystem, 6, 7, -183.0609);         // Setting value in Matrix A_7_8
+    gsl_matrix_set(ASystem, 8, 8, -7.0356);           // Setting value in Matrix A_9_9
+    gsl_matrix_set(ASystem, 8, 9, -183.0609);         // Setting value in Matrix A_9_10
+    gsl_matrix_set(ASystem, 10, 10, -7.0356);         // Setting value in Matrix A_11_11
+    gsl_matrix_set(ASystem, 10, 11, -183.0609);       // Setting value in Matrix A_11_12
+    gsl_matrix_set(A_Inv, 7, 6, -0.0055);       // Setting value in Matrix A_inv 8_7
+    gsl_matrix_set(A_Inv, 7, 7, -0.0384);       // Setting value in Matrix A_inv 8_8
+    gsl_matrix_set(A_Inv, 9, 8, -0.0055);       // Setting value in Matrix A_inv 10_9
+    gsl_matrix_set(A_Inv, 9, 9, -0.0384);       // Setting value in Matrix A_inv 10_10
+    gsl_matrix_set(A_Inv, 11, 10, -0.0055);     // Setting value in Matrix A_inv 12_11
+    gsl_matrix_set(A_Inv, 11, 11, -0.0384);     // Setting value in Matrix A_inv 12_12
+}

@@ -2,19 +2,46 @@
   <dictionary name="faridbonakdar">
     <words>
       <w>adma</w>
+      <w>alphar</w>
+      <w>alphax</w>
+      <w>alphay</w>
+      <w>anfang</w>
+      <w>ansicee</w>
+      <w>auswahl</w>
+      <w>axterme</w>
+      <w>ayterme</w>
       <w>berechnen</w>
+      <w>betraegt</w>
       <w>bonakdar</w>
+      <w>cmat</w>
+      <w>datenanalyse</w>
+      <w>dmat</w>
+      <w>drehzahl</w>
+      <w>drehzahlen</w>
+      <w>ende</w>
       <w>farid</w>
+      <w>faridbonakdar</w>
+      <w>gesamtzeit</w>
       <w>geschwindigkeit</w>
       <w>gierrate</w>
+      <w>kptrans</w>
       <w>laenge</w>
+      <w>lenk</w>
+      <w>lenkwinkel</w>
       <w>masse</w>
       <w>masterthesis</w>
       <w>matlab</w>
+      <w>maximalzeit</w>
+      <w>minimalzeit</w>
       <w>simulink</w>
       <w>slipage</w>
+      <w>statischer</w>
       <w>steier</w>
+      <w>terme</w>
+      <w>wgwhile</w>
+      <w>wiwhile</w>
       <w>yawrate</w>
+      <w>zeit</w>
     </words>
   </dictionary>
 </component>

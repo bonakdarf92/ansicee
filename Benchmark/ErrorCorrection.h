@@ -23,5 +23,7 @@ void calculateCorrection(size_t cyc);
 
 gsl_vector* returnReference(size_t n);
 
+gsl_matrix* complex_difference(gsl_matrix* a, gsl_matrix* b);
+
 
 #endif //ANSICEE_ERRORCORRECTION_H

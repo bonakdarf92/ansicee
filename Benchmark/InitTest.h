@@ -5,11 +5,12 @@
 #ifndef ANSICEE_INITTEST_H
 #define ANSICEE_INITTEST_H
 
-//#include <stdio.h>
 #include <wchar.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include "ErrorCorrection.h"
+#include <gsl/gsl_matrix_complex_double.h>
+#include <gsl/gsl_complex.h>
 
 
 void open_files(size_t choice);
@@ -22,7 +23,9 @@ gsl_vector* saving(size_t n);
 
 gsl_matrix* savingMatrix(size_t n);
 
-void create_data(void);
+//gsl_matrix* bigMatrices(size_t n);
+
+void create_data(size_t zaehler, gsl_matrix* matrix, gsl_matrix* matrixSaver);
 
 void printer(gsl_matrix* matrix, gsl_vector* vector);
 

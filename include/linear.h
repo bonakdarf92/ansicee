@@ -18,9 +18,9 @@
 #define KONSTANTE 1.0
 #define I_MAX_A 10
 #define I_MAX_B 1000
-#define T_DELTA 0.1603
-#define T_N_CONSTUP 0.0739
-#define T_N_CONSTDN 0.6211
+#define T_DELTA 0.160256410256410
+#define T_N_CONSTUP 0.073909830007391
+#define T_N_CONSTDN 0.621118012422360
 
 
 
@@ -49,7 +49,7 @@ void calculate_Ai(void);
 
 void calculate_EWI(void);
 
-void changing_engineSpeed(int n_updn);
+void changing_engineSpeed(gsl_matrix* n_updn, size_t zaehler);
 
 void calculate_Cop(void);
 
@@ -73,9 +73,13 @@ void tune_KP(void);
 
 double scalar(size_t n);
 
-void calculating_PI_Controller();
+void calculating_PI_Controller(size_t zaehler);
 
 gsl_vector* returnCinDin(size_t n);
+
+void update_BSystem(size_t zaehler);
+
+void rechanging_engineSpeed(void);
 
 
 #endif //ANSICEE_LINEAR_H

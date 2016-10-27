@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include "InitTest.h"
 #include "ErrorCorrection.h"
+#define DEBUGGER 0
 
 
 
@@ -33,6 +34,8 @@ int main() {
     correction = gsl_vector_alloc(9);
 #endif
 
+    gsl_matrix* tempKS;
+    tempKS = gsl_matrix_alloc(3, 12);
     initializeVector();
     open_files(0);
     start_initializing(0);
@@ -48,16 +51,26 @@ int main() {
     //double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[100];
-    while (zaehler < 100) {
-
-        //storeCurrentInformation(zaehler);
+    float timings[20];
+    while (zaehler < 20) {
 
         // Taking time for performance
         clock_t begin = clock();
         testVector(zaehler);
-        //printf("vor der Berech: ");
-        //printer(NULL, getVector(19));
+        calculate_C_and_D(zaehler);
+        calculating_PI_Controller(zaehler);
+        //create_data(zaehler, bigMatrices(1), tempKS);
+
+        //printf("Korrekter KS ");
+        //printer(tempKS, NULL);
+        //printf("KI   berech. : ");
+        //printer(get_Matrix(5), NULL);
+
+        //printf("Difference : ");
+        //printer(complex_difference(get_Matrix(4), tempKS), NULL);
+
+
+
 
 #if DEBUGGER == 1
         gsl_matrix_get_row(tempSize18, savingMatrix(1), zaehler);
@@ -67,33 +80,33 @@ int main() {
 
 
         // Korrekte Zustandsvektor aus Simulink
-        gsl_matrix_get_row(tempSize3, savingMatrix(18), zaehler);
-        printf("Korr.  xg          : ");
-        printer(NULL, tempSize3);
+        //gsl_matrix_get_row(tempSize3, savingMatrix(18), zaehler);
+        //printf("Korr.  xg          : ");
+        //printer(NULL, tempSize3);
 
         // Kopierte Werte aus C-Code
-        printf("Anf.    xg         : ");
-        printer(NULL, getVector(1));
+        //printf("Anf.    xg         : ");
+        //printer(NULL, getVector(1));
 
         // Zustandsvektor aus vorherigen Iteration
-        printf("Anf. xg_alt        : ");
-        printer(NULL, getVector(3));
+        //printf("Anf. xg_alt        : ");
+        //printer(NULL, getVector(3));
 
         // Differnz aus xg und xg_alt
-        printf("Anf. xg - xg_alt   : ");
-        printer(NULL, simple_difference(getVector(1), getVector(3)));
+        //printf("Anf. xg - xg_alt   : ");
+        //printer(NULL, simple_difference(getVector(1), getVector(3)));
 
         // Korrekte Differenz aus Simulink
-        printf("Korr. diff xg      : ");
-        gsl_matrix_get_row(tempSize3, savingMatrix(26), zaehler);
-        printer(NULL, tempSize3);
+        printf("Korr. c Matrix : ");
+        //gsl_matrix_get_row(tempSize3, savingMatrix(26), zaehler);
+        printer(NULL, getMatrix(1));
         //printer(NULL,getVector(1));
 #endif
 
         //printf(" \n +++++++ Vor Berechnung +++++++ \n \n");
         // This method combines all functions written in the File horizontalModel.c
-        calculate_C_and_D(zaehler);
-        //printer(NULL, getMatrix(1));
+        //calculate_C_and_D(zaehler);
+        //printer(NULL, savingMatrix(1));
 
  /*
 
@@ -106,16 +119,16 @@ int main() {
 
         printf("End xg - xg_alt   : ");
         printer(NULL, simple_difference(getVector(1), getVector(3)));
-
-
         */
 
+        //printf("Difference     : ");
+        //printer(NULL, simple_difference(getMatrix(1), tempSize18));
 
         //printf("xg-xg_alt End : ");
         //printer(NULL, simple_difference(getVector(1), getVector(3)));
 
         // This method combines all function written in linear.c
-        calculating_PI_Controller();
+        //calculating_PI_Controller();
 
         //printf("c Matrix  Ber.: ");
         //printer(get_Matrix(7), NULL);
@@ -159,10 +172,10 @@ int main() {
 
         //printf(" Vektor diff  : ");
         //printer(NULL, simple_difference(tempSize18, getMatrix(1)));
-        printer(get_Matrix(7), NULL);
+        //printer(get_Matrix(7), NULL);
 
 
-        //printf("\n ___________________________________________________\n \n");
+        printf("\n ___________________________________________________\n \n %zu\n", zaehler+1);
         zaehler++;
     }
     //print_Timings(timings, sizeof(timings)/ sizeof(float));
