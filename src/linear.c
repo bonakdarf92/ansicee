@@ -3,6 +3,7 @@
 //
 
 #include <InitTest.h>
+#include <calcMatrix_A_B.h>
 #include "linear.h"
 
 
@@ -33,6 +34,7 @@ gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
 gsl_matrix* temp5;
 gsl_matrix* temp6;
 gsl_matrix* temporary;
+gsl_matrix* Inverse;
 gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
 double A0 = 10;
@@ -84,6 +86,8 @@ void initMatrix(void){
     eigenvalue3 = gsl_vector_complex_alloc(15);
     eigenvalue4 = gsl_vector_complex_alloc(15);
     dmd = gsl_matrix_alloc(3,3);
+    Inverse = gsl_matrix_alloc(3, 3);
+
 
 
     // TODO initialize all matrices
@@ -229,6 +233,10 @@ gsl_matrix * get_Matrix(size_t n){
             return KP;
         case 15:
             return temp4;
+        case 16:
+            return temp3;
+        case 17:
+            return Inverse;
         default:
             return 0;
     }
@@ -415,25 +423,28 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     // temporary storage of matrix KS for later usage
 
-
+    size_t i;
     //gsl_permutation* p = gsl_permutation_alloc(3);
     //int s;
     // Transpose the matrix KS and save into temp5
     gsl_matrix_transpose_memcpy(temp5, KS);
+    gsl_vector* tau = gsl_vector_alloc(3);
     //gsl_matrix* eye2 = gsl_matrix_alloc(3,3);
     //gsl_matrix_set_identity(eye2);
     //gsl_matrix* output = gsl_matrix_alloc(3,3);
-    int choleyks;
+    //int choleyks;
     // Calculating the product of KS and KS_transpose
     //temp3 = KS;
     //gsl_matrix_memcpy(dmd, temp3);
 
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, KS, temp5, 0.0, temp3);
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, KS, KS, 0.0, temp3);
+    gsl_matrix_transpose(temp3);
+    gsl_linalg_QR_decomp(temp3, tau);
+    gsl_vector* b = gsl_vector_alloc(3);
+    gsl_matrix_get_col(b, KS, i);
+    gsl_vector* x = gsl_vector_alloc(3);
+    gsl_linalg_QR_solve(temp3, tau, b, x);
 
-    //gsl_linalg_LU_decomp(temp3, p, &s);
-    //gsl_linalg_LU_invert(temp3, p, output);
-    //long double deter;
-    //deter = (long double) gsl_linalg_LU_det (temp3, s);
 
 
     //gsl_linalg_cholesky_decomp(temp3);
@@ -445,12 +456,15 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     // Scaling KI with a0
     //gsl_matrix_scale(KI, a0);
+    //invertMatrixA(temp3, Inverse);
 
-    printf("KS * KS' ");
-    printer(temp3, NULL);
+    //printf("KS * KS' ");
+    //printer(temp3, NULL);
+    //printf("Inverse ");
+    //printer(Inverse, NULL);
 
-    //printf("KS' ");
-    //printer(temp5, NULL);
+    //printf("KI' ");
+    //printer(KI, NULL);
 
     //printf("Inverse ");
     //printer(output, NULL);

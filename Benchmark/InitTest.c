@@ -72,8 +72,8 @@ FILE* AgAnfangFile;
 FILE* AiOutFile;
 FILE* n_updnFile;
 FILE* T_nFile;
-//FILE* prod1File;
-//FILE* prod2File;
+FILE* prod1File;
+FILE* prod2File;
 
 gsl_vector* n1;
 gsl_vector* n2;
@@ -135,14 +135,14 @@ gsl_matrix* KpMatrix;
 gsl_matrix* KpAnfangMatrix;
 gsl_matrix* KpEndeMatrix;
 gsl_matrix* KptransMatrix;
-//gsl_matrix* KsOut1Matrix;
+gsl_matrix* KsOut1Matrix;
 gsl_matrix* AgAnfangMatrix;
 gsl_matrix* AiOutMatrix;
 gsl_vector* tempCol;
 gsl_matrix* n_updnMatrix;
 gsl_matrix* T_nMatrix;
-//gsl_matrix* prod1Matrix;
-//gsl_matrix* prod2Matrix;
+gsl_matrix* prod1Matrix;
+gsl_matrix* prod2Matrix;
 
 
 
@@ -208,21 +208,21 @@ void start_initializing(size_t choice) {
         //EWgwhile1Matrix = gsl_matrix_complex_alloc(61001, 15);
         //EWiAnfangMatrix = gsl_matrix_complex_alloc(61001, 15);
         //EWiwhile1Matrix = gsl_matrix_complex_alloc(61001, 15);
-        //KiMatrix = gsl_matrix_alloc(36, 61001);
-        //KiAnfangMatrix = gsl_matrix_alloc(36, 61001);
-        //KiEndeMatrix = gsl_matrix_alloc(36, 61001);
+        KiMatrix = gsl_matrix_alloc(36, 61001);
+        KiAnfangMatrix = gsl_matrix_alloc(36, 61001);
+        KiEndeMatrix = gsl_matrix_alloc(36, 61001);
         //KpMatrix = gsl_matrix_alloc(36, 61001);
         //KpAnfangMatrix = gsl_matrix_alloc(36, 61001);
         //KpEndeMatrix = gsl_matrix_alloc(36, 61001);
         //KptransMatrix = gsl_matrix_alloc(36, 61001);
-        //KsOut1Matrix = gsl_matrix_alloc(36, 61001);
+        KsOut1Matrix = gsl_matrix_alloc(36, 61001);
         //AgAnfangMatrix = gsl_matrix_alloc(225, 61001);
         //AiOutMatrix = gsl_matrix_alloc(225, 61001);
-        tempCol = gsl_vector_alloc(36);
+        tempCol = gsl_vector_alloc(9);
         n_updnMatrix = gsl_matrix_alloc(61001, 3);
         T_nMatrix = gsl_matrix_alloc(61001, 3);
-        //prod1Matrix = gsl_matrix_alloc(36, 61001);
-        //prod2Matrix = gsl_matrix_alloc(36, 61001);
+        prod1Matrix = gsl_matrix_alloc(9, 61001);
+        prod2Matrix = gsl_matrix_alloc(9, 61001);
     }
 }
 
@@ -288,20 +288,20 @@ void start_reading(void) {
     //gsl_matrix_complex_fscanf(EWiAnfangFile, EWiAnfangMatrix);
     //gsl_matrix_complex_fscanf(EWiwhile1File, EWiwhile1Matrix);
     //gsl_matrix_fscanf(EWiwhile1File, EWiwhile1Matrix);
-    //gsl_matrix_fscanf(KiFile, KiMatrix);
-    //gsl_matrix_fscanf(KiAnfangFile, KiAnfangMatrix);
-    //gsl_matrix_fscanf(KiEndeFile, KiEndeMatrix);
+    gsl_matrix_fscanf(KiFile, KiMatrix);
+    gsl_matrix_fscanf(KiAnfangFile, KiAnfangMatrix);
+    gsl_matrix_fscanf(KiEndeFile, KiEndeMatrix);
     //gsl_matrix_fscanf(KpFile, KpMatrix);
     //gsl_matrix_fscanf(KpAnfangFile, KpAnfangMatrix);
     //gsl_matrix_fscanf(KpEndeFile, KpEndeMatrix);
     //gsl_matrix_fscanf(KptransFile, KptransMatrix);
-    //gsl_matrix_fscanf(KsOut1File, KsOut1Matrix);
+    gsl_matrix_fscanf(KsOut1File, KsOut1Matrix);
     //gsl_matrix_fscanf(AgAnfangFile, AgAnfangMatrix);
     //gsl_matrix_fscanf(AiOutFile, AiOutMatrix);
     gsl_matrix_fscanf(n_updnFile, n_updnMatrix);
     gsl_matrix_fscanf(T_nFile, T_nMatrix);
-    //gsl_matrix_fscanf(prod1File, prod1Matrix);
-    //gsl_matrix_fscanf(prod2File, prod2Matrix);
+    gsl_matrix_fscanf(prod1File, prod1Matrix);
+    gsl_matrix_fscanf(prod2File, prod2Matrix);
 }
 
 /*
@@ -421,21 +421,24 @@ gsl_matrix* savingMatrix(size_t n){
 /*
  *
  */
-/*
 gsl_matrix* bigMatrices(size_t n){
     switch (n){
         case 1:
             return KsOut1Matrix;
         case 2:
-            return prod1Matrix;
+            return KiMatrix;
         case 3:
+            return KiAnfangMatrix;
+        case 4:
+            return prod1Matrix;
+        case 5:
             return prod2Matrix;
         default:
             return 0;
     }
 
 }
-*/
+
 /*
  * This Method gets an input counter, a matrix pointer to read from and a pointer to
  * save the information.
@@ -593,20 +596,20 @@ void open_files(size_t choice) {
         //EWgwhile1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWgwhile1.txt", "rw");
         //EWiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWianfang.txt", "rw");
         //EWiwhile1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/EWiwhile1.txt", "rw");
-        //KiFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiNeu.txt", "rw");
-        //KiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KianfangNeu.txt", "rw");
-        //KiEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiendeNeu.txt", "rw");
+        KiFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiNeu.txt", "rw");
+        KiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KianfangNeu.txt", "rw");
+        KiEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiendeNeu.txt", "rw");
         //KpFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpNeu.txt", "rw");
         //KpAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpanfangNeu.txt", "rw");
         //KpEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpendeNeu.txt", "rw");
         //KptransFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KptransNeu.txt", "rw");
-        //KsOut1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Ksout1Neu.txt", "rw");
+        KsOut1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Ksout1Neu.txt", "rw");
         //AgAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/AganfangNeu.txt", "rw");
         //AiOutFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Aiout1Neu.txt", "rw");
         n_updnFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n_updn_neu.txt", "rw");
         T_nFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/T_n.txt", "rw");
-        //prod1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod1neu.txt", "rw");
-        //prod2File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod2neu.txt", "rw");
+        prod1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod1KI.txt", "rw");
+        prod2File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/INVNEU.txt", "rw");
     }
 }
 

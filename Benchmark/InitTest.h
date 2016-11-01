@@ -23,7 +23,7 @@ gsl_vector* saving(size_t n);
 
 gsl_matrix* savingMatrix(size_t n);
 
-//gsl_matrix* bigMatrices(size_t n);
+gsl_matrix* bigMatrices(size_t n);
 
 void create_data(size_t zaehler, gsl_matrix* matrix, gsl_matrix* matrixSaver);
 

@@ -5,14 +5,19 @@
 #ifndef ANSICEE_CALCMATRIX_A_B_H
 #define ANSICEE_CALCMATRIX_A_B_H
 
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_permutation.h>
 
-void invertMatrixA(double Matrix[12][12]);
+
+void invertMatrixA(gsl_matrix* matrix, gsl_matrix* output);
 
 void invertMatrixB(double Matrix[12][12]);
 
 double eigenWerte();
 
-double determinante();
+double determinante(gsl_matrix* matrix);
 
 void matrixMulti(double a[12][12], double b [12][12]);
 

@@ -8,6 +8,7 @@
 #include <sys/times.h>
 #include <sys/time.h>
 #include "InitTest.h"
+#include "calcMatrix_A_B.h"
 #include "ErrorCorrection.h"
 #define DEBUGGER 0
 
@@ -34,8 +35,10 @@ int main() {
     correction = gsl_vector_alloc(9);
 #endif
 
-    gsl_matrix* tempKS;
-    tempKS = gsl_matrix_alloc(3, 12);
+    gsl_matrix* tempKI;
+    tempKI = gsl_matrix_alloc(12, 3);
+    gsl_matrix* tempProd1;
+    tempProd1 = gsl_matrix_alloc(3, 3);
     initializeVector();
     open_files(0);
     start_initializing(0);
@@ -51,24 +54,35 @@ int main() {
     //double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[20];
-    while (zaehler < 20) {
+    float timings[61001];
+    while (zaehler < 61001) {
 
         // Taking time for performance
         clock_t begin = clock();
         testVector(zaehler);
         calculate_C_and_D(zaehler);
         calculating_PI_Controller(zaehler);
-        //create_data(zaehler, bigMatrices(1), tempKS);
+        //create_data(zaehler, bigMatrices(2), tempKI);
+        create_data(zaehler, bigMatrices(4), tempProd1);
 
         //printf("Korrekter KS ");
         //printer(tempKS, NULL);
-        //printf("KI   berech. : ");
-        //printer(get_Matrix(5), NULL);
+
+        //printf("Prod berech. : ");
+        //printer(get_Matrix(16), NULL);
+
+        //printf("Prod korrekt : ");
+        //printer(tempProd1, NULL);
 
         //printf("Difference : ");
-        //printer(complex_difference(get_Matrix(4), tempKS), NULL);
+        //printer(complex_difference(get_Matrix(16), tempProd1), NULL);
 
+
+        //create_data(zaehler, bigMatrices(5), tempProd1);
+        //printf("Inv.  Korr : ");
+        //printer(tempProd1, NULL);
+        //printf("Inv.  Ber. : ");
+        //printer(get_Matrix(17), NULL);
 
 
 

@@ -13,6 +13,7 @@ gsl_vector* DMatrixRef;
 gsl_vector* difference3;
 gsl_vector* difference18;
 gsl_matrix* tempdiff36;
+gsl_matrix* tempdiff9;
 double rmsErrorC [61001];
 double rmsErrorD [61001];
 
@@ -28,7 +29,8 @@ void initCorrection(){
     DMatrixTest = gsl_vector_alloc(18);
     difference3 = gsl_vector_alloc(3);
     difference18 = gsl_vector_alloc(18);
-    tempdiff36 = gsl_matrix_alloc(3,12);
+    tempdiff36 = gsl_matrix_alloc(12, 3);
+    tempdiff9 = gsl_matrix_alloc(3, 3);
 }
 
 /*
@@ -117,9 +119,9 @@ gsl_vector* returnReference(size_t n){
 }
 
 gsl_matrix* complex_difference(gsl_matrix* a, gsl_matrix* b){
-    gsl_matrix_memcpy(tempdiff36, a);
-    gsl_matrix_sub(tempdiff36, b);
-    return tempdiff36;
+    gsl_matrix_memcpy(tempdiff9, a);
+    gsl_matrix_sub(tempdiff9, b);
+    return tempdiff9;
 
 }
 
