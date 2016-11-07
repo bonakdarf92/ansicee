@@ -13,6 +13,7 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_linalg.h>
+#include <Lapacke/lapacke.h>
 
 
 #define KONSTANTE 1.0

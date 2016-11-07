@@ -38,7 +38,9 @@ int main() {
     gsl_matrix* tempKI;
     tempKI = gsl_matrix_alloc(12, 3);
     gsl_matrix* tempProd1;
-    tempProd1 = gsl_matrix_alloc(3, 3);
+    tempProd1 = gsl_matrix_alloc(12, 3);
+    gsl_matrix* tempAi;
+    tempAi = gsl_matrix_alloc(15, 15);
     initializeVector();
     open_files(0);
     start_initializing(0);
@@ -54,28 +56,39 @@ int main() {
     //double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[61001];
-    while (zaehler < 61001) {
+    float timings[20];
+    while (zaehler < 20) {
 
         // Taking time for performance
         clock_t begin = clock();
         testVector(zaehler);
         calculate_C_and_D(zaehler);
         calculating_PI_Controller(zaehler);
-        //create_data(zaehler, bigMatrices(2), tempKI);
-        create_data(zaehler, bigMatrices(4), tempProd1);
+        create_data(zaehler, bigMatrices(3), tempKI);
+        //create_data(zaehler, bigMatrices(6), tempAi);
 
-        //printf("Korrekter KS ");
-        //printer(tempKS, NULL);
+        //printf("Korrekter KI : ");
+        //printer(tempKI, NULL);
+        //gsl_matrix_transpose_memcpy(tempProd1, tempKS);
 
-        //printf("Prod berech. : ");
-        //printer(get_Matrix(16), NULL);
+        //printf(" Transponiert KS ");
+        //printer(tempProd1, NULL);
+
+        //printf("Berechn. KI  : ");
+        //printer(get_Matrix(5), NULL);
 
         //printf("Prod korrekt : ");
         //printer(tempProd1, NULL);
 
         //printf("Difference : ");
-        //printer(complex_difference(get_Matrix(16), tempProd1), NULL);
+        //printer(complex_difference(get_Matrix(10), tempAi), NULL);
+
+        //printf("Korrektes D : ");
+        //printer(get_Matrix(9), );
+
+        //printf("Berechn. D  : ");
+        //printer(NULL, returnCinDin(1));
+
 
 
         //create_data(zaehler, bigMatrices(5), tempProd1);
@@ -193,9 +206,9 @@ int main() {
         zaehler++;
     }
     //print_Timings(timings, sizeof(timings)/ sizeof(float));
-    //calculateCycleTime(timings, "MIN");
-    //calculateCycleTime(timings, "MAX");
-    //calculateCycleTime(timings, "Total");
+    calculateCycleTime(timings, "MIN");
+    calculateCycleTime(timings, "MAX");
+    calculateCycleTime(timings, "Total");
     clock_t omega = clock();
     printf("Gesamte Berechnung dauert %g\n", (float) (omega - alpha) / CLOCKS_PER_SEC);
 

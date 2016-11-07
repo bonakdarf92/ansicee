@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.5)
 project(ansicee)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lgsl -lgslcblas ")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -llapack -lgsl -lgslcblas")
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 
-#include_directories(-I/usr/include/gsl)
+include_directories(-I/usr/local/include/)
+#include(-L/usr/local/lib/liblapack.a)
 include_directories(include)
 include_directories(src)
 include_directories(Benchmark)

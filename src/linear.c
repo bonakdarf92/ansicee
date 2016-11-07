@@ -4,7 +4,9 @@
 
 #include <InitTest.h>
 #include <calcMatrix_A_B.h>
+#include <gsl/gsl_matrix.h>
 #include "linear.h"
+#include <gsl/gsl_errno.h>
 
 
 gsl_matrix* ASystem;        // Declaration of Matrix A
@@ -15,7 +17,7 @@ gsl_matrix* KS;             // Declaration of Matrix KS
 gsl_matrix* KP;
 gsl_matrix* Ai;             // Declaration of Matrix A iterator
 gsl_matrix* Ag;
-gsl_matrix* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
+gsl_matrix_complex* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
 gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
 gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
 gsl_matrix* EW_G1;
@@ -37,9 +39,9 @@ gsl_matrix* temporary;
 gsl_matrix* Inverse;
 gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
 double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
-double A0 = 10;
+double A0 = 10.0;/**/
 double b_min = 0.00001;     // Declaration and initialization of tuning factor b_min
-double B0 = 10;             // TODO check which value B0 has
+double B0 = 10.0;             // TODO check which value B0 has
 
 gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
 gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
@@ -47,6 +49,11 @@ gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenva
 gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenvalues
 gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
 gsl_matrix* dmd;
+gsl_matrix* threetimes3;
+gsl_matrix* linalgtest;
+gsl_matrix* KI2;
+gsl_matrix* KI3;
+gsl_matrix* KI4;
 
 gsl_vector_view a;
 double delta_a [] = {1.8, 1.3, 1.05};
@@ -87,6 +94,13 @@ void initMatrix(void){
     eigenvalue4 = gsl_vector_complex_alloc(15);
     dmd = gsl_matrix_alloc(3,3);
     Inverse = gsl_matrix_alloc(3, 3);
+    EW_I = gsl_matrix_complex_alloc(15, 15);
+    EW_I1 = gsl_matrix_alloc(15, 15);
+    KI2 = gsl_matrix_alloc(12, 3);
+    KI3 = gsl_matrix_alloc(12, 3);
+    KI4 = gsl_matrix_alloc(12, 3);
+    threetimes3 = gsl_matrix_alloc(3, 3);
+    linalgtest = gsl_matrix_alloc(3, 3);
 
 
 
@@ -202,7 +216,7 @@ void matrixPresetting(void){
  */
 gsl_matrix * get_Matrix(size_t n){
     switch (n){
-        case 1:
+        case 1:/**/
             return ASystem;
         case 2:
             return A_Inv;
@@ -224,8 +238,8 @@ gsl_matrix * get_Matrix(size_t n){
             return Ai;
         case 11:
             return EW_G;
-        case 12:
-            return EW_I;
+        //case 12:
+            //return EW_I;
         case 13:
             EWI_output = EW_I1;
             return EWI_output;
@@ -234,7 +248,7 @@ gsl_matrix * get_Matrix(size_t n){
         case 15:
             return temp4;
         case 16:
-            return temp3;
+            return Ag;
         case 17:
             return Inverse;
         default:
@@ -330,60 +344,38 @@ void calculate_KS(void){
  *
  */
 void calculate_Ai(void){
-    // Scheint zu funktionieren
-    //temp1 = BSystem;
-    //gsl_matrix_scale(temp1,-1);
-    temp2 = KI;
-    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp2);
-/*
-    printf("%f ", gsl_matrix_get(temp2,0,0));
-    printf("%f ", gsl_matrix_get(temp2,0,1));
-    printf("%f ", gsl_matrix_get(temp2,0,2));
-    printf("%f ", gsl_matrix_get(temp2,1,0));
-    printf("%f ", gsl_matrix_get(temp2,1,1));
-    printf("%f ", gsl_matrix_get(temp2,1,2));
-    printf("%f ", gsl_matrix_get(temp2,2,0));
-    printf("%f ", gsl_matrix_get(temp2,2,1));
-    printf("%f ", gsl_matrix_get(temp2,2,2));
-    printf("%f ", gsl_matrix_get(temp2,3,0));
-    printf("%f ", gsl_matrix_get(temp2,3,1));
-    printf("%f ", gsl_matrix_get(temp2,3,2));
-*/
-    //printf(" >>>>>>>>> A\n");
+    gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp5);
+
     // Copying the System matrix A (12 x 12) into top left corner of Ai (15 x 15)
     for (size_t i = 0; i < 12; i++) {
         for (size_t j = 0; j < 12; j++) {
             gsl_matrix_set(Ai,i, j, gsl_matrix_get(ASystem, i, j));
-            //printf("%f ", gsl_matrix_get(ASystem, i,j));
         }
-        //printf("\n");
     }
 
-    //printf("<<<<<<<<<<< A\n");
-
-    //printf(">>>>>>>>>>> T\n");
     // Copying the temporary stored matrix (-B * Ki) into the top right corner of Ai
     for (size_t k = 0; k < 12 ; k++) {
         for (size_t m = 0; m < 3 ; m++) {
-            gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temp2, k, m));
-            //printf("%f ", gsl_matrix_get(temp2,k,m));
+            if ( gsl_isnan(gsl_matrix_get(temp5, k, m)) || gsl_isinf(gsl_matrix_get(temp5, k, m))) {
+                //gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temp5, k, m));
+                gsl_matrix_set(Ai, k, 12 + m, 0);
+            } else
+                //gsl_matrix_set(Ai, k, 12 + m, 0);
+                gsl_matrix_set(Ai, k, 12 + m, gsl_matrix_get(temp5, k, m));
         }
-        //printf("\n");
     }
 
-    //printf("<<<<<<<<<<< T\n");
-
-    //printf(">>>>>>>>>>> C_op\n");
     // Copying the elements of Matrix C_op in bottom left corner of Ai
     for (size_t l = 0; l < 3 ; l++) {
         for (size_t n = 0; n < 12; n++) {
-            gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
-      //      printf("%f", gsl_matrix_get(C_op,l,n));
+            if ( gsl_isnan(gsl_matrix_get(C_op, l, n)) || gsl_isinf(gsl_matrix_get(C_op, l, n)) ) {
+                //gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
+                gsl_matrix_set(Ai, 12 + l, n, 0);
+            } else
+                //gsl_matrix_set(Ai, 12 + l, n, 0);
+                gsl_matrix_set(Ai, 12 + l, n, gsl_matrix_get(C_op, l, n));
         }
-        //printf("\n");
     }
-
-    //printf("<<<<<<<<<<< C_op\n");
 
     // Setting zeros in the bottom right corner of Ai
     for (size_t v = 0; v < 3; v++) {
@@ -391,9 +383,8 @@ void calculate_Ai(void){
             gsl_matrix_set(Ai, 12+v, 12+w, 0);
         }
     }
-
 }
-//TODO Test this method properly
+//TODO Funktioniert jedoch mit Abweichungen aus Ki
 
 /*
  * This method calculates the eigenvalues of Matrix Ai
@@ -402,8 +393,40 @@ void calculate_Ai(void){
  * workspace
  */
 void calculate_EWI(void){
-    EW_I = Ai;
-    gsl_eigen_nonsymm(EW_I, eigenvalue, workspace);
+    // Initialize the complex Matrix view EWI with the values of Ai
+    gsl_matrix_complex_view EWI_view = gsl_matrix_complex_view_array(Ai->data, Ai->size1, Ai->size2);
+
+    // Copy the elements of Matrix View into complex Matrix EWI
+    gsl_matrix_complex_memcpy(EW_I, &EWI_view.matrix);
+    //gsl_eigen_nonsymm(EW_I, eigenvalue, workspace);
+
+    // Define Settings for zgeev (Complex GEneral EigenValues)
+    // N = No calculation V = do computation
+    char Eigenvectors = 'N';
+
+    // Size of rows/cols
+    int n = (int) EW_I->size1;
+
+    // Eigenvalues
+    complex double w;
+
+    // Work for auxilary calculation
+    complex double work;
+
+    // Size of work
+    int lworker = 30;
+
+    // Work
+    double rworker;
+
+    // Status if succesful or aborted
+    int info;
+
+    // Initalizing complex Matrix for calculations in zgeev
+    complex double * A = (complex double *) EW_I->data;
+
+    // Calculate eigenvalues without eigenvectors
+    zgeev_(&Eigenvectors, &Eigenvectors, &n, A, &n, &w, NULL, &n, NULL, &n, &work, &lworker, &rworker, &info);
 }
 // TODO Test the method and compare with matlab data
 
@@ -420,58 +443,236 @@ void calculate_EWI(void){
  *  and stored in the matrix KI
  */
 void calculate_KI(gsl_matrix* KS, double a0){
-
+/*
     // temporary storage of matrix KS for later usage
+    //size_t i;
+    //gsl_permutation* p1 = gsl_permutation_alloc(3);
+    //gsl_permutation* p2 = gsl_permutation_alloc(3);
+    //gsl_permutation* p3 = gsl_permutation_alloc(3);
 
-    size_t i;
-    //gsl_permutation* p = gsl_permutation_alloc(3);
-    //int s;
     // Transpose the matrix KS and save into temp5
     gsl_matrix_transpose_memcpy(temp5, KS);
+
+    // Declaration and Initialization Vector tau for QR Decomposition
     gsl_vector* tau = gsl_vector_alloc(3);
-    //gsl_matrix* eye2 = gsl_matrix_alloc(3,3);
-    //gsl_matrix_set_identity(eye2);
-    //gsl_matrix* output = gsl_matrix_alloc(3,3);
-    //int choleyks;
-    // Calculating the product of KS and KS_transpose
-    //temp3 = KS;
-    //gsl_matrix_memcpy(dmd, temp3);
 
-    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, KS, KS, 0.0, temp3);
-    gsl_matrix_transpose(temp3);
-    gsl_linalg_QR_decomp(temp3, tau);
+    // Declaration and Initialization of Vector b for linear solution
     gsl_vector* b = gsl_vector_alloc(3);
-    gsl_matrix_get_col(b, KS, i);
+
+    // Declaration and Initialization of Vector x for linear solution
     gsl_vector* x = gsl_vector_alloc(3);
-    gsl_linalg_QR_solve(temp3, tau, b, x);
+
+    // Declaration and Initialization of Vector x for linear solution
+    gsl_vector* norm = gsl_vector_alloc(3);
+
+    gsl_permutation* permutation = gsl_permutation_alloc(3);
+
+    gsl_matrix* Q = gsl_matrix_alloc(3, 3);
+
+    gsl_matrix* R = gsl_matrix_alloc(3, 3);
+
+    int signum;
+
+    //int sig1;
+    //int sig2;
+    //int sig3;
+    //gsl_vector* tau1 = gsl_vector_alloc(3);
+    //gsl_vector* tau2 = gsl_vector_alloc(3);
+    //gsl_vector* norm = gsl_vector_alloc(3);
+    //gsl_vector* b = gsl_vector_alloc(3);
+    //gsl_vector* x1 = gsl_vector_alloc(3);
+    //gsl_vector* x2 = gsl_vector_alloc(3);
+    //gsl_vector* x3 = gsl_vector_alloc(3);
+    //gsl_matrix* Q = gsl_matrix_alloc(3, 3);
+    //gsl_matrix* Btest = gsl_matrix_calloc(12, 3);
+
+    //gsl_matrix* R = gsl_matrix_alloc(3, 3);
+*/
+    // Build matrix-matrix product KS * KS' and save it in temp3
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, KS, KS, 0.0, temp3);
+    //gsl_matrix_memcpy(temp5, KS);
+
+    // Transpose matrix temp3
+    gsl_matrix_transpose(temp3);
+    //gsl_matrix_memcpy(dmd, temp3);
+    //gsl_matrix_memcpy(Inverse, temp3);
+    gsl_matrix_memcpy(threetimes3, temp3);
+    //gsl_matrix_transpose_memcpy(Btest, KS);
+
+    //gsl_linalg_LU_decomp(temp3, p1, &sig1);
+
+    gsl_error_handler_t * handler = gsl_set_error_handler_off();
+/*
+    //gsl_linalg_LU_decomp(temp3, p1, &sig1);
+    //gsl_linalg_LU_decomp(threetimes3, p3, &sig3);
+    //gsl_linalg_QR_decomp(dmd, tau1);
+    //gsl_linalg_QRPT_decomp(Inverse, tau2, p2, &sig2, norm);
+    //gsl_linalg_QRPT_decomp2(Inverse, Q, R, tau2, p2, &sig2, norm);
+
+    //gsl_linalg_LU_solve(temp3, p1, testB, x1);
+    //gsl_linalg_QR_solve(dmd, tau1, testB, x2);
+    //gsl_linalg_QRPT_solve(Inverse, tau2, p2, testB, x3);
 
 
+    // Calculating the QR Decomposition of (KS * KS')' and save data in temp3 and tau --> A = QR
+    //gsl_linalg_QR_decomp(temp3, tau);
+    //gsl_linalg_QRPT_decomp(temp3, tau, permutation, &signum, norm);
+    //gsl_linalg_QRPT_decomp2(temp3, Q, R, tau, permutation, &signum, norm);
+    //printer(NULL, tau);
+    //printf("QR Decomp");
+    //printer(NULL, x2);
+    //printf("LU decomp ");
+    //printer(NULL, x1);
+    //printf("QRP' Decomp");
+    //printer(NULL, x3);
 
-    //gsl_linalg_cholesky_decomp(temp3);
-    //gsl_linalg_cholesky_invert(temp3);
+    //printf("QR Decomp");
+    //printer(dmd, NULL);
+    //printf("LU decomp ");
+    //printer(temp3, NULL);
+    //printf("QRP' Decomp");
+    //printer(R, NULL);
+    */
+    /*
+    double tauLap;
+    double workLap[36];
+    int lworkLap = 3;
+    //double matrix[3, 3] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+    int info;
+    int m = 12;
+    int n = 3;
+    int lda = 3;
+    char trans = 'T';
+    int nrhs = 12;
+    int lwork = 36;
+
+    char uplo = 'U';
+    int ipiv[3];
+*/
+
+    //double a = threetimes3->data;  // 3 Reihen, 3 Spalten
+    //double b = KS->data;           // 3 Reihen, 12 Spalten
+    //gsl_matrix_view view1 = gsl_matrix_view_array(threetimes3->data, 3, 3);
+    //double a[25] = {6.80, -2.11, 5.66, 5.97, 8.23, -6.05,-3.30, 5.36,-4.44, 1.08, -0.45, 2.58,-2.70, 0.27, 9.04,
+    //                 8.32, 2.71, 4.35,-7.17, 2.14, -9.67,-5.14,-7.26, 6.08,-6.87};
+    double a3 [9] = {19.0, 2.0, 3.0, 2.0, 4.0, 5.0, 3.0, 5.0, 20.0};
+    double b3 [9] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+    //double *a2 = threetimes3->data;
+    //double b[15] = {4.02, 6.19, -8.22, -7.57, -3.03,
+    //                -1.56, 4.00,-8.67,  1.75,  2.86,
+    //                9.81, -4.09, -4.57, -8.61, 8.99};
+    //double *b2 = KS->data;
+    //printf("Test1 %f %f\n", KS->data[0], KS->data[1]);
+    int n = 3;      // 5
+    int nrhs = 3;  // 3
+    int lda = 3;    // 5
+    int ldb = 3;    // evtl 3 ?
+    int info;       //
+    int ipiv[3];    // evtl 12 ?
+    double xPtr[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    int ldx = 3;
+    double workPtr[192];
+    //float swork [18];
+    int lwork = 192;
+    int iter;
+    char uplo = 'U';
+
+
+    //gsl_linalg_LU_invert(threetimes3, p3, linalgtest);
+    //gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, linalgtest, KS, 1.0, KI4);
+    //gsl_blas_dtrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, 1.0, R, Btest);
+
+    //printf("Vorher");
+    //printer(threetimes3, NULL);
+    //dgeqrf_(&m, &n, threetimes3->data, &lda, &tauLap, &workLap, &lworkLap, &info);
+    //printer(linalgtest, NULL);
+    //printer(KS, NULL);
+    //printf("Nachher");
+    //printer(threetimes3, NULL);
+
+    gsl_matrix* testB = gsl_matrix_alloc(3, 12);
+    gsl_matrix_memcpy(testB, KS);
+    //dgels_(&trans, &m, &n, &nrhs, threetimes3->data, &n, testB->data, &nrhs, &workLap, &lwork, &info);
+    dsysv_(&uplo, &n, &nrhs, a3, &lda, &ipiv, b3, &ldb, &workPtr, &lwork, &info);
+    //dgelsy_(&m, &n, &nrhs, threetimes3->data, &lda, testB->data, &ldb, jpvtPtr, &rcond, &rank, &work, &lwork, &info);
+    //dgesv_(&n, &nrhs, a3, &lda, ipiv, b3, &ldb, &info);
+    //dsgesv_(&n, &nrhs, a3, &lda, ipiv, b3, &ldb, xPtr, &ldx, workPtr, &swork, &iter, &info);
+
+    gsl_matrix* output = gsl_matrix_alloc(3, 3);
+    output->data = b3;
+    gsl_matrix* output2 = gsl_matrix_alloc(3, 3);
+    gsl_matrix_transpose_memcpy(output2, output);
+    printer(output2, NULL);
+    printf(" Info %d",info);
+/*
+    for (i = 0; i < KS->size2; i++) {       // KS.size2 = 12
+        gsl_matrix_get_col(b, KS, i);
+        gsl_linalg_LU_solve(temp3, p1, b, x1);
+        gsl_linalg_QR_solve(dmd, tau1, b, x2);
+        gsl_linalg_QRPT_solve(Inverse, tau2, p2, b, x3);
+
+        // Declaration and Initialization Vector tau for QR Decomposition
+        //gsl_vector* tau = gsl_vector_alloc(3);
+
+        // Declaration and Initialization of Vector b for linear solution
+        //gsl_vector* b = gsl_vector_alloc(3);
+
+        // Declaration and Initialization of Vector x for linear solution
+        //gsl_vector* x = gsl_vector_alloc(3);
+
+        // Declaration and Initialization of Vector x for linear solution
+        //gsl_vector* norm = gsl_vector_alloc(3);
+
+        //gsl_permutation* permutation = gsl_permutation_alloc(3);
+
+        //gsl_matrix* Q = gsl_matrix_alloc(3, 3);
+
+        //gsl_matrix* R = gsl_matrix_alloc(3, 3);
+
+        //int signum;
+
+        //gsl_linalg_QRPT_decomp2(temp3, Q, R, tau, permutation, &signum, norm);
+        //gsl_matrix_get_col(b, KS, i);
+        //printf("\nb ");
+        //printer(NULL, b);
+
+        //printf("Matrix R ");
+        //printer(R, NULL);
+        //printf("Matrix Q ");
+        //printer(Q, NULL);
+        //gsl_linalg_QR_QRsolve(Q, R, b, x);
+        gsl_matrix_set_row(KI, i, x1);
+        gsl_matrix_set_row(KI2, i, x2);
+        gsl_matrix_set_row(KI3, i, x3);
+        //printf("x ");
+        //printer(NULL, x);
+        //printf("QR Decomp");
+        //printer(NULL, x2);
+        //printf("LU decomp ");
+        //printer(NULL, x1);
+        //printf("QRP' Decomp");
+        //printer(NULL, x3);
+     }
+*/
+    //printf("QR Decomp");
+    //printer(KI2, NULL);
+    //printf("LU decomp ");
+    //printer(KI, NULL);
+    //printf("QRP' Decomp");
+    //printer(KI3, NULL);
+    //printf("LU Inverse ");
+    //printer(KI4, NULL);
+
     // Dividing the matrix KS with the Product of KS and KS_transpose
     // TODO Berechnung überprüfen Werte Stimmen nicht überein
-    //gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KI);
-    //gsl_blas_dtrsm(CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit, 1.0, temp3, eye2);
+
+    gsl_set_error_handler(handler);
 
     // Scaling KI with a0
     //gsl_matrix_scale(KI, a0);
-    //invertMatrixA(temp3, Inverse);
 
-    //printf("KS * KS' ");
-    //printer(temp3, NULL);
-    //printf("Inverse ");
-    //printer(Inverse, NULL);
-
-    //printf("KI' ");
-    //printer(KI, NULL);
-
-    //printf("Inverse ");
-    //printer(output, NULL);
-
-    //printf("Determinante %.80Lf\n", deter);
 }
-// TODO might be a BOTTLENECK !!!
+// TODO große Abweichungen in den Matrixeinträgen
 
 /*
  * This method changes the matrix indexes for direction change in engine speed
@@ -614,6 +815,7 @@ void matrix_Calculator_EWI(void){
 
     // Counter for termination of while loop
     size_t i = 0;
+    double A0temp = A0;
 
     // Pointer on vector_view containing all real parts of complex vector eigenvalue
     a = gsl_vector_complex_real(eigenvalue);
@@ -623,6 +825,7 @@ void matrix_Calculator_EWI(void){
 
     // Finding the biggest value of vector real
     double max = gsl_vector_max(&a.vector);
+    //printf(" Wert %f\n ", max);
 
     /*
      * This while loop calculates all Matrices via iteration of tuning factor a0
@@ -630,12 +833,12 @@ void matrix_Calculator_EWI(void){
      * This leads to adaptation of the system matrix in respect to its poles
      *
      */
-    while ((max > 0) && (A0 >= a_min) && (i <= I_MAX_A)){
+    while ((max > 0) && (A0temp >= a_min) && (i <= I_MAX_A)){
         // If a0 is to big get the half for next iteration
-        A0 *= 0.5;
+        A0temp *= 0.5;
 
         // Function calls for the iteration
-        calculate_KI(KS, A0);
+        calculate_KI(KS, A0temp);
         calculate_Ai();
         calculate_EWI();
 
@@ -650,12 +853,14 @@ void matrix_Calculator_EWI(void){
  */
 void tune_matrix_EWI(void){
     // Initialize matrix EW_I1 with ground matrix EW_I
-    EW_I1 = EW_I;
+    //EW_I1 = EW_I;
+    gsl_matrix_memcpy(EW_I1, EW_I);
     gsl_eigen_nonsymm(EW_I1,eigenvalue2,workspace);
 
     // counter for while loop
     size_t j = 0;
     size_t i = 1;
+    double A0temp = 10;
 
     // The biggest real number of complex eigenvalue vector of EW_I
     const gsl_vector saving = gsl_vector_complex_real(eigenvalue).vector;
@@ -673,16 +878,16 @@ void tune_matrix_EWI(void){
          * state and counter is less then 10 then
          */
         while ((real1 <= 0) && (real1 <= real2) && (i+j <= I_MAX_A)){
-            A0 *= delta_a[c];       // Adapt Factor A0
+            A0temp *= delta_a[c];       // Adapt Factor A0
             EW_I1 = EW_I;           // Save current Eigenvalues to new one
-            calculate_KI(KS,A0);    // Calculates the new matrix KS
+            calculate_KI(KS,A0temp);    // Calculates the new matrix KS
             calculate_Ai();         // Calculates the new System matrix Ai
             calculate_EWI();        // Calculates the new eigenvalues
             j++;                    // Increment the counter for while loop
         }
 
         // Undo the previous multiplication in the while loop for next computation
-        A0 /= delta_a[c];
+        A0temp /= delta_a[c];
 
         // Save the new calculated Matrix into the old one
         EW_I = EW_I1;
@@ -697,39 +902,76 @@ void tune_matrix_EWI(void){
 void calculate_KP(gsl_matrix* KS, double b0){
 
     // temporary storage of matrix KS for later usage
-    temp2 = KS;
+    size_t i, j;
+
+    // Transpose the matrix KS and save into temp5
+    gsl_matrix_transpose_memcpy(temp5, KS);
+
+    // Declaration and Initialization Vector tau for QR Decomposition
+    gsl_vector* tau = gsl_vector_alloc(3);
+
+    // Declaration and Initialization of Vector b for linear solution
+    gsl_vector* b = gsl_vector_alloc(3);
+
+    // Declaration and Initialization of Vector x for linear solution
+    gsl_vector* x = gsl_vector_alloc(3);
+
+    // Declaration and Initialization of Vector x for linear solution
+    gsl_vector* norm = gsl_vector_alloc(3);
+
+    gsl_permutation* permutation = gsl_permutation_alloc(3);
+
+    int signum;
 
     // Transpose the matrix KS and save into temp4
     gsl_matrix_transpose_memcpy(temp5,KS);
 
-    // Calculating the product of KS and KS_transpose
-    //temp3 = KS;
+    gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, KS, KS, 0.0, temp3);
 
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp2,temp5,0.0,temp3);
-    //gsl_matrix_mul_elements(temp3, temp5);
+    gsl_matrix_transpose(temp3);
 
     // Dividing the matrix KS with the Product of KS and KS_transpose
-    //KP = KS;
-    //gsl_matrix_div_elements(KP, temp3);
-    //gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,temp5,temp3,0.0,KP);
-    gsl_blas_dtrsm(CblasRight,CblasLower,CblasNoTrans,CblasNonUnit,1.0,temp3,KP);
+
+    gsl_linalg_QRPT_decomp(temp3, tau, permutation, &signum, norm);
+    //printer(NULL, tau);
+
+    for (i = 0; i < KS->size2; i++) {
+        gsl_matrix_get_col(b, KS, i);
+        gsl_linalg_QRPT_solve(temp3, tau, permutation, b, x);
+        gsl_matrix_set_row(KP, i, x);
+    }
+
+
+    //gsl_blas_dtrsm(CblasRight,CblasLower,CblasNoTrans,CblasNonUnit,1.0,temp3,KP);
 
     // Scaling KI with b0
     gsl_matrix_scale(KP, b0);
 
+    /*
+
     // Saving the current matrix of KP into KP_current for calculations
-    gsl_matrix* KP_current = get_Matrix(14);
+    gsl_matrix* KP_current = gsl_matrix_alloc(12, 3); // = get_Matrix(14);
+    gsl_matrix_memcpy(KP_current, KP);
 
     // Saving the current subtrahend into sub for calculations
-    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,KP_current,D_op,0.0,temp1);
+    gsl_blas_dgemm(CblasNoTrans,CblasNoTrans,1.0,KP, D_op, 0.0, temp1);
     //gsl_matrix_mul_elements(KP_current, D_op);
-    gsl_matrix* sub = eye;
+    gsl_matrix* sub = gsl_matrix_alloc(12, 12);
+    gsl_matrix_memcpy(sub, eye);
     gsl_matrix_sub(sub, temp1);
 
     // Calculating the Division of sub and KP_current
-    KP = KP_current;
+    //KP = KP_current;
     gsl_blas_dtrsm(CblasLeft,CblasLower,CblasNoTrans,CblasNonUnit,1.0,sub,KP);
+    gsl_linalg_QRPT_decomp(sub, tau, permutation, &signum, norm);
+    for (j = 0; j < KP->size1; j++) {
+        gsl_matrix_get_col(b, KP, i);
+        gsl_linalg_QRPT_solve(sub, tau, permutation, b, x);
+        gsl_matrix_set_row(KP, i, x);
+    }
     //gsl_matrix_div_elements(KP, KP_current);
+
+     */
 }
 // TODO check if its working
 
@@ -763,21 +1005,22 @@ void calculate_AG(void){
     //gsl_matrix* B_current = get_Matrix(3);
 
     // Copying the matrix B_current in B_current2 for second calculation
-    gsl_matrix* B_current2 = BSystem;
+    //gsl_matrix* B_current2 = BSystem;
 
     // Storing the matrix KI in new matrix KI_current
     //gsl_matrix* KI_current = get_Matrix(5);
 
     // Computing temp_calc1: -->  temp_calc1 = - BSystem * KI
-    gsl_matrix* temp_calc1 = KI;
-    gsl_matrix* temp_calc3 = BSystem;
+    gsl_matrix* temp_calc1 = gsl_matrix_alloc(12, 3);
+    gsl_matrix* temp_calc3 = gsl_matrix_alloc(12, 12);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, -1.0, BSystem, KI, 0.0, temp_calc1);
-    //gsl_matrix_mul_elements(temp_calc1, KI_current);
 
     //gsl_matrix_scale(temp_calc1, -1);           // Multiply temp_calc1 with -1
-    gsl_matrix* A_current = get_Matrix(1);       // Storing the Matrix A in new Matrix A_current
+    //gsl_matrix* A_current = get_Matrix(1);       // Storing the Matrix A in new Matrix A_current
     //gsl_matrix* KP_current = get_Matrix(14);     // Storing the Matrix KP in new Matrix KP_current
     //gsl_matrix* C_current = C_op;       // Storing the Matrix C_current in new Matrix C_current
+    gsl_matrix* A_current = gsl_matrix_alloc(12, 12);
+    gsl_matrix_memcpy(A_current, ASystem);
 
     /*
      * Computing the next three steps can be summarized into this picture:
@@ -790,7 +1033,7 @@ void calculate_AG(void){
      *      --> [L] = A - B * KP * C
      *
      */
-    gsl_matrix* temp_calc2 = BSystem;
+    gsl_matrix* temp_calc2 = gsl_matrix_alloc(12, 12);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, KP, C_op, 0.0, temp_calc2);
     gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, BSystem, temp_calc2, 0.0, temp_calc3);
     gsl_matrix_sub(A_current, temp_calc3);
@@ -830,7 +1073,8 @@ void calculate_AG(void){
  * Comment
  */
 void calculate_EWG(void){
-    EW_G = Ag;
+    //EW_G = Ag;
+    gsl_matrix_memcpy(EW_G, Ag);
     gsl_eigen_nonsymm(EW_G, eigenvalue3, workspace);
 }
 // TODO check this methd, pretty same like calculate_EWI

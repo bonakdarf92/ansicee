@@ -212,13 +212,13 @@ void start_initializing(size_t choice) {
         KiAnfangMatrix = gsl_matrix_alloc(36, 61001);
         KiEndeMatrix = gsl_matrix_alloc(36, 61001);
         //KpMatrix = gsl_matrix_alloc(36, 61001);
-        //KpAnfangMatrix = gsl_matrix_alloc(36, 61001);
+        KpAnfangMatrix = gsl_matrix_alloc(36, 61001);
         //KpEndeMatrix = gsl_matrix_alloc(36, 61001);
         //KptransMatrix = gsl_matrix_alloc(36, 61001);
         KsOut1Matrix = gsl_matrix_alloc(36, 61001);
         //AgAnfangMatrix = gsl_matrix_alloc(225, 61001);
-        //AiOutMatrix = gsl_matrix_alloc(225, 61001);
-        tempCol = gsl_vector_alloc(9);
+        AiOutMatrix = gsl_matrix_alloc(225, 61001);
+        tempCol = gsl_vector_alloc(36);
         n_updnMatrix = gsl_matrix_alloc(61001, 3);
         T_nMatrix = gsl_matrix_alloc(61001, 3);
         prod1Matrix = gsl_matrix_alloc(9, 61001);
@@ -292,12 +292,12 @@ void start_reading(void) {
     gsl_matrix_fscanf(KiAnfangFile, KiAnfangMatrix);
     gsl_matrix_fscanf(KiEndeFile, KiEndeMatrix);
     //gsl_matrix_fscanf(KpFile, KpMatrix);
-    //gsl_matrix_fscanf(KpAnfangFile, KpAnfangMatrix);
+    gsl_matrix_fscanf(KpAnfangFile, KpAnfangMatrix);
     //gsl_matrix_fscanf(KpEndeFile, KpEndeMatrix);
     //gsl_matrix_fscanf(KptransFile, KptransMatrix);
     gsl_matrix_fscanf(KsOut1File, KsOut1Matrix);
     //gsl_matrix_fscanf(AgAnfangFile, AgAnfangMatrix);
-    //gsl_matrix_fscanf(AiOutFile, AiOutMatrix);
+    gsl_matrix_fscanf(AiOutFile, AiOutMatrix);
     gsl_matrix_fscanf(n_updnFile, n_updnMatrix);
     gsl_matrix_fscanf(T_nFile, T_nMatrix);
     gsl_matrix_fscanf(prod1File, prod1Matrix);
@@ -433,6 +433,10 @@ gsl_matrix* bigMatrices(size_t n){
             return prod1Matrix;
         case 5:
             return prod2Matrix;
+        case 6:
+            return AiOutMatrix;
+        case 7:
+            return KpAnfangMatrix;
         default:
             return 0;
     }
@@ -519,7 +523,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         for (i = 0; i < rows; i++) {
             printf(" \n");
             for (j = 0; j < col; j++) {
-                printf("%.16f ", gsl_matrix_get(matrix, i, j));
+                printf("%.10f ", gsl_matrix_get(matrix, i, j));
             }
         }
         printf("\n_________________");
@@ -529,7 +533,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         size_t i;
         printf("[ ");
         for (i = 0; i < rows; i++) {
-            printf("%.6f ",gsl_vector_get(vector, i));
+            printf("%.10f ",gsl_vector_get(vector, i));
         }
         printf(" ]\n");
     }
@@ -600,12 +604,12 @@ void open_files(size_t choice) {
         KiAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KianfangNeu.txt", "rw");
         KiEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KiendeNeu.txt", "rw");
         //KpFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpNeu.txt", "rw");
-        //KpAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpanfangNeu.txt", "rw");
+        KpAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpanfangNeu.txt", "rw");
         //KpEndeFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KpendeNeu.txt", "rw");
         //KptransFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/KptransNeu.txt", "rw");
         KsOut1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Ksout1Neu.txt", "rw");
         //AgAnfangFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/AganfangNeu.txt", "rw");
-        //AiOutFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Aiout1Neu.txt", "rw");
+        AiOutFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/Aiout1Neu.txt", "rw");
         n_updnFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/n_updn_neu.txt", "rw");
         T_nFile = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/T_n.txt", "rw");
         prod1File = fopen("/Users/faridbonakdar/ClionProjects/ansicee/Benchmark/Datenanalyse/prod1KI.txt", "rw");
