@@ -14,6 +14,8 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_linalg.h>
 #include <Lapacke/lapacke.h>
+#include <Lapacke/lapacke_utils.h>
+#include <Lapacke/lapacke_config.h>
 
 
 #define KONSTANTE 1.0

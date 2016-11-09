@@ -56,8 +56,8 @@ int main() {
     //double brain3 = 0;
 
     size_t zaehler = 0;
-    float timings[20];
-    while (zaehler < 20) {
+    float timings[2];
+    while (zaehler < 2) {
 
         // Taking time for performance
         clock_t begin = clock();

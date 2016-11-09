@@ -523,7 +523,7 @@ void printer(gsl_matrix* matrix, gsl_vector* vector){
         for (i = 0; i < rows; i++) {
             printf(" \n");
             for (j = 0; j < col; j++) {
-                printf("%.10f ", gsl_matrix_get(matrix, i, j));
+                printf("%.16f ", gsl_matrix_get(matrix, i, j));
             }
         }
         printf("\n_________________");

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(ansicee)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -llapack -lgsl -lgslcblas")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -llapack -llapacke -lgsl -lgslcblas")
 
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 

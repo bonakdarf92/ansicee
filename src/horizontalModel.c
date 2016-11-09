@@ -366,7 +366,7 @@ void friction(void) {
  */
 void acceleration_ax(void) {
 
-    // Declaration of output acceleration ax
+    // Declaration auxiliary values for big formula
     double mux1 = gsl_vector_get(mux, 0);
     double mux2 = gsl_vector_get(mux, 1);
     double mux3 = gsl_vector_get(mux, 2);
@@ -379,55 +379,11 @@ void acceleration_ax(void) {
     double alphay1 = gsl_vector_get(alpha_y, 0);
     double alphay2 = gsl_vector_get(alpha_y, 1);
     double alphay3 = gsl_vector_get(alpha_y, 2);
-    /*
-
-    // For an overview and summary of the long equitation some auxiliary scalars are calculated
-    // and stored into the following doubles
-    // mux_all, muy_all, alpha_x_all, alpha_y_all, firstPart,
-
-    //mux_all = gsl_vector_get(mux,0) + gsl_vector_get(mux, 1) + gsl_vector_get(mux, 2);
-    //muy_all = gsl_vector_get(muy,0) + gsl_vector_get(muy, 1) + gsl_vector_get(muy, 2);
-    //double alphax_all = gsl_vector_get(alpha_x, 0) + gsl_vector_get(alpha_x, 1) + gsl_vector_get(alpha_x, 2);
-    //alphay_all = gsl_vector_get(alpha_y, 0) + gsl_vector_get(alpha_y, 1) + gsl_vector_get(alpha_y, 2);
-
-    // The firstPart is a summary of the first to additions in the big equitation of motion
-    // g/3 * [mu_x(0) + mu_x(1) + mu_x(2)] + ca / m * [alpha_x(0) + alpha_x(1) + alpha_x(2)]
-
-    //double firstPart = ((GRAVY/3) * mux_all) + ((C_a / MASSE) * alphax_all);
-
-    // The Factor p1 is a summary of the first big factor in the big equitation
-    // [hcg/l * (mux(2) - mux(3)] / [l / hcg  - muy(2) - muy(3)]
-
-    //double p1 = ((HCG/LAENGE) * (mux2 - mux3)) / ((LAENGE / HCG)- muy2 + muy3);
-
-    // The factor p2 is a summary of the second big factor in the fraction
-    // mu_y(0) + mu_y(1) + mu_y(2) + ca / m * [alpha_y(0) + alpha_y(1) + alpha_y(2)
-
-    //double p2 = muy_all + (C_a / MASSE) * alphay_all;
-
-    // The numerator of the big fraction
-    //double fraction_1 = firstPart + p1 * p2;
-
-    // The first quotient part for the big denominator
-    //double q1 = 1 - (((HCG / LAENGE) / SQRT3) * (mux2 + mux3 - 2 * mux1)) - (HCG/LAENGE * (mux2 - mux3)) / (((LAENGE / HCG) - muy2 + muy3) * ((HCG / LAENGE) * (muy2 + muy3 - 2 * muy1)));
-
-    //double qx = 1 - (((HCG / LAENGE) / SQRT3) * (mux2 + mux3 - 2 * mux1));
-    //double qy = HCG/LAENGE * (mux2 - mux3) / ((LAENGE / HCG) - muy2 + muy3);
-    //double qz = (HCG / LAENGE) * (muy2 + muy3 - 2 * muy1);
-    // The second quotient part for the big denominator
-    //double q2 = (LAENGE / HCG - muy2 + muy3) * (HCG / LAENGE * (muy2 + muy3 - 2 * muy1) );
-
-    // The denominator of the big fraction
-    //double fraction_2 = qx - qy * qz; // / q2 ;
-
-    //ax = fraction_1 / fraction_2;
-    */
 
     // The big equitation taken from Jan's horizontal Model
     ax = (GRAVY/3* (mux1+mux2+mux3) + C_a/MASSE * (alphax1+alphax2+alphax3) + ((HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3)*(muy1+muy2+muy3+C_a/MASSE*(alphay1+alphay2+alphay3)))) / (1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1) - HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3)*(HCG/LAENGE*(muy2+muy3-2*muy1)));
 
 #if DEBUGGER == 1
-
     ax1 = GRAVY/3* (mux1+mux2+mux3);
     ax2 = C_a/MASSE * (alphax1+alphax2+alphax3);
     ax3 = (HCG/LAENGE*(mux2-mux3))/(LAENGE/HCG-muy2+muy3);
@@ -435,7 +391,6 @@ void acceleration_ax(void) {
     ax5 = 1 - HCG/LAENGE/SQRT3 * (mux2+mux3-2*mux1);
     ax6 = HCG/LAENGE*(mux2-mux3)/(LAENGE/HCG-muy2+muy3);
     ax7 = HCG/LAENGE*(muy2+muy3-2*muy1);
-
 #endif
 }
 
@@ -468,8 +423,6 @@ void acceleration_ay(void) {
      */
     ay = (GRAVY/3 * muy_all + HCG / LAENGE / SQRT3 * (muy2 + muy3 - 2 * muy1)
             * returnAcceleration(0) + C_a / MASSE * alphay_all) / (1 - HCG / LAENGE *  (muy2 - muy3));
-    //ay = (GRAVY/3* (muy1+muy2+muy3) + HCG/LAENGE/SQRT3 * (muy2+muy3-2*muy1) * returnAcceleration(0) + C_a/MASSE * (alphay1+alphay2+alphay3)) / (1 - HCG/LAENGE * (muy2-muy3));
-
 #if DEBUGGER == 1
     ay1 = GRAVY/3 * muy_all;
     ay2 = HCG / LAENGE / SQRT3 * (muy2 + muy3 - 2 * muy1) * returnAcceleration(0);
@@ -484,11 +437,11 @@ void acceleration_ay(void) {
  */
 void contactForce(void) {
 
-    // current saving of ax and ay for caluclations
-    //TODO Umschreiben Das ist redundant
+    // current saving of ax and ay for calculations
     double a_x = returnAcceleration(0);
     double a_y = returnAcceleration(1);
-    /* Declaration of output vector and
+    /*
+     * Declaration of output vector and
      * Calculation of the three Forces FZ_1, FZ_2 and FZ_3
      */
     double FZ_1 = ((MASSE * GRAVY) / 3 ) - ((2 * MASSE * HCG ) / (SQRT3 * LAENGE)) * a_x;
@@ -527,7 +480,7 @@ void wheelForce(void) {
  */
 void yawrateCalculator(void) {
 
-    // Calculation of psi_pp with formula taken from Jan's Modell
+    // Calculation of psi_pp with formula taken from Jan's Model
     psi_pp = LAENGE/THETA * (gsl_vector_get(Fy, 0) / SQRT3 - gsl_vector_get(Fy, 1) / 2 / SQRT3 - gsl_vector_get(Fy, 2)
             / 2 / SQRT3 - gsl_vector_get(Fx, 1) / 2 + gsl_vector_get(Fx, 2) / 2);
 

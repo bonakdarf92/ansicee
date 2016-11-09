@@ -488,16 +488,20 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     //gsl_matrix* R = gsl_matrix_alloc(3, 3);
 */
+    //printer(KS, NULL);
     // Build matrix-matrix product KS * KS' and save it in temp3
     gsl_blas_dgemm(CblasNoTrans, CblasTrans, 1.0, KS, KS, 0.0, temp3);
     //gsl_matrix_memcpy(temp5, KS);
-
+    //printer(KS, NULL);
     // Transpose matrix temp3
-    gsl_matrix_transpose(temp3);
+    //gsl_matrix_transpose(temp3);
     //gsl_matrix_memcpy(dmd, temp3);
     //gsl_matrix_memcpy(Inverse, temp3);
     gsl_matrix_memcpy(threetimes3, temp3);
     //gsl_matrix_transpose_memcpy(Btest, KS);
+
+    size_t i;
+    size_t j;
 
     //gsl_linalg_LU_decomp(temp3, p1, &sig1);
 
@@ -556,32 +560,48 @@ void calculate_KI(gsl_matrix* KS, double a0){
     //double a[25] = {6.80, -2.11, 5.66, 5.97, 8.23, -6.05,-3.30, 5.36,-4.44, 1.08, -0.45, 2.58,-2.70, 0.27, 9.04,
     //                 8.32, 2.71, 4.35,-7.17, 2.14, -9.67,-5.14,-7.26, 6.08,-6.87};
     double a3 [9] = {19.0, 2.0, 3.0, 2.0, 4.0, 5.0, 3.0, 5.0, 20.0};
+    double b4 [36] = {397.472512951577, -6931.90068901920, -17104.4041448888, 690.259868205320, -12038.0974786996
+                ,-29703.8999328737, 387.899070390892, -6764.94033095593, -16692.4309259111, 9740.85235817155 ,-169879.976534301
+                 ,-419177.351944731, 875.929366966719, -15276.1642240868, -37693.8012234337, 797.006091333060, -13899.7462557548
+            ,-34297.5019602415, -4.13083627588057, 72.0415774524024, 177.761960429290, 1.31554631783812, -22.9430617965015
+          ,-56.6118037308531, 0.555002936395560, -9.67922337230086, -23.8833987669135, 1698.80980988175, -29627.1578735975,
+                      -73104.7521695148, 1113.07836687159, -19412.0308872516, -47899.0159357860, -841.344182865860, 14673.0003481289,
+                      36205.4996503421};
+    double a4[9] = {temp3->data[0], temp3->data[1], temp3->data[2], temp3->data[3], temp3->data[4], temp3->data[5],
+                    temp3->data[6], temp3->data[7], temp3->data[8]};
+    double b5[36];
+    double a5[9];
+    for (i = 0; i < 36; i++) {
+        b5[i] = KS->data[i];
+    }
+    for (i = 0;  i<9 ; i++) {
+        a5[i] = temp3->data[i];
+    }
     double b3 [9] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
     //double *a2 = threetimes3->data;
     //double b[15] = {4.02, 6.19, -8.22, -7.57, -3.03,
     //                -1.56, 4.00,-8.67,  1.75,  2.86,
     //                9.81, -4.09, -4.57, -8.61, 8.99};
     //double *b2 = KS->data;
-    //printf("Test1 %f %f\n", KS->data[0], KS->data[1]);
-    int n = 3;      // 5
-    int nrhs = 3;  // 3
-    int lda = 3;    // 5
-    int ldb = 3;    // evtl 3 ?
-    int info;       //
-    int ipiv[3];    // evtl 12 ?
+    int m = 3;
+    int n = 3;
+    int nrhs = 12;
+    int lda = 3;
+    int ldb = 3;
+    int info;
+    int ipiv;
     double xPtr[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     int ldx = 3;
-    double workPtr[192];
+    double *workPtr;
     //float swork [18];
-    int lwork = 192;
+    int lwork = 10;
     int iter;
-    char uplo = 'U';
-
-
-    //gsl_linalg_LU_invert(threetimes3, p3, linalgtest);
-    //gsl_blas_dgemm(CblasNoTrans, CblasNoTrans, 1.0, linalgtest, KS, 1.0, KI4);
-    //gsl_blas_dtrsm(CblasLeft, CblasUpper, CblasNoTrans, CblasNonUnit, 1.0, R, Btest);
-
+    char trans = 'N';
+    double wkopt;
+    double* worker;
+    int jpvt;
+    double tau[3];
+    double work[1920];
     //printf("Vorher");
     //printer(threetimes3, NULL);
     //dgeqrf_(&m, &n, threetimes3->data, &lda, &tauLap, &workLap, &lworkLap, &info);
@@ -592,17 +612,27 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     gsl_matrix* testB = gsl_matrix_alloc(3, 12);
     gsl_matrix_memcpy(testB, KS);
-    //dgels_(&trans, &m, &n, &nrhs, threetimes3->data, &n, testB->data, &nrhs, &workLap, &lwork, &info);
-    dsysv_(&uplo, &n, &nrhs, a3, &lda, &ipiv, b3, &ldb, &workPtr, &lwork, &info);
+    //dgels_(&trans, &m, &n, &nrhs, a5, &lda, b5, &ldb, &wkopt, &lwork, &info);
+    //lwork = (int)wkopt;
+    //worker = (double*) malloc(lwork * sizeof(double));
+    //dgels_(&trans, &m, &n, &nrhs, a5, &lda, b5, &ldb, &wkopt, &lwork, &info);
+    //info = LAPACKE_dgels(LAPACK_COL_MAJOR, 'N', m, n, nrhs, temp3->data, lda, threetimes3->data, ldb);
+    //dsysv_(&uplo, &n, &nrhs, a3, &lda, &ipiv, b3, &ldb, &workPtr, &lwork, &info);
     //dgelsy_(&m, &n, &nrhs, threetimes3->data, &lda, testB->data, &ldb, jpvtPtr, &rcond, &rank, &work, &lwork, &info);
-    //dgesv_(&n, &nrhs, a3, &lda, ipiv, b3, &ldb, &info);
+    //dgesv_(&n, &nrhs, a5, &lda, ipiv, b5, &ldb, &info);
     //dsgesv_(&n, &nrhs, a3, &lda, ipiv, b3, &ldb, xPtr, &ldx, workPtr, &swork, &iter, &info);
+    //info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, temp3->data, lda, &ipiv, threetimes3->data, ldb);
 
-    gsl_matrix* output = gsl_matrix_alloc(3, 3);
-    output->data = b3;
+    printer(temp3, NULL);
+
+    gsl_matrix* output = gsl_matrix_alloc(3, 12);
+    //for (j = 0; j < 36; j++) {
+    //    output->data[j] = b5[j];
+    //}
+    output->data = temp3->data;
     gsl_matrix* output2 = gsl_matrix_alloc(3, 3);
-    gsl_matrix_transpose_memcpy(output2, output);
-    printer(output2, NULL);
+    //gsl_matrix_transpose_memcpy(output2, output);
+    printer(temp3, NULL);
     printf(" Info %d",info);
 /*
     for (i = 0; i < KS->size2; i++) {       // KS.size2 = 12
