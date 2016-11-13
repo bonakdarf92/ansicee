@@ -33,8 +33,54 @@
  * und pruefen ob evtl. etwas weiter modularisiert werden kann.
  */
 
-// Test funktion
 
+gsl_matrix* ASystem;        // Declaration of Matrix A
+gsl_matrix* BSystem;        // Declaration of Matrix B
+gsl_matrix* A_Inv;          // Declaration of Matrix A inverse
+gsl_matrix* KI;             // Declaration of Matrix KI
+gsl_matrix* KS;             // Declaration of Matrix KS
+gsl_matrix* KP;
+gsl_matrix* Ai;             // Declaration of Matrix A iterator
+gsl_matrix* Ag;
+gsl_matrix_complex* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
+gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
+gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
+gsl_matrix* EW_G1;
+gsl_matrix* EWI_output;     // Declaration of output Matrix EWI
+gsl_matrix* EWG_output;
+
+gsl_vector* C_in;           // Declaration of input Matrix C
+gsl_vector* D_in;           // Declaration of input Matrix D
+
+gsl_matrix* C_op;           // Declaration of operation Matrix C
+gsl_matrix* D_op;           // Declaration of operation Matrix D
+gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
+gsl_matrix* temp5;
+gsl_matrix* temp6;
+gsl_matrix* temporary;
+gsl_matrix* Inverse;
+gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
+double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
+double A0 = 10.0;
+double b_min = 0.00001;     // Declaration and initialization of tuning factor b_min
+double B0 = 10.0;             // TODO check which value B0 has
+
+gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
+gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenvalues
+gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
+gsl_matrix* dmd;
+gsl_matrix* threetimes3;
+gsl_matrix* linalgtest;
+gsl_matrix* KI2;
+gsl_matrix* KI3;
+gsl_matrix* KI4;
+
+gsl_vector_view a;
 
 void initMatrix(void);
 

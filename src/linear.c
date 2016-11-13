@@ -9,53 +9,6 @@
 #include <gsl/gsl_errno.h>
 
 
-gsl_matrix* ASystem;        // Declaration of Matrix A
-gsl_matrix* BSystem;        // Declaration of Matrix B
-gsl_matrix* A_Inv;          // Declaration of Matrix A inverse
-gsl_matrix* KI;             // Declaration of Matrix KI
-gsl_matrix* KS;             // Declaration of Matrix KS
-gsl_matrix* KP;
-gsl_matrix* Ai;             // Declaration of Matrix A iterator
-gsl_matrix* Ag;
-gsl_matrix_complex* EW_I;           // Declaration of Matrix Eigenvalue for Integrator
-gsl_matrix* EW_G;           // Declaration of Matrix Eigenvalue for G??
-gsl_matrix* EW_I1;          // Declaration of Matrix Eigenvalue for inner calculations
-gsl_matrix* EW_G1;
-gsl_matrix* EWI_output;     // Declaration of output Matrix EWI
-gsl_matrix* EWG_output;
-
-gsl_vector* C_in;           // Declaration of input Matrix C
-gsl_vector* D_in;           // Declaration of input Matrix D
-
-gsl_matrix* C_op;           // Declaration of operation Matrix C
-gsl_matrix* D_op;           // Declaration of operation Matrix D
-gsl_matrix* temp1;          // Declaration of temporary Matrix for Calculations
-gsl_matrix* temp2;          // Declaration of temporary Matrix for Calculations
-gsl_matrix* temp3;          // Declaration of temporary Matrix for Calculations
-gsl_matrix* temp4;          // Declaration of temporary Matrix for Calculations
-gsl_matrix* temp5;
-gsl_matrix* temp6;
-gsl_matrix* temporary;
-gsl_matrix* Inverse;
-gsl_matrix* eye;            // Declaration of identity matrix for calculations KP
-double a_min = 0.001;       // Declaration and initialization of tuning factor a_min
-double A0 = 10.0;/**/
-double b_min = 0.00001;     // Declaration and initialization of tuning factor b_min
-double B0 = 10.0;             // TODO check which value B0 has
-
-gsl_eigen_nonsymm_workspace* workspace;     // Declaration of workspace for eigenvalue calculation
-gsl_vector_complex* eigenvalue;             // Declaration of vector for eigenvalues
-gsl_vector_complex* eigenvalue2;            // Declaration of vector for eigenvalues
-gsl_vector_complex* eigenvalue3;            // Declaration of vector for eigenvalues
-gsl_vector_complex* eigenvalue4;            // Declaration of vector for eigenvalues
-gsl_matrix* dmd;
-gsl_matrix* threetimes3;
-gsl_matrix* linalgtest;
-gsl_matrix* KI2;
-gsl_matrix* KI3;
-gsl_matrix* KI4;
-
-gsl_vector_view a;
 double delta_a [] = {1.8, 1.3, 1.05};
 double delta_b [] = {5, 1.8, 1.2, 1.02};
 
@@ -102,9 +55,7 @@ void initMatrix(void){
     threetimes3 = gsl_matrix_alloc(3, 3);
     linalgtest = gsl_matrix_alloc(3, 3);
 
-
-
-    // TODO initialize all matrices
+    // This sets all values of Matrix A, B, C and D to zero
     gsl_matrix_set_zero(ASystem);
     gsl_matrix_set_zero(BSystem);
     gsl_matrix_set_zero(A_Inv);
@@ -164,14 +115,10 @@ void matrixPresetting(void){
     gsl_matrix_set(ASystem, 10, 11, -183.0609);       // Setting value in Matrix A_11_12
     gsl_matrix_set(ASystem, 11, 10, 1);               // Setting value in Matrix A_12_11
 
-    //TODO T_n1, T_n2 und T_n3
     // Setting all the indexes for Matrix B
     gsl_matrix_set(BSystem, 0, 0, (KONSTANTE / (T_DELTA*T_DELTA)) );
     gsl_matrix_set(BSystem, 2, 1, (KONSTANTE / (T_DELTA*T_DELTA)) );
     gsl_matrix_set(BSystem, 4, 2, (KONSTANTE / (T_DELTA*T_DELTA)));
-    //gsl_matrix_set(BSystem, 6, 3, (KONSTANTE / (T_N_CONSTUP*T_N_CONSTDN)));     // TODO T_n_1
-    //gsl_matrix_set(BSystem, 8, 4, (KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN));     // TODO T_n_2
-    //gsl_matrix_set(BSystem, 10, 5, (KONSTANTE / (T_N_CONSTDN*T_N_CONSTDN)));    // TODO T_n_3
 
 
     // Setting all the indexes for Matrix A inverse
@@ -241,7 +188,7 @@ gsl_matrix * get_Matrix(size_t n){
         //case 12:
             //return EW_I;
         case 13:
-            EWI_output = EW_I1;
+            gsl_matrix_memcpy(EWI_output, EW_I1);
             return EWI_output;
         case 14:
             return KP;
@@ -439,6 +386,8 @@ void calculate_EWI(void){
  *                      |___|   |________|
  *                      temp5     temp 3
  *
+ * transform
+ *      -->   Ki = a0 * [(KS * KS')' \ KS ]'
  *
  *  and stored in the matrix KI
  */
@@ -571,13 +520,14 @@ void calculate_KI(gsl_matrix* KS, double a0){
                     temp3->data[6], temp3->data[7], temp3->data[8]};
     double b5[36];
     double a5[9];
+    double a6[4] = {1.0, 2.0, 3.0, 4.0};
     for (i = 0; i < 36; i++) {
         b5[i] = KS->data[i];
     }
     for (i = 0;  i<9 ; i++) {
         a5[i] = temp3->data[i];
     }
-    double b3 [9] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+    double b3 [9] = {1.0, 2.0, 3.0, 4.0, 7.0, 6.0, 7.0, 8.0, 9.0};
     //double *a2 = threetimes3->data;
     //double b[15] = {4.02, 6.19, -8.22, -7.57, -3.03,
     //                -1.56, 4.00,-8.67,  1.75,  2.86,
@@ -589,16 +539,16 @@ void calculate_KI(gsl_matrix* KS, double a0){
     int lda = 3;
     int ldb = 3;
     int info;
-    int ipiv;
+    int ipiv = 3;
     double xPtr[9] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     int ldx = 3;
     double *workPtr;
     //float swork [18];
-    int lwork = 10;
+    int lwork = 3000;
     int iter;
     char trans = 'N';
     double wkopt;
-    double* worker;
+    double worker = lwork;
     int jpvt;
     double tau[3];
     double work[1920];
@@ -609,6 +559,9 @@ void calculate_KI(gsl_matrix* KS, double a0){
     //printer(KS, NULL);
     //printf("Nachher");
     //printer(threetimes3, NULL);
+
+    dgetrf_(&n, &m, b3, &n, &ipiv, &info);
+    dgetri_(&n, b3, &n, &ipiv, &worker, &lwork, &info);
 
     gsl_matrix* testB = gsl_matrix_alloc(3, 12);
     gsl_matrix_memcpy(testB, KS);
@@ -625,14 +578,14 @@ void calculate_KI(gsl_matrix* KS, double a0){
 
     printer(temp3, NULL);
 
-    gsl_matrix* output = gsl_matrix_alloc(3, 12);
+    gsl_matrix* output = gsl_matrix_alloc(3, 3);
     //for (j = 0; j < 36; j++) {
     //    output->data[j] = b5[j];
     //}
-    output->data = temp3->data;
+    output->data = b3;
     gsl_matrix* output2 = gsl_matrix_alloc(3, 3);
     //gsl_matrix_transpose_memcpy(output2, output);
-    printer(temp3, NULL);
+    printer(output, NULL);
     printf(" Info %d",info);
 /*
     for (i = 0; i < KS->size2; i++) {       // KS.size2 = 12
@@ -1231,6 +1184,7 @@ void calculating_PI_Controller(size_t zaehler){
     calculate_Cop();
     calculate_Dop();
     calculate_KS();
+    // TODO fertig bis hier hin
     calculate_KI(KS, scalar(1));
     //calculate_Ai();
     //calculate_EWI();

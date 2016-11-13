@@ -6,56 +6,13 @@
 #include <math.h>
 #include "InitTest.h"
 
-
-/*
- * Declaration of System matrices and inner System vector for further use in methods.
- * Stored here to get access to each scalar, vector and matrix.
- */
-    gsl_vector* xg;             // Vector xg
-    gsl_vector* ug;             // Vector ug
-    gsl_vector* xg_alt;         // Vector xg_alt
-    gsl_vector* ug_alt;         // Vector ug_Alt
-    gsl_vector* acc_alt;        // Vector acc_alt
-    gsl_vector* delta_x;        // Vector delta_x
-    gsl_vector* delta_u;        // Vector delta_u
-    gsl_vector* alpha_r;        // Vector alpha_r
-    gsl_vector* alpha_x;        // Vector alpha_x
-    gsl_vector* alpha_y;        // Vector alpha_y
-    gsl_vector* C;              // Vector C
-    gsl_vector* D;              // Vector D
-    double v_1;                 // Velocity No.1
-    double v_2;                 // Velocity No.2
-    double v_3;                 // Velocity No.3
-    double beta_1;              // Angle beta_1
-    double beta_2;              // Angle beta_2
-    double beta_3;              // Angle beta_3
-    gsl_vector* beta;           // Vector beta
-    gsl_vector* v;              // Vector v
-    gsl_vector* vr;             // Vector vr
-    gsl_vector* sr;             // Vector sr
-    gsl_vector* mu;             // Vector mu
-    gsl_vector* mux;            // Vector mu
-    gsl_vector* muy;            // Vector mu
-    gsl_vector* Fz;             // Force Fz
-    gsl_vector* Fx;             // Force Fx
-    gsl_vector* Fy;             // Force Fy
-    gsl_vector* acc;            // Vector acc
-    gsl_matrix* test_ug;        // Matrix for testing and simulation ug
-    gsl_matrix* test_xg;        // Matrix for testing and simulation xg
-    double ax;
-    double ay;
-    double psi_pp;
-    gsl_vector* difference_xg_alt;
-    gsl_vector* difference_ug_alt;
-    gsl_vector* xg_alt_loop;
-    gsl_vector* ug_alt_loop;
-
-
 /*
  * Initialization of System matrix C and D.
  * Allocation of inner System vector xg, ug, xg_alt, ug_alt and acc_alt
  * The size of vector and matrix taken from Jan's Matlab Code (Horizontal model)
  */
+
+/** Auxiliary Methods for Initializing or debugging *************************/
 void initializeVector(void){
 
     xg = gsl_vector_alloc(3);                   // Vector xg
@@ -228,6 +185,7 @@ void initTest(void){
     gsl_matrix_memcpy(test_xg, savingMatrix(18));
 }
 
+/** Calculations Methods ****************************************************/
 /*
  * This method calculates the vectors alpha_r, alpha_x and alpha_y and
  * saves it.
@@ -646,6 +604,7 @@ void saving_current_state(void){
     gsl_vector_memcpy(ug_alt, ug);
 }
 
+/** Completion of all calculation methods ***********************************/
 /*
  * This function summarize all methods above and
  * calculates iteratively the system matrix C and D
@@ -703,9 +662,6 @@ double returnAcceleration(size_t n){
         return 0;
 }
 
-/*
- *
- */
 #if DEBUGGER == 1
 gsl_vector* buildVector(size_t choice) {
     gsl_vector *output;

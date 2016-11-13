@@ -36,9 +36,51 @@
     double ay4;
 #endif
 
-//TODO Anpassen des Infotextes
 /*
- * This Model is transcribed from Jan's Horizontal Model.
+ * Declaration of System matrices and inner System vector for further use in methods.
+ * Stored here to get access to each scalar, vector and matrix.
+ */
+gsl_vector* xg;             // Vector xg
+gsl_vector* ug;             // Vector ug
+gsl_vector* xg_alt;         // Vector xg_alt
+gsl_vector* ug_alt;         // Vector ug_Alt
+gsl_vector* acc_alt;        // Vector acc_alt
+gsl_vector* delta_x;        // Vector delta_x
+gsl_vector* delta_u;        // Vector delta_u
+gsl_vector* alpha_r;        // Vector alpha_r
+gsl_vector* alpha_x;        // Vector alpha_x
+gsl_vector* alpha_y;        // Vector alpha_y
+gsl_vector* C;              // Vector C
+gsl_vector* D;              // Vector D
+double v_1;                 // Velocity No.1
+double v_2;                 // Velocity No.2
+double v_3;                 // Velocity No.3
+double beta_1;              // Angle beta_1
+double beta_2;              // Angle beta_2
+double beta_3;              // Angle beta_3
+gsl_vector* beta;           // Vector beta
+gsl_vector* v;              // Vector v
+gsl_vector* vr;             // Vector vr
+gsl_vector* sr;             // Vector sr
+gsl_vector* mu;             // Vector mu
+gsl_vector* mux;            // Vector mu
+gsl_vector* muy;            // Vector mu
+gsl_vector* Fz;             // Force Fz
+gsl_vector* Fx;             // Force Fx
+gsl_vector* Fy;             // Force Fy
+gsl_vector* acc;            // Vector acc
+gsl_matrix* test_ug;        // Matrix for testing and simulation ug
+gsl_matrix* test_xg;        // Matrix for testing and simulation xg
+double ax;
+double ay;
+double psi_pp;
+gsl_vector* difference_xg_alt;
+gsl_vector* difference_ug_alt;
+gsl_vector* xg_alt_loop;
+gsl_vector* ug_alt_loop;
+
+/*
+ * This Model is translated from Jan's Horizontal Model.
  * All Methods and Calculation formula are taken from his
  * Matlab-Code or his Masterthesis.
  * The main purpose of this c-file is to generate the System

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/RTMakerDebug/App.c" charset="ISO-8859-1" />
-    <file url="file://$PROJECT_DIR$/RTMakerDebug/IO.c" charset="ISO-8859-1" />
-    <file url="file://$PROJECT_DIR$/RTMakerDebug/IO_ADMA_User.c" charset="ISO-8859-1" />
-    <file url="file://$PROJECT_DIR$/RTMakerDebug/IO_SLS400_User.c" charset="ISO-8859-1" />
+    <file url="file://$USER_HOME$/Desktop/Modelle Jan/Prototyp/srcmc/App.c" charset="ISO-8859-1" />
+    <file url="file://$USER_HOME$/Desktop/Modelle Jan/Prototyp/srcmc/IO.c" charset="ISO-8859-1" />
+    <file url="file://$USER_HOME$/Desktop/Modelle Jan/Prototyp/srcmc/IO.h" charset="ISO-8859-1" />
   </component>
 </project>

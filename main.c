@@ -63,8 +63,8 @@ int main() {
         clock_t begin = clock();
         testVector(zaehler);
         calculate_C_and_D(zaehler);
-        calculating_PI_Controller(zaehler);
-        create_data(zaehler, bigMatrices(3), tempKI);
+        //calculating_PI_Controller(zaehler);
+        //create_data(zaehler, bigMatrices(3), tempKI);
         //create_data(zaehler, bigMatrices(6), tempAi);
 
         //printf("Korrekter KI : ");
